@@ -2,1429 +2,3721 @@
   "AEFES": [
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 32.0,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 32.0
     },
     {
       "bank": "Gedik Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 27.2,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 27.2
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 29.0,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 29.0
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 31.43,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 31.43
     },
     {
       "bank": "Yapı Kredi Yatırım",
-      "recommendation": "al",
-      "targetPrice": 30.0,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 30.0
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 25.0,
       "date": "2026-06-25",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 25.0
     },
     {
       "bank": "ÜNLÜ & Co",
-      "recommendation": "al",
-      "targetPrice": 26.0,
       "date": "2026-01-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 26.0
     }
   ],
   "AKBNK": [
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 112.5,
       "date": "2026-07-31",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 112.5
     },
     {
       "bank": "Vakıf Yatırım",
-      "recommendation": "al",
-      "targetPrice": 97.0,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 97.0
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 93.0,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 93.0
     },
     {
       "bank": "Yapı Kredi Yatırım",
-      "recommendation": "al",
-      "targetPrice": 95.0,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 95.0
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 110.0,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 110.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 96.8,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 96.8
     },
     {
       "bank": "Halk Yatırım",
-      "recommendation": "al",
-      "targetPrice": 89.7,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 89.7
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 88.8,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 88.8
+    }
+  ],
+  "AKSA": [
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-08-18",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksa-aksa-akrilik-kimya-sanayii-a.s.-14",
+      "targetPrice": 17.08
+    },
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-08-14",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksa-aksa-akrilik-kimya-sanayii-a.s.-14",
+      "targetPrice": 20.15
+    },
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-08-14",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksa-aksa-akrilik-kimya-sanayii-a.s.-14",
+      "targetPrice": 15.7
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-08-14",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksa-aksa-akrilik-kimya-sanayii-a.s.-14",
+      "targetPrice": 15.5
+    },
+    {
+      "bank": "Ata Yatırım",
+      "date": "2026-07-28",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksa-aksa-akrilik-kimya-sanayii-a.s.-14",
+      "targetPrice": 15.8
+    }
+  ],
+  "AKSEN": [
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-07-01",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksen-aksa-enerji-uretim-a.s.-15",
+      "targetPrice": 114.7
+    },
+    {
+      "bank": "Şeker Yatırım",
+      "date": "2026-07-01",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksen-aksa-enerji-uretim-a.s.-15",
+      "targetPrice": 110.0
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-06-25",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksen-aksa-enerji-uretim-a.s.-15",
+      "targetPrice": 108.0
+    },
+    {
+      "bank": "QNB Finansinvest",
+      "date": "2026-06-23",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksen-aksa-enerji-uretim-a.s.-15",
+      "targetPrice": 120.3
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-05-13",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksen-aksa-enerji-uretim-a.s.-15",
+      "targetPrice": 117.5
+    },
+    {
+      "bank": "Vakıf Yatırım",
+      "date": "2026-05-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksen-aksa-enerji-uretim-a.s.-15",
+      "targetPrice": 112.8
+    },
+    {
+      "bank": "Global Menkul Değerler",
+      "date": "2026-05-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksen-aksa-enerji-uretim-a.s.-15",
+      "targetPrice": 106.5
+    },
+    {
+      "bank": "Marbaş Menkul Değerler",
+      "date": "2026-05-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksen-aksa-enerji-uretim-a.s.-15",
+      "targetPrice": 99.25
+    },
+    {
+      "bank": "Yapı Kredi Yatırım",
+      "date": "2026-05-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksen-aksa-enerji-uretim-a.s.-15",
+      "targetPrice": 98.0
+    },
+    {
+      "bank": "Halk Yatırım",
+      "date": "2026-05-12",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksen-aksa-enerji-uretim-a.s.-15",
+      "targetPrice": 102.8
+    },
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-05-12",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksen-aksa-enerji-uretim-a.s.-15",
+      "targetPrice": 91.0
+    },
+    {
+      "bank": "A1 Capital",
+      "date": "2026-04-01",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/aksen-aksa-enerji-uretim-a.s.-15",
+      "targetPrice": 103.25
+    }
+  ],
+  "ALARK": [
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-08-20",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/alark-alarko-holding-a.s.-18",
+      "targetPrice": 189.69
+    },
+    {
+      "bank": "Pusula Yatırım",
+      "date": "2026-08-20",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/alark-alarko-holding-a.s.-18",
+      "targetPrice": 162.4
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-08-20",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/alark-alarko-holding-a.s.-18",
+      "targetPrice": 141.82
+    },
+    {
+      "bank": "Ata Yatırım",
+      "date": "2026-07-28",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/alark-alarko-holding-a.s.-18",
+      "targetPrice": 197.01
+    },
+    {
+      "bank": "Tacirler Yatırım",
+      "date": "2026-07-01",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/alark-alarko-holding-a.s.-18",
+      "targetPrice": 170.0
+    }
+  ],
+  "ANSGR": [
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-07-29",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ansgr-anadolu-sigorta-sirketi-30",
+      "targetPrice": 49.88
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-07-29",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ansgr-anadolu-sigorta-sirketi-30",
+      "targetPrice": 53.4
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-07-29",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ansgr-anadolu-sigorta-sirketi-30",
+      "targetPrice": 48.7
+    },
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-07-29",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ansgr-anadolu-sigorta-sirketi-30",
+      "targetPrice": 42.0
+    },
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-07-29",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ansgr-anadolu-sigorta-sirketi-30",
+      "targetPrice": 36.49
+    },
+    {
+      "bank": "Pusula Yatırım",
+      "date": "2026-07-29",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ansgr-anadolu-sigorta-sirketi-30",
+      "targetPrice": 39.0
+    },
+    {
+      "bank": "TEB Yatırım",
+      "date": "2026-06-23",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ansgr-anadolu-sigorta-sirketi-30",
+      "targetPrice": 40.0
+    },
+    {
+      "bank": "Destek Yatırım",
+      "date": "2026-04-21",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ansgr-anadolu-sigorta-sirketi-30",
+      "targetPrice": 45.73
+    }
+  ],
+  "ARCLK": [
+    {
+      "bank": "Ziraat Yatırım",
+      "date": "2026-08-03",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 150.0
+    },
+    {
+      "bank": "Şeker Yatırım",
+      "date": "2026-07-31",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 149.5
+    },
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-07-27",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/hedef-fiyat/ar%C3%A7elik-a%C5%9F-hedef-fiyat-2026-10639",
+      "targetPrice": 163.0
+    },
+    {
+      "bank": "Vakıf Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 160.0
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 152.0
+    },
+    {
+      "bank": "Yapı Kredi Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 154.0
+    },
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 137.8
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 129.82
+    },
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 133.0
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 130.0
+    },
+    {
+      "bank": "Tera Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 119.0
+    },
+    {
+      "bank": "Pusula Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 122.5
+    },
+    {
+      "bank": "Ata Yatırım",
+      "date": "2026-07-28",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 155.0
+    },
+    {
+      "bank": "Tacirler Yatırım",
+      "date": "2026-07-01",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 141.0
+    },
+    {
+      "bank": "TEB Yatırım",
+      "date": "2026-06-23",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 118.0
+    },
+    {
+      "bank": "HSBC Yatırım",
+      "date": "2026-04-28",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/arclk-arcelik-a.s.-32",
+      "targetPrice": 130.0
     }
   ],
   "ASELS": [
     {
       "bank": "HSBC Yatırım",
-      "recommendation": "al",
-      "targetPrice": 450.0,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 450.0
     },
     {
       "bank": "Oyak Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 430.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 430.0
     },
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 495.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 495.0
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 480.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 480.0
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 450.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 450.0
     },
     {
       "bank": "Yapı Kredi Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 400.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 400.0
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 490.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 490.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 495.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 495.0
     }
   ],
   "ASTOR": [
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 367.0,
       "date": "2026-08-18",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 367.0
     },
     {
       "bank": "Tacirler Yatırım",
-      "recommendation": "al",
-      "targetPrice": 405.0,
       "date": "2026-08-18",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 405.0
     },
     {
       "bank": "Bulls Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 471.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 471.0
     },
     {
       "bank": "HSBC Yatırım",
-      "recommendation": "al",
-      "targetPrice": 420.0,
       "date": "2026-08-04",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 420.0
     },
     {
       "bank": "Tera Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 452.6,
       "date": "2026-05-21",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 452.6
     },
     {
       "bank": "Global Menkul",
-      "recommendation": "al",
-      "targetPrice": 388.0,
       "date": "2026-05-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 388.0
     },
     {
       "bank": "İnfo Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 261.0,
       "date": "2026-04-08",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 261.0
     }
   ],
   "BIMAS": [
     {
       "bank": "Yapı Kredi Yatırım",
-      "recommendation": "al",
-      "targetPrice": 540.0,
       "date": "2026-08-10",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 540.0
     },
     {
       "bank": "Ata Yatırım",
-      "recommendation": "al",
-      "targetPrice": 500.0,
       "date": "2026-07-28",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 500.0
     },
     {
       "bank": "Gedik Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 530.0,
       "date": "2026-07-27",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 530.0
     },
     {
       "bank": "Citi",
-      "recommendation": "al",
-      "targetPrice": 480.0,
       "date": "2026-07-20",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 480.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 482.5,
       "date": "2026-07-01",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 482.5
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 508.0,
       "date": "2026-06-25",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 508.0
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 496.89,
       "date": "2026-05-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 496.89
     },
     {
       "bank": "HSBC Yatırım",
-      "recommendation": "al",
-      "targetPrice": 480.0,
       "date": "2026-05-20",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 480.0
     }
   ],
-  "EREGL": [
+  "BRSAN": [
     {
-      "bank": "Ziraat Yatırım",
+      "bank": "Alnus Yatırım",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
       "recommendation": "al",
-      "targetPrice": 47.5,
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/brsan-borusan-mannesmann-boru-sanayi-ve-ticaret-a.s.-83",
+      "targetPrice": 828.42
+    },
+    {
+      "bank": "Global Menkul Değerler",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/brsan-borusan-mannesmann-boru-sanayi-ve-ticaret-a.s.-83",
+      "targetPrice": 809.0
+    },
+    {
+      "bank": "A1 Capital",
+      "date": "2026-03-31",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/brsan-borusan-mannesmann-boru-sanayi-ve-ticaret-a.s.-83",
+      "targetPrice": 703.0
+    }
+  ],
+  "BTCIM": [
+    {
+      "bank": "Şeker Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/hedef-fiyat/bati%C3%A7im-bati-anadolu-%C3%A7imento-sanayii-a%C5%9F-hedef-fiyat-2026-10856",
+      "targetPrice": 70.55
+    }
+  ],
+  "CCOLA": [
+    {
+      "bank": "Trive Yatırım",
       "date": "2026-08-11",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 129.0
+    },
+    {
+      "bank": "Tacirler Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 112.0
+    },
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 118.84
     },
     {
       "bank": "Şeker Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
       "recommendation": "al",
-      "targetPrice": 42.24,
-      "date": "2026-08-10",
-      "modelPortfolio": false
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 122.0
     },
     {
-      "bank": "HSBC Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 41.0,
-      "date": "2026-08-10",
-      "modelPortfolio": false
+      "bank": "Tera Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 134.0
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 46.0,
-      "date": "2026-08-10",
-      "modelPortfolio": false
-    },
-    {
-      "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 39.8,
-      "date": "2026-08-07",
-      "modelPortfolio": false
-    },
-    {
-      "bank": "İş Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 45.0,
-      "date": "2026-08-07",
-      "modelPortfolio": false
-    },
-    {
-      "bank": "Vakıf Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 50.4,
-      "date": "2026-08-07",
-      "modelPortfolio": false
+      "date": "2026-08-11",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 125.0
     },
     {
       "bank": "Gedik Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
       "recommendation": "endeks_ustu",
-      "targetPrice": 59.21,
-      "date": "2026-08-07",
-      "modelPortfolio": false
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 130.2
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 110.0
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 120.0
+    },
+    {
+      "bank": "Yapı Kredi Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 125.0
+    },
+    {
+      "bank": "Ata Yatırım",
+      "date": "2026-07-28",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 120.0
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-06-25",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 96.0
+    },
+    {
+      "bank": "TEB Yatırım",
+      "date": "2026-06-23",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 93.0
+    },
+    {
+      "bank": "Anadolu Yatırım",
+      "date": "2026-01-29",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 98.5
+    },
+    {
+      "bank": "ÜNLÜ & Co",
+      "date": "2026-01-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 96.0
+    },
+    {
+      "bank": "Oyak Yatırım",
+      "date": "2025-12-24",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 91.0
+    },
+    {
+      "bank": "J.P. Morgan",
+      "date": "2025-12-10",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 101.0
+    },
+    {
+      "bank": "Halk Yatırım",
+      "date": "2025-03-05",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 70.1
+    },
+    {
+      "bank": "Yatırım Finansman",
+      "date": "2025-01-27",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 87.0
+    },
+    {
+      "bank": "Citi",
+      "date": "2024-02-22",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ccola-cocacola-icecek-a.s.-93",
+      "targetPrice": 67.27
+    }
+  ],
+  "CIMSA": [
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 82.93
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 80.28
+    },
+    {
+      "bank": "Tera Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 80.0
+    },
+    {
+      "bank": "Vakıf Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 74.5
+    },
+    {
+      "bank": "Kuveyt Türk Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 74.4
+    },
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 73.11
+    },
+    {
+      "bank": "Phillip Capital",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 71.5
+    },
+    {
+      "bank": "Şeker Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 70.55
+    },
+    {
+      "bank": "Halk Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 68.1
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 66.2
+    },
+    {
+      "bank": "Ahlatcı Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 65.5
+    },
+    {
+      "bank": "Marbaş Menkul",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 64.4
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://www.borsametre.com.tr/teknik-analizler/cimsa-icin-13-kurum-hedef-fiyat-guncellemesi-yapti-138257h",
+      "targetPrice": 64.32
+    }
+  ],
+  "CWENE": [
+    {
+      "bank": "QNB Invest",
+      "date": "2026-08-17",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://www.yatirimx.com.tr/sirket-haberleri/37-tlden-60-tlye-cwene-hissesi-icin-yeni-hedef-fiyat/23619",
+      "targetPrice": 60.0
+    }
+  ],
+  "DOAS": [
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-08-20",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 305.0
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-08-20",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 205.1
+    },
+    {
+      "bank": "Tacirler Yatırım",
+      "date": "2026-08-20",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 230.0
+    },
+    {
+      "bank": "Şeker Yatırım",
+      "date": "2026-08-20",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 302.9
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-08-20",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 255.0
+    },
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-08-20",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 307.44
+    },
+    {
+      "bank": "Marbaş Menkul",
+      "date": "2026-08-20",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 254.0
+    },
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-08-20",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 225.65
+    },
+    {
+      "bank": "Phillip Capital",
+      "date": "2026-08-20",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 271.0
+    },
+    {
+      "bank": "Ata Yatırım",
+      "date": "2026-07-28",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 208.0
+    },
+    {
+      "bank": "HSBC Yatırım",
+      "date": "2026-07-28",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 200.0
+    },
+    {
+      "bank": "Halk Yatırım",
+      "date": "2026-07-02",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 226.1
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-06-25",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 242.7
+    },
+    {
+      "bank": "ÜNLÜ & Co",
+      "date": "2026-06-02",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 227.0
+    },
+    {
+      "bank": "A1 Capital",
+      "date": "2026-03-18",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 282.68
+    },
+    {
+      "bank": "Tera Yatırım",
+      "date": "2026-03-05",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/doas-dogus-otomotiv-servis-ve-ticaret-a.s.-125",
+      "targetPrice": 351.9
+    }
+  ],
+  "DOHOL": [
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-08-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/dohol-dogan-sirketler-grubu-holding-a.s.-128",
+      "targetPrice": 33.27
+    },
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-08-12",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/dohol-dogan-sirketler-grubu-holding-a.s.-128",
+      "targetPrice": 35.4
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-08-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/dohol-dogan-sirketler-grubu-holding-a.s.-128",
+      "targetPrice": 31.9
+    },
+    {
+      "bank": "Tacirler Yatırım",
+      "date": "2026-08-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/dohol-dogan-sirketler-grubu-holding-a.s.-128",
+      "targetPrice": 34.4
+    },
+    {
+      "bank": "Pusula Yatırım",
+      "date": "2026-08-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/dohol-dogan-sirketler-grubu-holding-a.s.-128",
+      "targetPrice": 34.0
+    },
+    {
+      "bank": "ICBC Yatırım",
+      "date": "2026-03-16",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/dohol-dogan-sirketler-grubu-holding-a.s.-128",
+      "targetPrice": 28.0
+    },
+    {
+      "bank": "Oyak Yatırım",
+      "date": "2025-12-24",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/dohol-dogan-sirketler-grubu-holding-a.s.-128",
+      "targetPrice": 25.96
+    },
+    {
+      "bank": "Phillip Capital",
+      "date": "2025-03-27",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/dohol-dogan-sirketler-grubu-holding-a.s.-128",
+      "targetPrice": 25.0
+    },
+    {
+      "bank": "Tera Yatırım",
+      "date": "2024-01-16",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/dohol-dogan-sirketler-grubu-holding-a.s.-128",
+      "targetPrice": 19.3
+    }
+  ],
+  "ECILC": [
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2024-01-10",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ecilc-eis-eczacibasi-ilac-sinai-ve-finansal-yatirimlar-sanayi-ve-ticaret-a.s.-133",
+      "targetPrice": 53.5
     }
   ],
   "EKGYO": [
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 32.84,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 32.84
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 41.0,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 41.0
     },
     {
       "bank": "Vakıf Yatırım",
-      "recommendation": "al",
-      "targetPrice": 29.5,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 29.5
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 33.15,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 33.15
     },
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 29.5,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 29.5
+    }
+  ],
+  "ENJSA": [
+    {
+      "bank": "Halk Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/enjsa-enerjisa-enerji-a.s.-147",
+      "targetPrice": 164.6
+    },
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/enjsa-enerjisa-enerji-a.s.-147",
+      "targetPrice": 183.95
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": true,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/enjsa-enerjisa-enerji-a.s.-147",
+      "targetPrice": 173.54
+    },
+    {
+      "bank": "Pusula Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/enjsa-enerjisa-enerji-a.s.-147",
+      "targetPrice": 154.3
+    },
+    {
+      "bank": "Ata Yatırım",
+      "date": "2026-07-28",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/enjsa-enerjisa-enerji-a.s.-147",
+      "targetPrice": 142.96
     }
   ],
   "ENKAI": [
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 126.0,
       "date": "2026-08-18",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 126.0
     },
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 127.2,
       "date": "2026-08-18",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 127.2
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 127.0,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 127.0
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 129.0,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 129.0
     },
     {
       "bank": "Yapı Kredi Yatırım",
-      "recommendation": "al",
-      "targetPrice": 110.0,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 110.0
     },
     {
       "bank": "Destek Yatırım",
-      "recommendation": "al",
-      "targetPrice": 140.0,
       "date": "2026-04-21",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 140.0
+    }
+  ],
+  "EREGL": [
+    {
+      "bank": "Ziraat Yatırım",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 47.5
+    },
+    {
+      "bank": "Şeker Yatırım",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 42.24
+    },
+    {
+      "bank": "HSBC Yatırım",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 41.0
+    },
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 46.0
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-08-07",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 39.8
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-08-07",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 45.0
+    },
+    {
+      "bank": "Vakıf Yatırım",
+      "date": "2026-08-07",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 50.4
+    },
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-08-07",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 59.21
+    }
+  ],
+  "EUPWR": [
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-06-10",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/eupwr-europower-enerji-162",
+      "targetPrice": 150.0
+    },
+    {
+      "bank": "Phillip Capital",
+      "date": "2026-05-20",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/eupwr-europower-enerji-162",
+      "targetPrice": 91.5
     }
   ],
   "FROTO": [
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 130.0,
       "date": "2026-08-07",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 130.0
     },
     {
       "bank": "Vakıf Yatırım",
-      "recommendation": "al",
-      "targetPrice": 124.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 124.0
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 152.5,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 152.5
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 115.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 115.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 130.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 130.0
     },
     {
       "bank": "Yapı Kredi Yatırım",
-      "recommendation": "al",
-      "targetPrice": 140.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 140.0
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 170.0,
       "date": "2026-05-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 170.0
     }
   ],
   "GARAN": [
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 205.0,
       "date": "2026-07-31",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 205.0
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 181.5,
       "date": "2026-07-31",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 181.5
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 195.0,
       "date": "2026-07-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 195.0
     },
     {
       "bank": "Yapı Kredi Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 170.0,
       "date": "2026-07-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 170.0
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 205.73,
       "date": "2026-07-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 205.73
     },
     {
       "bank": "J.P. Morgan",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 143.0,
       "date": "2026-07-27",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 143.0
+    }
+  ],
+  "GENIL": [
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2025-08-14",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/genil-gen-ilac-177",
+      "targetPrice": 120.0
+    }
+  ],
+  "GESAN": [
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-06-10",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/gesan-girisim-elektrik-sanayi-180",
+      "targetPrice": 162.0
+    },
+    {
+      "bank": "Phillip Capital",
+      "date": "2025-07-16",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/hedef-fiyat/girisim-elektrik-sanayi-hedef-fiyat-2025-6604",
+      "targetPrice": 99.0
+    }
+  ],
+  "GLRMK": [
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-06-23",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.yatirimx.com.tr/piyasa/glrmk-icin-al-tavsiyesi-27754-tl-hedef-fiyat-belirlendi/21619",
+      "targetPrice": 277.54
+    },
+    {
+      "bank": "Phillip Capital",
+      "date": "2026-06-16",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://paraajansi.com.tr/ekonomi/araci-kurumdan-glrmk-hissesine-28550-tllik-hedef-fiyat-22227466h",
+      "targetPrice": 285.5
+    },
+    {
+      "bank": "Pusula Yatırım",
+      "date": "2026-02-24",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.borsamatik.com.tr/pusula-yatirim-gulermak-glrmk-hissesi-icin-hedef-fiyatini-320-tl-olarak-belirledi-haber-177014",
+      "targetPrice": 320.0
+    },
+    {
+      "bank": "Kuveyt Türk Yatırım",
+      "date": "2026-08-19",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://paraajansi.com.tr/sirket-haberleri/kuveyt-turk-yatirim-glrmk-tavsiyesini-tuttan-ala-yukseltti-22229117h",
+      "targetPrice": 248.0
+    },
+    {
+      "bank": "Tera Yatırım",
+      "date": "2026-01-21",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/glrmk-gulermak-agir-sanayi-insaat-ve-taah-637",
+      "targetPrice": 267.8
+    },
+    {
+      "bank": "Oyak Yatırım",
+      "date": "2025-07-29",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/hedef-fiyat/gulermak-agir-sanayi-insaat-ve-taah-hedef-fiyat-2025-6736",
+      "targetPrice": 326.4
+    }
+  ],
+  "GRSEL": [
+    {
+      "bank": "Kuveyt Türk Yatırım",
+      "date": "2026-07-13",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.borsamatik.com.tr/bir-hisse-bir-analiz-422-tl-hedef-fiyat-haber-179613",
+      "targetPrice": 422.0
+    },
+    {
+      "bank": "Phillip Capital",
+      "date": "2026-08-11",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://bigpara.hurriyet.com.tr/haberler/araci-kurum-raporlari/grsel-hisse-degelendirmesi-phillip-cap_ID102228264/",
+      "targetPrice": 564.0
+    }
+  ],
+  "GRTHO": [
+    {
+      "bank": "Bulls Yatırım",
+      "date": "2026-06-17",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://www.dunya.com/sirketler/bulls-yatirim-grtho-hissesinde-beklentisini-yukseltti-haberi-828936",
+      "targetPrice": 359.5
     }
   ],
   "GUBRF": [
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 320.0,
       "date": "2025-12-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 320.0
     },
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 300.0,
       "date": "2025-12-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 300.0
+    }
+  ],
+  "HALKB": [
+    {
+      "bank": "Pusula Yatırım",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.yatirimx.com.tr/sirket-haberleri/halkb-hissesi-icin-hedef-fiyatlar-aciklandi-100-tl-dikkat-cekti/23237",
+      "targetPrice": 100.0
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.yatirimx.com.tr/sirket-haberleri/halkb-hissesi-icin-hedef-fiyatlar-aciklandi-100-tl-dikkat-cekti/23237",
+      "targetPrice": 41.3
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://www.yatirimx.com.tr/sirket-haberleri/halkb-hissesi-icin-hedef-fiyatlar-aciklandi-100-tl-dikkat-cekti/23237",
+      "targetPrice": 46.0
+    },
+    {
+      "bank": "Vakıf Yatırım",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://www.yatirimx.com.tr/sirket-haberleri/halkb-hissesi-icin-hedef-fiyatlar-aciklandi-100-tl-dikkat-cekti/23237",
+      "targetPrice": 43.7
+    },
+    {
+      "bank": "Yapı Kredi Yatırım",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://www.yatirimx.com.tr/sirket-haberleri/halkb-hissesi-icin-hedef-fiyatlar-aciklandi-100-tl-dikkat-cekti/23237",
+      "targetPrice": 40.0
+    },
+    {
+      "bank": "Şeker Yatırım",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://www.yatirimx.com.tr/sirket-haberleri/halkb-hissesi-icin-hedef-fiyatlar-aciklandi-100-tl-dikkat-cekti/23237",
+      "targetPrice": 46.38
+    },
+    {
+      "bank": "PhillipCapital",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://www.yatirimx.com.tr/sirket-haberleri/halkb-hissesi-icin-hedef-fiyatlar-aciklandi-100-tl-dikkat-cekti/23237",
+      "targetPrice": 52.4
+    }
+  ],
+  "HEKTS": [
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-03-09",
+      "modelPortfolio": false,
+      "recommendation": "sat",
+      "sourceUrl": "https://paratic.com/hektas-hekts-hedef-fiyati-dustu-sat-tavsiyesi-suruyor/",
+      "targetPrice": 3.6
     }
   ],
   "ISCTR": [
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 22.94,
       "date": "2026-08-04",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 22.94
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 18.5,
       "date": "2026-08-04",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 18.5
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 21.57,
       "date": "2026-08-04",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 21.57
     },
     {
       "bank": "Halk Yatırım",
-      "recommendation": "al",
-      "targetPrice": 19.15,
       "date": "2026-08-04",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 19.15
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 17.0,
       "date": "2026-08-04",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 17.0
     },
     {
       "bank": "Yapı Kredi Yatırım",
-      "recommendation": "al",
-      "targetPrice": 18.0,
       "date": "2026-08-04",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 18.0
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 18.8,
       "date": "2026-08-04",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 18.8
+    }
+  ],
+  "ISMEN": [
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-05-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.yatirimx.com.tr/piyasa/deniz-yatirim-ismen-icin-al-dedi-hedef-fiyat-6473-tl/20378",
+      "targetPrice": 64.73
+    }
+  ],
+  "IZENR": [
+    {
+      "bank": "Oyak Yatırım",
+      "date": "2025-12-24",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/izenr-izdemir-enerji-elektrik-uretim-as-543",
+      "targetPrice": 16.6
     }
   ],
   "KCHOL": [
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 336.5,
       "date": "2026-08-10",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 336.5
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 348.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 348.0
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 308.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 308.0
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 295.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 295.0
     },
     {
       "bank": "Vakıf Yatırım",
-      "recommendation": "al",
-      "targetPrice": 319.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 319.0
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 321.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 321.0
     },
     {
       "bank": "Tacirler Yatırım",
-      "recommendation": "al",
-      "targetPrice": 337.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 337.0
     }
   ],
   "KRDMD": [
     {
       "bank": "Halk Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 48.04,
       "date": "2026-07-02",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 48.04
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 45.0,
       "date": "2026-07-01",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 45.0
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 47.0,
       "date": "2026-06-25",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 47.0
     },
     {
       "bank": "TEB Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 43.0,
       "date": "2026-06-23",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 43.0
     },
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 53.5,
       "date": "2026-05-14",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 53.5
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 48.0,
       "date": "2026-05-11",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 48.0
     },
     {
       "bank": "Vakıf Yatırım",
-      "recommendation": "al",
-      "targetPrice": 52.6,
       "date": "2026-05-11",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 52.6
+    }
+  ],
+  "MAVI": [
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-07-27",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 69.0
+    },
+    {
+      "bank": "Tacirler Yatırım",
+      "date": "2026-07-01",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 60.8
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-06-25",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 53.5
+    },
+    {
+      "bank": "Tera Yatırım",
+      "date": "2026-06-11",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 59.7
+    },
+    {
+      "bank": "Trive Yatırım",
+      "date": "2026-06-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 69.9
+    },
+    {
+      "bank": "Halk Yatırım",
+      "date": "2026-06-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 63.4
+    },
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-06-10",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 69.0
+    },
+    {
+      "bank": "Marbaş Menkul Değerler",
+      "date": "2026-06-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 62.22
+    },
+    {
+      "bank": "Ahlatcı Yatırım",
+      "date": "2026-06-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 62.4
+    },
+    {
+      "bank": "Yapı Kredi Yatırım",
+      "date": "2026-06-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 68.0
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-06-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 61.23
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-06-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 65.76
+    },
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-06-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 58.28
+    },
+    {
+      "bank": "Kuveyt Türk Yatırım",
+      "date": "2026-06-10",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 56.0
+    },
+    {
+      "bank": "İnfo Yatırım",
+      "date": "2026-03-18",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 59.0
+    },
+    {
+      "bank": "Ziraat Yatırım",
+      "date": "2026-03-18",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 76.0
+    },
+    {
+      "bank": "Ünlü Menkul",
+      "date": "2026-01-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 67.0
+    },
+    {
+      "bank": "Oyak Yatırım",
+      "date": "2025-12-24",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 60.0
+    },
+    {
+      "bank": "Phillip Capital",
+      "date": "2025-09-23",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 70.0
+    },
+    {
+      "bank": "Yatırım Finansman",
+      "date": "2025-05-07",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/mavi-mavi-giyim-sanayi-ve-ticaret-a.s.-288",
+      "targetPrice": 51.0
     }
   ],
   "MGROS": [
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 1057.19,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 1057.19
     },
     {
       "bank": "Tacirler Yatırım",
-      "recommendation": "al",
-      "targetPrice": 979.0,
       "date": "2026-08-14",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 979.0
     },
     {
       "bank": "Gedik Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 980.0,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 980.0
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 946.44,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 946.44
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 901.0,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 901.0
     },
     {
       "bank": "Vakıf Yatırım",
-      "recommendation": "al",
-      "targetPrice": 911.0,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 911.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 910.0,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 910.0
     },
     {
       "bank": "Halk Yatırım",
-      "recommendation": "al",
-      "targetPrice": 890.4,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 890.4
+    }
+  ],
+  "MPARK": [
+    {
+      "bank": "Trive Yatırım",
+      "date": "2026-08-07",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://paraajansi.com.tr/sirket-haberleri/mpark-hissesine-10-yeni-hedef-fiyat-verildi-5753-prim-beklentisi-22228817h",
+      "targetPrice": 720.0
+    },
+    {
+      "bank": "Tacirler Yatırım",
+      "date": "2026-08-06",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://paraajansi.com.tr/sirket-haberleri/mpark-hissesine-10-yeni-hedef-fiyat-verildi-5753-prim-beklentisi-22228817h",
+      "targetPrice": 645.0
+    },
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-08-06",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://paraajansi.com.tr/sirket-haberleri/mpark-hissesine-10-yeni-hedef-fiyat-verildi-5753-prim-beklentisi-22228817h",
+      "targetPrice": 723.0
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-08-06",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://paraajansi.com.tr/sirket-haberleri/mpark-hissesine-10-yeni-hedef-fiyat-verildi-5753-prim-beklentisi-22228817h",
+      "targetPrice": 640.0
+    },
+    {
+      "bank": "Kuveyt Türk Yatırım",
+      "date": "2026-08-06",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://paraajansi.com.tr/sirket-haberleri/mpark-hissesine-10-yeni-hedef-fiyat-verildi-5753-prim-beklentisi-22228817h",
+      "targetPrice": 608.0
+    },
+    {
+      "bank": "Fiba Yatırım",
+      "date": "2026-08-06",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://paraajansi.com.tr/sirket-haberleri/mpark-hissesine-10-yeni-hedef-fiyat-verildi-5753-prim-beklentisi-22228817h",
+      "targetPrice": 728.5
+    },
+    {
+      "bank": "İnfo Yatırım",
+      "date": "2026-08-06",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://paraajansi.com.tr/sirket-haberleri/mpark-hissesine-10-yeni-hedef-fiyat-verildi-5753-prim-beklentisi-22228817h",
+      "targetPrice": 676.0
+    },
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-08-06",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://paraajansi.com.tr/sirket-haberleri/mpark-hissesine-10-yeni-hedef-fiyat-verildi-5753-prim-beklentisi-22228817h",
+      "targetPrice": 710.0
+    },
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-08-06",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://paraajansi.com.tr/sirket-haberleri/mpark-hissesine-10-yeni-hedef-fiyat-verildi-5753-prim-beklentisi-22228817h",
+      "targetPrice": 614.51
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-08-06",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://paraajansi.com.tr/sirket-haberleri/mpark-hissesine-10-yeni-hedef-fiyat-verildi-5753-prim-beklentisi-22228817h",
+      "targetPrice": 700.24
+    },
+    {
+      "bank": "Ünlü Menkul",
+      "date": "2026-06-18",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.hedeffiyat.com.tr/senet/mpark-mlp-saglik-hizmetleri-a.s.-304",
+      "targetPrice": 705.0
+    },
+    {
+      "bank": "Tera Yatırım",
+      "date": "2026-04-13",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://www.hedeffiyat.com.tr/senet/mpark-mlp-saglik-hizmetleri-a.s.-304",
+      "targetPrice": 610.2
+    },
+    {
+      "bank": "HSBC Yatırım",
+      "date": "2026-03-23",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.hedeffiyat.com.tr/senet/mpark-mlp-saglik-hizmetleri-a.s.-304",
+      "targetPrice": 500.0
+    },
+    {
+      "bank": "Oyak Yatırım",
+      "date": "2026-03-12",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://www.hedeffiyat.com.tr/senet/mpark-mlp-saglik-hizmetleri-a.s.-304",
+      "targetPrice": 633.1
+    },
+    {
+      "bank": "Yatırım Finansman",
+      "date": "2025-01-27",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://www.hedeffiyat.com.tr/senet/mpark-mlp-saglik-hizmetleri-a.s.-304",
+      "targetPrice": 532.0
+    }
+  ],
+  "OBAMS": [
+    {
+      "bank": "ÜNLÜ & Co",
+      "date": "2024-05-16",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/hedef-fiyat/-2904",
+      "targetPrice": 78.0
+    }
+  ],
+  "ODAS": [
+    {
+      "bank": "Ata Yatırım",
+      "date": "2025-01-31",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/odas-odas-elektrik-uretim-sanayi-ticaret-a.s.-316",
+      "targetPrice": 10.0
+    }
+  ],
+  "OTKAR": [
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-07-27",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/otkar-otokar-otomotiv-ve-savunma-sanayi-a.s.-323",
+      "targetPrice": 480.0
+    },
+    {
+      "bank": "TEB Yatırım",
+      "date": "2026-06-23",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/otkar-otokar-otomotiv-ve-savunma-sanayi-a.s.-323",
+      "targetPrice": 380.0
+    },
+    {
+      "bank": "Yatırım Finansman",
+      "date": "2026-06-17",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/hedef-fiyat/otokar-otomotiv-ve-savunma-sanayi-a.s.-hedef-fiyat-2026-10369",
+      "targetPrice": 700.0
+    },
+    {
+      "bank": "Halk Yatırım",
+      "date": "2026-05-06",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/otkar-otokar-otomotiv-ve-savunma-sanayi-a.s.-323",
+      "targetPrice": 462.0
+    },
+    {
+      "bank": "Yapı Kredi Yatırım",
+      "date": "2026-05-06",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/otkar-otokar-otomotiv-ve-savunma-sanayi-a.s.-323",
+      "targetPrice": 780.0
+    },
+    {
+      "bank": "Vakıf Yatırım",
+      "date": "2026-05-06",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/otkar-otokar-otomotiv-ve-savunma-sanayi-a.s.-323",
+      "targetPrice": 548.0
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-05-06",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/otkar-otokar-otomotiv-ve-savunma-sanayi-a.s.-323",
+      "targetPrice": 540.0
+    },
+    {
+      "bank": "Ziraat Yatırım",
+      "date": "2025-11-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/otkar-otokar-otomotiv-ve-savunma-sanayi-a.s.-323",
+      "targetPrice": 680.0
+    },
+    {
+      "bank": "Ak Yatırım",
+      "date": "2025-07-30",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/otkar-otokar-otomotiv-ve-savunma-sanayi-a.s.-323",
+      "targetPrice": 760.0
+    },
+    {
+      "bank": "Oyak Yatırım",
+      "date": "2025-01-14",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/otkar-otokar-otomotiv-ve-savunma-sanayi-a.s.-323",
+      "targetPrice": 614.0
+    }
+  ],
+  "OYAKC": [
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-08-07",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/oyakc-oyak-cimento-325",
+      "targetPrice": 27.4
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-08-07",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/oyakc-oyak-cimento-325",
+      "targetPrice": 38.92
+    },
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-08-07",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/oyakc-oyak-cimento-325",
+      "targetPrice": 34.2
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-08-07",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/oyakc-oyak-cimento-325",
+      "targetPrice": 33.0
+    },
+    {
+      "bank": "Marbaş Menkul Değerler",
+      "date": "2026-08-07",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/oyakc-oyak-cimento-325",
+      "targetPrice": 35.48
+    },
+    {
+      "bank": "Şeker Yatırım",
+      "date": "2026-08-07",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/oyakc-oyak-cimento-325",
+      "targetPrice": 33.35
+    },
+    {
+      "bank": "QNB Finansinvest",
+      "date": "2026-03-24",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/oyakc-oyak-cimento-325",
+      "targetPrice": 34.2
+    },
+    {
+      "bank": "Tera Yatırım",
+      "date": "2026-03-05",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/oyakc-oyak-cimento-325",
+      "targetPrice": 40.1
+    },
+    {
+      "bank": "İnfo Yatırım",
+      "date": "2026-01-08",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/oyakc-oyak-cimento-325",
+      "targetPrice": 35.8
+    },
+    {
+      "bank": "Phillip Capital",
+      "date": "2025-11-19",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/oyakc-oyak-cimento-325",
+      "targetPrice": 30.7
+    },
+    {
+      "bank": "Anadolu Yatırım",
+      "date": "2025-05-07",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/oyakc-oyak-cimento-325",
+      "targetPrice": 31.45
+    }
+  ],
+  "PATEK": [
+    {
+      "bank": "Oyak Yatırım",
+      "date": "2025-12-24",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/patek-pasifik-teknoloji-584",
+      "targetPrice": 51.9
     }
   ],
   "PETKM": [
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 21.0,
       "date": "2026-08-18",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 21.0
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 21.6,
       "date": "2026-08-07",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 21.6
     },
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 24.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 24.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 18.91,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 18.91
     },
     {
       "bank": "Gedik Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 26.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 26.0
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "sat",
-      "targetPrice": 18.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "sat",
+      "targetPrice": 18.0
     },
     {
       "bank": "Ata Yatırım",
-      "recommendation": "sat",
-      "targetPrice": 19.42,
       "date": "2026-07-28",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "sat",
+      "targetPrice": 19.42
     },
     {
       "bank": "HSBC Yatırım",
-      "recommendation": "sat",
-      "targetPrice": 15.0,
       "date": "2026-06-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "sat",
+      "targetPrice": 15.0
     }
   ],
   "PGSUS": [
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 271.9,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 271.9
     },
     {
       "bank": "HSBC Yatırım",
-      "recommendation": "al",
-      "targetPrice": 240.0,
       "date": "2026-08-04",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 240.0
     },
     {
       "bank": "Gedik Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 245.0,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 245.0
     },
     {
       "bank": "Vakıf Yatırım",
-      "recommendation": "al",
-      "targetPrice": 220.0,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 220.0
     },
     {
       "bank": "Halk Yatırım",
-      "recommendation": "al",
-      "targetPrice": 218.1,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 218.1
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 215.0,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 215.0
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 190.0,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 190.0
     },
     {
       "bank": "İnfo Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 195.0,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 195.0
+    }
+  ],
+  "PSGYO": [
+    {
+      "bank": "Oyak Yatırım",
+      "date": "2025-12-24",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/psgyo-pasifik-gayrimenkul-yatirim-ortakligi-a.s.-519",
+      "targetPrice": 5.7
+    },
+    {
+      "bank": "İntegral Yatırım",
+      "date": "2024-07-26",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/hedef-fiyat/pasifik-gayrimenkul-yatirim-ortakligi-a.s.-hedef-fiyat-2024-3313",
+      "targetPrice": 5.3
     }
   ],
   "SAHOL": [
     {
       "bank": "Tacirler Yatırım",
-      "recommendation": "al",
-      "targetPrice": 183.0,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 183.0
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 181.0,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 181.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 172.63,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 172.63
     },
     {
       "bank": "Vakıf Yatırım",
-      "recommendation": "al",
-      "targetPrice": 159.0,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 159.0
     },
     {
-      "bank": "Garanti BBVA",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 143.8,
+      "bank": "Garanti BBVA Yatırım",
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 143.8
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 139.5,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 139.5
     },
     {
       "bank": "Gedik Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 139.5,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 139.5
     },
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 131.0,
       "date": "2026-08-13",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 131.0
     }
   ],
   "SISE": [
     {
       "bank": "Halk Yatırım",
-      "recommendation": "al",
-      "targetPrice": 68.5,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 68.5
     },
     {
       "bank": "Gedik Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 68.0,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 68.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 65.0,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 65.0
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 60.0,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 60.0
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 57.0,
       "date": "2026-08-17",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 57.0
     },
     {
       "bank": "Vakıf Yatırım",
-      "recommendation": "al",
-      "targetPrice": 70.3,
       "date": "2026-05-11",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 70.3
+    }
+  ],
+  "SKBNK": [
+    {
+      "bank": "Tacirler Yatırım",
+      "date": "2025-12-26",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://borsaatlas.com/analizler/skbnk-yorum/",
+      "targetPrice": 9.3
+    }
+  ],
+  "SOKM": [
+    {
+      "bank": "Halk Yatırım",
+      "date": "2026-08-18",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 88.4
+    },
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-08-18",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 84.71
+    },
+    {
+      "bank": "Yapı Kredi Yatırım",
+      "date": "2026-08-18",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 90.0
+    },
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-08-18",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 88.0
+    },
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-08-18",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 88.0
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-08-18",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 98.19
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-08-18",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 74.0
+    },
+    {
+      "bank": "Ata Yatırım",
+      "date": "2026-07-28",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 110.0
+    },
+    {
+      "bank": "Citi",
+      "date": "2026-07-20",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 80.0
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-06-25",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 71.0
+    },
+    {
+      "bank": "HSBC Yatırım",
+      "date": "2026-05-20",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 72.0
+    },
+    {
+      "bank": "ÜNLÜ & Co",
+      "date": "2026-01-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 82.0
+    },
+    {
+      "bank": "J.P. Morgan",
+      "date": "2025-12-10",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 77.0
+    },
+    {
+      "bank": "Tera Yatırım",
+      "date": "2025-08-20",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/sokm-sok-marketler-ticaret-394",
+      "targetPrice": 51.8
     }
   ],
   "TAVHL": [
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 510.0,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 510.0
     },
     {
       "bank": "Oyak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 460.0,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 460.0
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 448.0,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 448.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 440.0,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 440.0
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 425.5,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 425.5
     },
     {
       "bank": "Vakıf Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 427.0,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 427.0
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 404.9,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 404.9
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 430.0,
       "date": "2026-07-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 430.0
     }
   ],
   "TCELL": [
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 167.64,
       "date": "2026-08-14",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 167.64
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 163.0,
       "date": "2026-08-14",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 163.0
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 159.0,
       "date": "2026-08-14",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 159.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 150.0,
       "date": "2026-08-14",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 150.0
     },
     {
       "bank": "Vakıf Yatırım",
-      "recommendation": "al",
-      "targetPrice": 174.0,
       "date": "2026-08-14",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 174.0
     },
     {
       "bank": "Halk Yatırım",
-      "recommendation": "al",
-      "targetPrice": 162.0,
       "date": "2026-08-14",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 162.0
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 162.2,
       "date": "2026-08-14",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 162.2
     },
     {
       "bank": "Ata Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 160.0,
       "date": "2026-08-14",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 160.0
     }
   ],
   "THYAO": [
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 455.0,
       "date": "2026-08-07",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 455.0
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 461.0,
       "date": "2026-08-07",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 461.0
     },
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 508.5,
       "date": "2026-04-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 508.5
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 456.0,
       "date": "2026-04-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 456.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 445.0,
       "date": "2026-04-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 445.0
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 330.0,
       "date": "2026-04-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 330.0
     },
     {
       "bank": "Yapı Kredi Yatırım",
-      "recommendation": "al",
-      "targetPrice": 500.0,
       "date": "2026-04-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 500.0
     },
     {
       "bank": "Oyak Yatırım",
-      "recommendation": "al",
-      "targetPrice": 460.0,
       "date": "2026-04-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 460.0
+    }
+  ],
+  "TKFEN": [
+    {
+      "bank": "ÜNLÜ & Co",
+      "date": "2026-06-11",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://www.hedeffiyat.com.tr/senet/tkfen-tekfen-holding-a.s.-411",
+      "targetPrice": 101.4
+    },
+    {
+      "bank": "Halk Yatırım",
+      "date": "2025-05-09",
+      "modelPortfolio": false,
+      "recommendation": "sat",
+      "sourceUrl": "https://www.hedeffiyat.com.tr/senet/tkfen-tekfen-holding-a.s.-411",
+      "targetPrice": 96.4
+    },
+    {
+      "bank": "Yatırım Finansman",
+      "date": "2025-01-27",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://www.hedeffiyat.com.tr/senet/tkfen-tekfen-holding-a.s.-411",
+      "targetPrice": 90.0
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2025-01-17",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://www.hedeffiyat.com.tr/senet/tkfen-tekfen-holding-a.s.-411",
+      "targetPrice": 85.43
     }
   ],
   "TOASO": [
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 530.0,
       "date": "2026-07-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 530.0
     },
     {
       "bank": "Yapı Kredi Yatırım",
-      "recommendation": "al",
-      "targetPrice": 494.0,
       "date": "2026-07-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 494.0
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 442.45,
       "date": "2026-07-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 442.45
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 435.0,
       "date": "2026-07-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 435.0
     },
     {
       "bank": "Vakıf Yatırım",
-      "recommendation": "al",
-      "targetPrice": 406.0,
       "date": "2026-07-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 406.0
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 400.0,
       "date": "2026-07-30",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 400.0
     }
   ],
   "TRALT": [
     {
       "bank": "Gedik Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 70.0,
       "date": "2026-08-11",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 70.0
     },
     {
       "bank": "Halk Yatırım",
-      "recommendation": "al",
-      "targetPrice": 68.26,
       "date": "2026-08-11",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 68.26
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 57.0,
       "date": "2026-05-15",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 57.0
+    }
+  ],
+  "TRENJ": [
+    {
+      "bank": "ÜNLÜ & Co",
+      "date": "2026-07-23",
+      "modelPortfolio": true,
+      "recommendation": "al",
+      "sourceUrl": "https://www.yatirimx.com.tr/sirket-haberleri/tr-dogal-enerji-trenj-icin-yeni-hedef-fiyat-21870-tl/22500",
+      "targetPrice": 218.7
+    }
+  ],
+  "TRMET": [
+    {
+      "bank": "ÜNLÜ & Co",
+      "date": "2026-07-23",
+      "modelPortfolio": true,
+      "recommendation": "al",
+      "sourceUrl": "https://paraajansi.com.tr/ekonomi/trmet-hissesi-icin-aciklanan-yeni-hedef-fiyat-28220-tl-22228352h",
+      "targetPrice": 282.2
+    }
+  ],
+  "TSKB": [
+    {
+      "bank": "Ziraat Yatırım",
+      "date": "2026-08-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 22.5
+    },
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 18.7
+    },
+    {
+      "bank": "Vakıf Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 18.9
+    },
+    {
+      "bank": "Şeker Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 18.0
+    },
+    {
+      "bank": "Yapı Kredi Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 18.0
+    },
+    {
+      "bank": "Halk Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 17.17
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 18.77
+    },
+    {
+      "bank": "Tera Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 17.24
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 20.0
+    },
+    {
+      "bank": "Phillip Capital",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 18.4
+    },
+    {
+      "bank": "Pusula Yatırım",
+      "date": "2026-07-30",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 16.7
+    },
+    {
+      "bank": "Ata Yatırım",
+      "date": "2026-07-28",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 20.32
+    },
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-07-27",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 17.31
+    },
+    {
+      "bank": "Tacirler Yatırım",
+      "date": "2026-07-01",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 20.1
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-06-25",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 16.0
+    },
+    {
+      "bank": "ICBC Yatırım",
+      "date": "2026-02-04",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 19.0
+    },
+    {
+      "bank": "ÜNLÜ & Co",
+      "date": "2025-12-15",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 16.7
+    },
+    {
+      "bank": "Marbaş Menkul",
+      "date": "2025-10-17",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 20.14
+    },
+    {
+      "bank": "Trive Yatırım",
+      "date": "2025-08-01",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tskb-turkiye-sinai-kalkinma-bankasi-a.s.-420",
+      "targetPrice": 19.56
     }
   ],
   "TTKOM": [
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 93.9,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 93.9
     },
     {
       "bank": "Gedik Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 91.33,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 91.33
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 88.75,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 88.75
     },
     {
       "bank": "Yapı Kredi Yatırım",
-      "recommendation": "al",
-      "targetPrice": 92.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 92.0
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 81.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 81.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 90.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 90.0
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 88.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 88.0
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 71.0,
       "date": "2026-08-06",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 71.0
     }
   ],
   "TUPRS": [
     {
       "bank": "A1 Capital",
-      "recommendation": "al",
-      "targetPrice": 461.0,
       "date": "2026-08-12",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 461.0
     },
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 430.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 430.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 395.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 395.0
     },
     {
       "bank": "QNB Finansinvest",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 425.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 425.0
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 460.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 460.0
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 372.0,
       "date": "2026-08-05",
-      "modelPortfolio": true
+      "modelPortfolio": true,
+      "recommendation": "al",
+      "targetPrice": 372.0
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 367.3,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 367.3
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 423.0,
       "date": "2026-08-05",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 423.0
+    }
+  ],
+  "TURSG": [
+    {
+      "bank": "Ziraat Yatırım",
+      "date": "2026-07-21",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 9.6
+    },
+    {
+      "bank": "Trive Yatırım",
+      "date": "2026-07-21",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 11.05
+    },
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-07-21",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 10.61
+    },
+    {
+      "bank": "Tera Yatırım",
+      "date": "2026-07-21",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 10.55
+    },
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-07-21",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 10.25
+    },
+    {
+      "bank": "Yapı Kredi Yatırım",
+      "date": "2026-07-21",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 9.5
+    },
+    {
+      "bank": "Phillip Capital",
+      "date": "2026-07-21",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 10.5
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-07-21",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 11.21
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-07-21",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 10.7
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-07-21",
+      "modelPortfolio": true,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 11.0
+    },
+    {
+      "bank": "Pusula Yatırım",
+      "date": "2026-07-21",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 10.44
+    },
+    {
+      "bank": "ÜNLÜ & Co",
+      "date": "2026-07-14",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 10.0
+    },
+    {
+      "bank": "TEB Yatırım",
+      "date": "2026-06-23",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 10.0
+    },
+    {
+      "bank": "Oyak Yatırım",
+      "date": "2026-04-21",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 9.85
+    },
+    {
+      "bank": "HSBC Yatırım",
+      "date": "2026-02-25",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 7.93
+    },
+    {
+      "bank": "Marbaş Menkul",
+      "date": "2025-10-20",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/tursg-turkiye-sigorta-429",
+      "targetPrice": 7.97
+    }
+  ],
+  "ULKER": [
+    {
+      "bank": "Şeker Yatırım",
+      "date": "2026-08-19",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 159.8
+    },
+    {
+      "bank": "TEB Yatırım",
+      "date": "2026-08-19",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 126.0
+    },
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-08-19",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 126.0
+    },
+    {
+      "bank": "Ak Yatırım",
+      "date": "2026-08-19",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 150.0
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2026-08-19",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 209.26
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-08-19",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 154.07
+    },
+    {
+      "bank": "Alnus Yatırım",
+      "date": "2026-08-19",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 159.06
+    },
+    {
+      "bank": "Yapı Kredi Yatırım",
+      "date": "2026-08-10",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 150.0
+    },
+    {
+      "bank": "Ata Yatırım",
+      "date": "2026-07-28",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 220.0
+    },
+    {
+      "bank": "Garanti BBVA Yatırım",
+      "date": "2026-06-25",
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 172.5
+    },
+    {
+      "bank": "Ziraat Yatırım",
+      "date": "2026-05-13",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 260.0
+    },
+    {
+      "bank": "HSBC Yatırım",
+      "date": "2026-04-17",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 150.0
+    },
+    {
+      "bank": "ÜNLÜ & Co",
+      "date": "2026-01-12",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 205.0
+    },
+    {
+      "bank": "J.P. Morgan",
+      "date": "2025-12-10",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/ulker-ulker-biskuvi-sanayi-a.s.-432",
+      "targetPrice": 145.0
     }
   ],
   "VAKBN": [
     {
       "bank": "Gedik Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 43.72,
       "date": "2026-07-27",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 43.72
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 52.79,
       "date": "2026-07-01",
-      "modelPortfolio": true
+      "modelPortfolio": true,
+      "recommendation": "al",
+      "targetPrice": 52.79
     },
     {
       "bank": "Tacirler Yatırım",
-      "recommendation": "al",
-      "targetPrice": 49.5,
       "date": "2026-07-01",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 49.5
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 45.0,
       "date": "2026-06-29",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 45.0
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 45.5,
       "date": "2026-06-25",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 45.5
     },
     {
       "bank": "TEB Yatırım",
-      "recommendation": "endekse_paralel",
-      "targetPrice": 38.0,
       "date": "2026-06-23",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "targetPrice": 38.0
     },
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 58.5,
       "date": "2026-05-07",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 58.5
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 40.0,
       "date": "2026-05-07",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 40.0
+    }
+  ],
+  "VESTL": [
+    {
+      "bank": "Vakıf Yatırım",
+      "date": "2026-08-18",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/vestl-vestel-elektronik-sanayi-ve-ticaret-a.s.-448",
+      "targetPrice": 25.0
+    },
+    {
+      "bank": "Deniz Yatırım",
+      "date": "2026-08-18",
+      "modelPortfolio": false,
+      "recommendation": "sat",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/vestl-vestel-elektronik-sanayi-ve-ticaret-a.s.-448",
+      "targetPrice": 26.3
+    },
+    {
+      "bank": "Halk Yatırım",
+      "date": "2026-01-15",
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/vestl-vestel-elektronik-sanayi-ve-ticaret-a.s.-448",
+      "targetPrice": 75.46
+    },
+    {
+      "bank": "İş Yatırım",
+      "date": "2025-08-20",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/vestl-vestel-elektronik-sanayi-ve-ticaret-a.s.-448",
+      "targetPrice": 44.0
     }
   ],
   "YKBNK": [
     {
       "bank": "Ziraat Yatırım",
-      "recommendation": "al",
-      "targetPrice": 51.4,
       "date": "2026-08-03",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 51.4
     },
     {
       "bank": "Ak Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 47.0,
       "date": "2026-08-03",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 47.0
     },
     {
       "bank": "Halk Yatırım",
-      "recommendation": "al",
-      "targetPrice": 46.93,
       "date": "2026-08-03",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 46.93
     },
     {
       "bank": "Deniz Yatırım",
-      "recommendation": "al",
-      "targetPrice": 54.3,
       "date": "2026-08-03",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 54.3
     },
     {
       "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 48.0,
       "date": "2026-07-31",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 48.0
     },
     {
       "bank": "Şeker Yatırım",
-      "recommendation": "al",
-      "targetPrice": 51.1,
       "date": "2026-07-31",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "al",
+      "targetPrice": 51.1
     },
     {
       "bank": "Garanti BBVA Yatırım",
-      "recommendation": "endeks_ustu",
-      "targetPrice": 51.0,
       "date": "2026-07-31",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "endeks_ustu",
+      "targetPrice": 51.0
     },
     {
       "bank": "Ata Yatırım",
-      "recommendation": "tut",
-      "targetPrice": 47.91,
       "date": "2026-07-28",
-      "modelPortfolio": false
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "targetPrice": 47.91
+    }
+  ],
+  "ZOREN": [
+    {
+      "bank": "Gedik Yatırım",
+      "date": "2026-07-27",
+      "modelPortfolio": false,
+      "recommendation": "endekse_paralel",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/zoren-zorlu-enerji-elektrik-uretim-a.s.-464",
+      "targetPrice": 3.58
+    },
+    {
+      "bank": "Şeker Yatırım",
+      "date": "2026-07-01",
+      "modelPortfolio": false,
+      "recommendation": "tut",
+      "sourceUrl": "https://hedeffiyat.com.tr/senet/zoren-zorlu-enerji-elektrik-uretim-a.s.-464",
+      "targetPrice": 4.3
     }
   ]
 }
