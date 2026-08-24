@@ -63,7 +63,6 @@
 
     line-height:1.5;
     min-height:100vh;
-
     -webkit-font-smoothing:antialiased;
   }
 
@@ -81,28 +80,16 @@
     position:sticky;
     top:0;
     z-index:10;
-
     backdrop-filter:blur(10px);
-
-    background:
-      rgba(
-        11,
-        15,
-        20,
-        0.7
-      );
-
-    border-bottom:
-      1px solid var(--border);
+    background:rgba(11,15,20,0.7);
+    border-bottom:1px solid var(--border);
   }
 
   .topbar{
     display:flex;
     align-items:center;
     justify-content:space-between;
-
     padding:16px 20px;
-
     max-width:var(--maxw);
     margin:0 auto;
   }
@@ -111,19 +98,15 @@
     display:flex;
     align-items:center;
     gap:10px;
-
     font-weight:700;
     font-size:18px;
-
     letter-spacing:-0.02em;
-
     text-decoration:none;
   }
 
   .brand .logo{
     width:32px;
     height:32px;
-
     border-radius:9px;
 
     background:
@@ -139,36 +122,24 @@
 
     font-size:16px;
     font-weight:800;
-
     color:#06110d;
   }
 
   #userBadge{
     font-size:13px;
-
     color:var(--text-dim);
-
     display:none;
-
     align-items:center;
-
     gap:10px;
   }
 
   #userBadge button{
     background:transparent;
-
-    border:
-      1px solid var(--border);
-
+    border:1px solid var(--border);
     color:var(--text-dim);
-
     border-radius:8px;
-
     padding:6px 12px;
-
     font-size:12.5px;
-
     cursor:pointer;
   }
 
@@ -183,56 +154,38 @@
 
   h1{
     font-size:26px;
-
     margin:0 0 6px;
-
     letter-spacing:-0.02em;
   }
 
   .lead{
     color:var(--text-dim);
-
     font-size:14.5px;
-
     margin:0 0 32px;
   }
 
   .card{
     background:var(--card);
-
-    border:
-      1px solid var(--border);
-
+    border:1px solid var(--border);
     border-radius:var(--radius);
-
     padding:28px;
   }
 
   label{
     display:block;
-
     font-size:13px;
-
     color:var(--text-dim);
-
     margin:0 0 6px;
   }
 
   input,
   select{
     width:100%;
-
     background:var(--bg-elev);
-
-    border:
-      1px solid var(--border);
-
+    border:1px solid var(--border);
     color:var(--text);
-
     border-radius:10px;
-
     padding:11px 13px;
-
     font-size:14.5px;
   }
 
@@ -243,9 +196,7 @@
   input:focus,
   select:focus{
     outline:none;
-
-    border-color:
-      var(--brand-2);
+    border-color:var(--brand-2);
   }
 
   select option{
@@ -255,38 +206,22 @@
 
   .btn{
     display:inline-flex;
-
     align-items:center;
-
     justify-content:center;
-
     gap:8px;
-
     padding:12px 20px;
-
     border-radius:10px;
-
     font-weight:600;
-
     font-size:14.5px;
-
     text-decoration:none;
-
-    border:
-      1px solid var(--border);
-
+    border:1px solid var(--border);
     cursor:pointer;
-
-    transition:
-      transform .15s,
-      border-color .15s;
-
+    transition:transform .15s, border-color .15s;
     width:100%;
   }
 
   .btn:hover{
-    transform:
-      translateY(-1px);
+    transform:translateY(-1px);
   }
 
   .btn.primary{
@@ -298,56 +233,29 @@
       );
 
     color:#04110c;
-
     border-color:transparent;
-  }
-
-  .btn.ghost{
-    background:transparent;
-
-    color:var(--text-dim);
-  }
-
-  .btn.small{
-    width:auto;
-
-    padding:9px 14px;
-
-    font-size:13px;
   }
 
   .tab-row{
     display:flex;
-
     gap:8px;
-
     margin-bottom:22px;
   }
 
   .tab{
     flex:1;
-
     text-align:center;
-
     padding:9px;
-
     border-radius:9px;
-
     font-size:13.5px;
-
     color:var(--text-dim);
-
     cursor:pointer;
-
-    border:
-      1px solid transparent;
+    border:1px solid transparent;
   }
 
   .tab.active{
     background:var(--bg-elev);
-
     color:var(--text);
-
     border-color:var(--border);
   }
 
@@ -357,110 +265,54 @@
 
   #msg{
     font-size:13.5px;
-
     padding:10px 14px;
-
     border-radius:9px;
-
     margin-bottom:16px;
-
     display:none;
   }
 
   #msg.error{
-    background:
-      rgba(
-        255,
-        107,
-        107,
-        0.1
-      );
-
+    background:rgba(255,107,107,0.1);
     color:var(--danger);
-
-    border:
-      1px solid
-      rgba(
-        255,
-        107,
-        107,
-        0.25
-      );
-
+    border:1px solid rgba(255,107,107,0.25);
     display:block;
   }
 
   #msg.ok{
-    background:
-      rgba(
-        45,
-        212,
-        167,
-        0.1
-      );
-
+    background:rgba(45,212,167,0.1);
     color:var(--brand);
-
-    border:
-      1px solid
-      rgba(
-        45,
-        212,
-        167,
-        0.25
-      );
-
+    border:1px solid rgba(45,212,167,0.25);
     display:block;
   }
 
   table{
     width:100%;
-
     border-collapse:collapse;
-
     font-size:14px;
   }
 
   th{
     text-align:left;
-
     color:var(--text-dim);
-
     font-weight:600;
-
     font-size:12px;
-
     text-transform:uppercase;
-
     letter-spacing:.04em;
-
-    padding:
-      0 10px 10px;
+    padding:0 10px 10px;
   }
 
   td{
-    padding:
-      14px 10px;
-
-    border-top:
-      1px solid var(--border);
+    padding:14px 10px;
+    border-top:1px solid var(--border);
   }
 
   td.num{
     text-align:right;
-
-    font-variant-numeric:
-      tabular-nums;
+    font-variant-numeric:tabular-nums;
   }
 
   tr:hover td{
-    background:
-      rgba(
-        255,
-        255,
-        255,
-        0.02
-      );
+    background:rgba(255,255,255,0.02);
   }
 
   .sym{
@@ -469,62 +321,38 @@
 
   .name{
     color:var(--text-dim);
-
     font-size:12px;
   }
 
   .del{
     background:transparent;
-
     border:none;
-
     color:var(--text-dim);
-
     cursor:pointer;
-
     font-size:16px;
-
     padding:4px 8px;
-
     border-radius:6px;
   }
 
   .del:hover{
     color:var(--danger);
-
-    background:
-      rgba(
-        255,
-        107,
-        107,
-        0.1
-      );
+    background:rgba(255,107,107,0.1);
   }
 
   .empty{
     text-align:center;
-
     color:var(--text-dim);
-
     padding:40px 0;
-
     font-size:14px;
   }
 
   .add-form{
     display:grid;
-
-    grid-template-columns:
-      1fr 1fr;
-
+    grid-template-columns:1fr 1fr;
     gap:12px;
-
     margin-top:20px;
-
     padding-top:20px;
-
-    border-top:
-      1px solid var(--border);
+    border-top:1px solid var(--border);
   }
 
   .add-form input{
@@ -532,34 +360,25 @@
   }
 
   .add-form .full{
-    grid-column:
-      1 / -1;
+    grid-column:1 / -1;
   }
 
   .section-title{
     font-size:13px;
-
     color:var(--text-dim);
-
     text-transform:uppercase;
-
     letter-spacing:.06em;
-
-    margin:
-      0 0 14px;
+    margin:0 0 14px;
   }
 
-  @media(
-    max-width:600px
-  ){
+  @media(max-width:600px){
 
     .card{
       padding:20px;
     }
 
     .add-form{
-      grid-template-columns:
-        1fr;
+      grid-template-columns:1fr;
     }
 
     .add-form .full{
@@ -577,7 +396,6 @@
     }
   }
 </style>
-
 </head>
 
 <body>
@@ -586,28 +404,14 @@
 
   <div class="topbar">
 
-    <a
-      class="brand"
-      href="./"
-    >
-
-      <span class="logo">
-        V
-      </span>
-
+    <a class="brand" href="./">
+      <span class="logo">V</span>
       Varlığım
-
     </a>
 
     <div id="userBadge">
-
-      <span id="userEmail">
-      </span>
-
-      <button id="signOutBtn">
-        Çıkış yap
-      </button>
-
+      <span id="userEmail"></span>
+      <button id="signOutBtn">Çıkış yap</button>
     </div>
 
   </div>
@@ -622,9 +426,7 @@
 
     <div id="authView">
 
-      <h1>
-        Portföyüme giriş yap
-      </h1>
+      <h1>Portföyüme giriş yap</h1>
 
       <p class="lead">
         Varlığım uygulamasındaki hesabınla giriş yaparak
@@ -651,8 +453,7 @@
 
         </div>
 
-        <div id="msg">
-        </div>
+        <div id="msg"></div>
 
         <form id="authForm">
 
@@ -746,31 +547,17 @@
 
               <tr>
 
-                <th>
-                  Hisse
-                </th>
-
-                <th class="num">
-                  Lot
-                </th>
-
-                <th class="num">
-                  Maliyet
-                </th>
-
-                <th class="num">
-                  Yatırılan
-                </th>
-
-                <th>
-                </th>
+                <th>Hisse</th>
+                <th class="num">Lot</th>
+                <th class="num">Maliyet</th>
+                <th class="num">Yatırılan</th>
+                <th></th>
 
               </tr>
 
             </thead>
 
-            <tbody id="holdingsBody">
-            </tbody>
+            <tbody id="holdingsBody"></tbody>
 
           </table>
 
@@ -791,16 +578,14 @@
               Yeni hisse ekle
             </div>
 
-            <input
-              id="newSymbol"
-              placeholder="Sembol (ör. THYAO)"
-              style="text-transform:uppercase;"
-            />
-
-            <input
-              id="newName"
-              placeholder="Şirket adı (opsiyonel)"
-            />
+            <select
+              id="newStockSelect"
+              class="full"
+            >
+              <option value="">
+                Hisse seç...
+              </option>
+            </select>
 
             <input
               id="newLot"
@@ -858,31 +643,17 @@
 
               <tr>
 
-                <th>
-                  Kripto
-                </th>
-
-                <th class="num">
-                  Miktar
-                </th>
-
-                <th class="num">
-                  Maliyet
-                </th>
-
-                <th class="num">
-                  Yatırılan
-                </th>
-
-                <th>
-                </th>
+                <th>Kripto</th>
+                <th class="num">Miktar</th>
+                <th class="num">Maliyet</th>
+                <th class="num">Yatırılan</th>
+                <th></th>
 
               </tr>
 
             </thead>
 
-            <tbody id="cryptoBody">
-            </tbody>
+            <tbody id="cryptoBody"></tbody>
 
           </table>
 
@@ -1009,6 +780,100 @@
     'login';
 
   /*
+   * ======================================
+   * BIST HİSSE LİSTESİ
+   * ======================================
+   *
+   * Kullanıcı sembol ve şirket adını
+   * elle yazmaz.
+   *
+   * Seçim buradan yapılır.
+   */
+
+  const stockMarketList = [
+
+    { symbol:'AEFES', name:'Anadolu Efes' },
+    { symbol:'AGHOL', name:'AG Anadolu Grubu Holding' },
+    { symbol:'AKBNK', name:'Akbank' },
+    { symbol:'AKCNS', name:'Akçansa' },
+    { symbol:'AKSA', name:'Aksa Akrilik' },
+    { symbol:'AKSEN', name:'Aksa Enerji' },
+    { symbol:'ALARK', name:'Alarko Holding' },
+    { symbol:'ALBRK', name:'Albaraka Türk' },
+    { symbol:'ALGYO', name:'Alarko GYO' },
+    { symbol:'ALKIM', name:'Alkim Kimya' },
+    { symbol:'ANHYT', name:'Anadolu Hayat Emeklilik' },
+    { symbol:'ANSGR', name:'Anadolu Sigorta' },
+    { symbol:'ARCLK', name:'Arçelik' },
+    { symbol:'ASELS', name:'Aselsan' },
+    { symbol:'ASTOR', name:'Astor Enerji' },
+    { symbol:'AYGAZ', name:'Aygaz' },
+    { symbol:'BIMAS', name:'BİM Birleşik Mağazalar' },
+    { symbol:'BRSAN', name:'Borusan Boru' },
+    { symbol:'BRYAT', name:'Borusan Yatırım' },
+    { symbol:'BSOKE', name:'Batısöke Çimento' },
+    { symbol:'CCOLA', name:'Coca-Cola İçecek' },
+    { symbol:'CIMSA', name:'Çimsa' },
+    { symbol:'CLEBI', name:'Çelebi Hava Servisi' },
+    { symbol:'CWENE', name:'CW Enerji' },
+    { symbol:'DOAS', name:'Doğuş Otomotiv' },
+    { symbol:'DOHOL', name:'Doğan Holding' },
+    { symbol:'ECILC', name:'Eczacıbaşı İlaç' },
+    { symbol:'EGEEN', name:'Ege Endüstri' },
+    { symbol:'EKGYO', name:'Emlak Konut GYO' },
+    { symbol:'ENJSA', name:'Enerjisa Enerji' },
+    { symbol:'ENKAI', name:'Enka İnşaat' },
+    { symbol:'EREGL', name:'Ereğli Demir Çelik' },
+    { symbol:'FROTO', name:'Ford Otosan' },
+    { symbol:'GARAN', name:'Garanti BBVA' },
+    { symbol:'GESAN', name:'Girişim Elektrik' },
+    { symbol:'GLYHO', name:'Global Yatırım Holding' },
+    { symbol:'GUBRF', name:'Gübre Fabrikaları' },
+    { symbol:'HALKB', name:'Halkbank' },
+    { symbol:'HEKTS', name:'Hektaş' },
+    { symbol:'ISCTR', name:'Türkiye İş Bankası C' },
+    { symbol:'ISGYO', name:'İş GYO' },
+    { symbol:'ISMEN', name:'İş Yatırım Menkul Değerler' },
+    { symbol:'KARSN', name:'Karsan Otomotiv' },
+    { symbol:'KCHOL', name:'Koç Holding' },
+    { symbol:'KONTR', name:'Kontrolmatik Teknoloji' },
+    { symbol:'KORDS', name:'Kordsa Teknik Tekstil' },
+    { symbol:'KOZAA', name:'Koza Anadolu Metal' },
+    { symbol:'KOZAL', name:'Koza Altın' },
+    { symbol:'KRDMD', name:'Kardemir D' },
+    { symbol:'MAVI', name:'Mavi Giyim' },
+    { symbol:'MGROS', name:'Migros' },
+    { symbol:'MIATK', name:'Mia Teknoloji' },
+    { symbol:'ODAS', name:'Odaş Elektrik' },
+    { symbol:'OTKAR', name:'Otokar' },
+    { symbol:'OYAKC', name:'Oyak Çimento' },
+    { symbol:'PETKM', name:'Petkim' },
+    { symbol:'PGSUS', name:'Pegasus' },
+    { symbol:'QUAGR', name:'Qua Granite' },
+    { symbol:'SAHOL', name:'Sabancı Holding' },
+    { symbol:'SASA', name:'Sasa Polyester' },
+    { symbol:'SISE', name:'Şişecam' },
+    { symbol:'SKBNK', name:'Şekerbank' },
+    { symbol:'SOKM', name:'Şok Marketler' },
+    { symbol:'TAVHL', name:'TAV Havalimanları' },
+    { symbol:'TCELL', name:'Turkcell' },
+    { symbol:'THYAO', name:'Türk Hava Yolları' },
+    { symbol:'TKFEN', name:'Tekfen Holding' },
+    { symbol:'TOASO', name:'Tofaş' },
+    { symbol:'TSKB', name:'TSKB' },
+    { symbol:'TTKOM', name:'Türk Telekom' },
+    { symbol:'TTRAK', name:'Türk Traktör' },
+    { symbol:'TUPRS', name:'Tüpraş' },
+    { symbol:'ULKER', name:'Ülker Bisküvi' },
+    { symbol:'VAKBN', name:'VakıfBank' },
+    { symbol:'VESBE', name:'Vestel Beyaz Eşya' },
+    { symbol:'VESTL', name:'Vestel Elektronik' },
+    { symbol:'YKBNK', name:'Yapı Kredi' },
+    { symbol:'ZOREN', name:'Zorlu Enerji' }
+
+  ];
+
+  /*
    * GİRİŞ SEKMELERİ
    */
 
@@ -1085,6 +950,8 @@
         'none';
 
       loadHoldings();
+
+      loadStockOptions();
 
     }
   );
@@ -1320,6 +1187,8 @@
 
         loadHoldings();
 
+        loadStockOptions();
+
         loadCryptoOptions();
 
       } else {
@@ -1389,29 +1258,84 @@
     ).replace(
       /[&<>"']/g,
       c => ({
-        '&':
-          '&amp;',
-
-        '<':
-          '&lt;',
-
-        '>':
-          '&gt;',
-
-        '"':
-          '&quot;',
-
-        "'":
-          '&#39;'
+        '&':'&amp;',
+        '<':'&lt;',
+        '>':'&gt;',
+        '"':'&quot;',
+        "'":'&#39;'
       }[c])
     );
 
   }
 
   /*
-   * ==========================
+   * ======================================
+   * HİSSE SEÇİM LİSTESİ
+   * ======================================
+   */
+
+  function loadStockOptions() {
+
+    const select =
+      document
+        .getElementById(
+          'newStockSelect'
+        );
+
+    if (
+      !select
+    ) {
+      return;
+    }
+
+    select.innerHTML =
+      '<option value="">Hisse seç...</option>';
+
+    const sorted =
+      [...stockMarketList]
+        .sort(
+          (
+            a,
+            b
+          ) =>
+            a.symbol.localeCompare(
+              b.symbol,
+              'tr'
+            )
+        );
+
+    for (
+      const stock
+      of sorted
+    ) {
+
+      const option =
+        document
+          .createElement(
+            'option'
+          );
+
+      option.value =
+        stock.symbol;
+
+      option.textContent =
+        `${stock.symbol} — ${stock.name}`;
+
+      option.dataset.name =
+        stock.name;
+
+      select.appendChild(
+        option
+      );
+
+    }
+
+  }
+
+  /*
+   * ======================================
    * HİSSE PORTFÖYÜ
-   * ==========================
+   * ======================================
    */
 
   async function loadHoldings() {
@@ -1509,16 +1433,13 @@
         <td>
 
           <div class="sym">
-
             ${escapeHtml(
               row.symbol
             )}
-
           </div>
 
           ${
             row.name
-
               ? `
                 <div class="name">
                   ${escapeHtml(
@@ -1526,34 +1447,27 @@
                   )}
                 </div>
               `
-
               : ''
           }
 
         </td>
 
         <td class="num">
-
           ${fmtNumber(
             row.lot
           )}
-
         </td>
 
         <td class="num">
-
           ${fmtTL(
             row.cost
           )}
-
         </td>
 
         <td class="num">
-
           ${fmtTL(
             invested
           )}
-
         </td>
 
         <td class="num">
@@ -1650,6 +1564,10 @@
 
   }
 
+  /*
+   * HİSSE EKLE
+   */
+
   document
     .getElementById(
       'addBtn'
@@ -1674,23 +1592,25 @@
           return;
         }
 
-        const symbol =
+        const select =
           document
             .getElementById(
-              'newSymbol'
-            )
-            .value
-            .trim()
-            .toUpperCase();
+              'newStockSelect'
+            );
+
+        const selectedOption =
+          select.options[
+            select.selectedIndex
+          ];
+
+        const symbol =
+          select.value;
 
         const name =
-          document
-            .getElementById(
-              'newName'
-            )
-            .value
-            .trim() ||
-          null;
+          selectedOption
+            ?.dataset
+            ?.name ||
+          '';
 
         const lot =
           parseFloat(
@@ -1712,16 +1632,21 @@
 
         if (
           !symbol ||
+          !name ||
           isNaN(
             lot
           ) ||
+          lot <=
+            0 ||
           isNaN(
             cost
-          )
+          ) ||
+          cost <=
+            0
         ) {
 
           showMsg(
-            'Lütfen sembol, lot ve maliyeti eksiksiz gir.',
+            'Lütfen hisseyi seçip lot ve maliyeti eksiksiz gir.',
             'error'
           );
 
@@ -1773,19 +1698,8 @@
 
         }
 
-        document
-          .getElementById(
-            'newSymbol'
-          )
-          .value =
-            '';
-
-        document
-          .getElementById(
-            'newName'
-          )
-          .value =
-            '';
+        select.value =
+          '';
 
         document
           .getElementById(
@@ -1807,9 +1721,9 @@
     );
 
   /*
-   * ==========================
+   * ======================================
    * KRİPTO SEÇİM LİSTESİ
-   * ==========================
+   * ======================================
    */
 
   let cryptoMarketList =
@@ -1831,7 +1745,7 @@
 
     if (
       cryptoMarketList.length >
-      0
+        0
     ) {
 
       fillCryptoSelect();
@@ -1939,9 +1853,9 @@
   }
 
   /*
-   * ==========================
+   * ======================================
    * KRİPTO PORTFÖYÜ
-   * ==========================
+   * ======================================
    */
 
   async function loadCryptoHoldings() {
@@ -2039,16 +1953,13 @@
         <td>
 
           <div class="sym">
-
             ${escapeHtml(
               row.symbol
             )}
-
           </div>
 
           ${
             row.name
-
               ? `
                 <div class="name">
                   ${escapeHtml(
@@ -2056,34 +1967,27 @@
                   )}
                 </div>
               `
-
               : ''
           }
 
         </td>
 
         <td class="num">
-
           ${fmtNumber(
             row.amount
           )}
-
         </td>
 
         <td class="num">
-
           ${fmtTL(
             row.cost
           )}
-
         </td>
 
         <td class="num">
-
           ${fmtTL(
             invested
           )}
-
         </td>
 
         <td class="num">
@@ -2179,6 +2083,10 @@
     loadCryptoHoldings();
 
   }
+
+  /*
+   * KRİPTO EKLE
+   */
 
   document
     .getElementById(
@@ -2354,5 +2262,4 @@
 </script>
 
 </body>
-
 </html>
