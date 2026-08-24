@@ -20,7 +20,9 @@
     --maxw:1120px;
   }
   *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
   html,body{margin:0;padding:0;}
+  section[id]{scroll-margin-top:76px;}
   body{
     background:radial-gradient(1200px 600px at 50% -10%, #16324a 0%, var(--bg) 55%) fixed;
     color:var(--text);
@@ -88,6 +90,11 @@
   }
   .btn.ghost{background:var(--card);color:var(--text);}
   .btn.ghost:hover{border-color:#33415a;}
+  .btn.disabled{
+    background:transparent;color:var(--text-dim);
+    border-style:dashed;cursor:not-allowed;opacity:.6;
+  }
+  .btn.disabled:hover{transform:none;border-color:var(--border);}
   .note{font-size:13px;color:var(--text-dim);}
 
   .stats{
@@ -287,8 +294,8 @@
         <h2>Varlığınızı takip etmeye bugün başlayın</h2>
       </div>
       <div class="cta-row">
-        <a class="btn ghost" href="#">App Store (yakında)</a>
-        <a class="btn ghost" href="#">Google Play (yakında)</a>
+        <span class="btn disabled" aria-disabled="true">🍎 App Store — yakında</span>
+        <span class="btn disabled" aria-disabled="true">▶ Google Play — yakında</span>
       </div>
     </div>
   </section>
