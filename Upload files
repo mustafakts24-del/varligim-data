@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Varlığım — Kişisel Finans Uygulaması</title>
+<meta name="description" content="Hisse, kripto, döviz, altın, fon, gayrimenkul ve daha fazlasını tek ekranda takip edin. Varlığım, tüm varlıklarınızı bir araya getiren kişisel finans uygulamasıdır." />
+<style>
+  :root{
+    --bg:#0b0f14;
+    --bg-elev:#121821;
+    --card:#161d28;
+    --border:#232c3a;
+    --text:#eef2f7;
+    --text-dim:#9aa7b8;
+    --brand:#2dd4a7;
+    --brand-2:#3d8bff;
+    --danger:#ff6b6b;
+    --radius:16px;
+    --maxw:1120px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%, #16324a 0%, var(--bg) 55%) fixed;
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+
+  header.top{
+    position:sticky;top:0;z-index:10;
+    backdrop-filter:blur(10px);
+    background:rgba(11,15,20,0.7);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 0;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:-0.02em;}
+  .brand .logo{
+    width:32px;height:32px;border-radius:9px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;font-weight:800;color:#06110d;
+  }
+  nav.links{display:flex;gap:28px;font-size:14px;color:var(--text-dim);}
+  nav.links a{text-decoration:none;transition:color .15s;}
+  nav.links a:hover{color:var(--text);}
+
+  .hero{padding:88px 0 64px;text-align:center;}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:13px;color:var(--brand);
+    background:rgba(45,212,167,0.1);
+    border:1px solid rgba(45,212,167,0.25);
+    padding:6px 14px;border-radius:999px;margin-bottom:24px;
+  }
+  h1{
+    font-size:clamp(32px,6vw,56px);
+    line-height:1.08;
+    margin:0 0 20px;
+    letter-spacing:-0.03em;
+    font-weight:800;
+  }
+  h1 .accent{
+    background:linear-gradient(90deg,var(--brand),var(--brand-2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .sub{
+    max-width:620px;margin:0 auto 36px;
+    color:var(--text-dim);
+    font-size:clamp(16px,2.4vw,19px);
+  }
+  .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;}
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:13px 24px;border-radius:12px;
+    font-weight:600;font-size:15px;text-decoration:none;
+    border:1px solid var(--border);
+    transition:transform .15s, border-color .15s, background .15s;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn.primary{
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    color:#04110c;border-color:transparent;
+  }
+  .btn.ghost{background:var(--card);color:var(--text);}
+  .btn.ghost:hover{border-color:#33415a;}
+  .note{font-size:13px;color:var(--text-dim);}
+
+  .stats{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+    max-width:760px;margin:56px auto 0;
+  }
+  .stat{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:14px;padding:20px 12px;text-align:center;
+  }
+  .stat .num{font-size:26px;font-weight:800;color:var(--brand);}
+  .stat .lbl{font-size:12.5px;color:var(--text-dim);margin-top:4px;}
+
+  section{padding:64px 0;}
+  .section-head{text-align:center;max-width:640px;margin:0 auto 44px;}
+  .section-head .tag{color:var(--brand-2);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+  .section-head h2{font-size:clamp(24px,4vw,34px);margin:10px 0 12px;letter-spacing:-0.02em;}
+  .section-head p{color:var(--text-dim);font-size:15.5px;}
+
+  .grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
+  }
+  .card{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius);padding:24px;
+    transition:border-color .15s, transform .15s;
+  }
+  .card:hover{border-color:#33415a;transform:translateY(-2px);}
+  .card .ic{
+    width:42px;height:42px;border-radius:11px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;margin-bottom:14px;
+    background:rgba(61,139,255,0.12);
+  }
+  .card h3{margin:0 0 8px;font-size:16.5px;}
+  .card p{margin:0;color:var(--text-dim);font-size:14px;}
+
+  .panel{
+    background:var(--bg-elev);border:1px solid var(--border);
+    border-radius:20px;padding:36px;
+    display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;
+  }
+  .panel h3{font-size:22px;margin:0 0 12px;letter-spacing:-0.02em;}
+  .panel p{color:var(--text-dim);font-size:15px;margin:0 0 14px;}
+  .panel code{
+    display:block;background:#0a0e14;border:1px solid var(--border);
+    border-radius:10px;padding:14px 16px;font-size:12.5px;
+    color:#9be3c6;overflow-x:auto;white-space:pre;
+  }
+  .badge-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .badge{
+    font-size:12px;color:var(--text-dim);
+    border:1px solid var(--border);border-radius:8px;padding:5px 10px;
+  }
+
+  footer{
+    border-top:1px solid var(--border);
+    padding:36px 0;margin-top:24px;
+    color:var(--text-dim);font-size:13px;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+  }
+
+  @media (max-width:820px){
+    .grid{grid-template-columns:repeat(2,1fr);}
+    .panel{grid-template-columns:1fr;}
+    .stats{grid-template-columns:repeat(2,1fr);}
+    nav.links{display:none;}
+  }
+  @media (max-width:520px){
+    .grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap topbar">
+    <div class="brand"><span class="logo">V</span> Varlığım</div>
+    <nav class="links">
+      <a href="#ozellikler">Özellikler</a>
+      <a href="#veri">Veri Kaynağı</a>
+      <a href="#sss">SSS</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">● Tüm varlıklarınız, tek bakışta</span>
+      <h1>Servetinizi <span class="accent">tek ekranda</span><br/>görün ve yönetin</h1>
+      <p class="sub">Hisse senedi, kripto para, döviz, altın, fon, gayrimenkul, araç ve mevduatınızı
+        tek bir uygulamada takip edin. Canlı piyasa verileri, analist tavsiyeleri ve
+        akıllı bildirimlerle finansal tablonuz her an güncel.</p>
+      <div class="cta-row">
+        <a class="btn primary" href="#indir">Uygulamayı İndir</a>
+        <a class="btn ghost" href="#ozellikler">Özellikleri Gör</a>
+      </div>
+      <p class="note">iOS ve Android için geliştiriliyor.</p>
+
+      <div class="stats">
+        <div class="stat"><div class="num">9+</div><div class="lbl">Varlık Türü</div></div>
+        <div class="stat"><div class="num">Canlı</div><div class="lbl">Piyasa Verisi</div></div>
+        <div class="stat"><div class="num">BIST</div><div class="lbl">Analist Tavsiyeleri</div></div>
+        <div class="stat"><div class="num">%100</div><div class="lbl">Kişisel Kontrol</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ozellikler">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">Özellikler</span>
+        <h2>Finansal hayatınızın tamamı, tek çatı altında</h2>
+        <p>Portföyünüzü oluşturun, Varlığım geri kalanını sizin için takip etsin.</p>
+      </div>
+      <div class="grid">
+        <div class="card"><div class="ic">📈</div><h3>Hisse Senedi (BIST)</h3><p>Portföyünüzü takip edin, canlı fiyatlar, gelişmiş grafikler ve teknik göstergelerle analiz yapın.</p></div>
+        <div class="card"><div class="ic">🪙</div><h3>Kripto Para</h3><p>Kripto varlıklarınızı anlık fiyatlarla izleyin, kâr/zarar durumunuzu tek bakışta görün.</p></div>
+        <div class="card"><div class="ic">💵</div><h3>Döviz</h3><p>USD, EUR ve diğer döviz varlıklarınızı güncel kurlarla takip edin.</p></div>
+        <div class="card"><div class="ic">🥇</div><h3>Emtia</h3><p>Altın, gümüş ve diğer emtia yatırımlarınızın güncel değerini görün.</p></div>
+        <div class="card"><div class="ic">📊</div><h3>Yatırım Fonları</h3><p>TEFAS fonlarınızı, performans geçmişi ve kategori dağılımıyla birlikte izleyin.</p></div>
+        <div class="card"><div class="ic">🏠</div><h3>Gayrimenkul &amp; Araç</h3><p>Ev, araç ve diğer maddi varlıklarınızı toplam servetinize dahil edin.</p></div>
+        <div class="card"><div class="ic">🏦</div><h3>Mevduat</h3><p>Vadeli/vadesiz mevduat hesaplarınızı ve faiz getirinizi hesaplayın.</p></div>
+        <div class="card"><div class="ic">🧾</div><h3>Bütçe Takibi</h3><p>Gelir ve giderlerinizi planlayın, harcamalarınızı kontrol altında tutun.</p></div>
+        <div class="card"><div class="ic">🔔</div><h3>Alarmlar &amp; Bildirimler</h3><p>Favori varlıklarınız için fiyat alarmları kurun, önemli hareketleri kaçırmayın.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="veri">
+    <div class="wrap">
+      <div class="panel">
+        <div>
+          <h3>Analist tavsiyeleri veri kaynağı</h3>
+          <p>Varlığım, BIST hisseleri için aracı kurum analist tavsiyelerini bu sitede
+            barındırılan açık JSON dosyasından çeker. Veri, kamuya açık raporlar
+            takip edilerek elle güncellenir ve uygulama otomatik olarak en güncel
+            sürümü kullanır.</p>
+          <div class="badge-list">
+            <span class="badge">JSON</span>
+            <span class="badge">Genel erişime açık</span>
+            <span class="badge">Periyodik güncelleme</span>
+          </div>
+        </div>
+        <div>
+          <code>GET /analyst-recommendations.json
+
+{
+  "THYAO": [
+    {
+      "bank": "İş Yatırım",
+      "recommendation": "al",
+      "targetPrice": 397.50,
+      "date": "2026-08-06"
+    }
+  ]
+}</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sss">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">SSS</span>
+        <h2>Sık sorulan sorular</h2>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;">
+        <div class="card">
+          <h3>Verilerim nerede saklanıyor?</h3>
+          <p>Portföy verileriniz cihazınızda saklanır; Varlığım yalnızca fiyat ve
+            piyasa bilgilerini almak için harici kaynaklara bağlanır.</p>
+        </div>
+        <div class="card">
+          <h3>Uygulama ücretsiz mi?</h3>
+          <p>Evet, Varlığım'ın temel özellikleri ücretsizdir.</p>
+        </div>
+        <div class="card">
+          <h3>Analist tavsiyeleri ne sıklıkla güncelleniyor?</h3>
+          <p>Veri kaynağı düzenli olarak elle güncellenir; uygulama her açılışta
+            en güncel sürümü otomatik olarak çeker.</p>
+        </div>
+        <div class="card">
+          <h3>Hangi platformlarda kullanılabilir?</h3>
+          <p>Varlığım, iOS ve Android için Flutter ile geliştirilmektedir.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="indir">
+    <div class="wrap" style="text-align:center;">
+      <div class="section-head" style="margin-bottom:24px;">
+        <span class="tag">Hemen Başlayın</span>
+        <h2>Varlığınızı takip etmeye bugün başlayın</h2>
+      </div>
+      <div class="cta-row">
+        <a class="btn ghost" href="#">App Store (yakında)</a>
+        <a class="btn ghost" href="#">Google Play (yakında)</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap" style="display:flex;justify-content:space-between;width:100%;flex-wrap:wrap;gap:12px;">
+    <span>© 2026 Varlığım</span>
+    <span>Kişisel finans takip uygulaması</span>
+  </div>
+</footer>
+
+</body>
+</html>
