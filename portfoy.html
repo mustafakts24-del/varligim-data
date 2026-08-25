@@ -1340,24 +1340,11 @@
 
   async function loadHoldings() {
 
-    const {
-      data,
-      error
-    } =
-      await supa
-        .from(
-          'stock_holdings'
-        )
-        .select(
-          '*'
-        )
-        .order(
-          'symbol',
-          {
-            ascending:
-              true
-          }
-        );
+    const { data, error } = await supa
+  .from('stock_holdings')
+  .select('*')
+  .is('deleted_at', null)
+  .order('symbol', { ascending: true });
 
     const tbody =
       document
