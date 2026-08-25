@@ -1545,54 +1545,7 @@
   loadHoldings();
 }
 
-    const {
-      data:{
-        user
-      }
-    } =
-      await supa.auth
-        .getUser();
-
-    if (
-      !user
-    ) {
-      return;
-    }
-
-    const {
-      error
-    } =
-      await supa
-        .from(
-          'stock_holdings'
-        )
-        .delete()
-        .eq(
-          'user_id',
-          user.id
-        )
-        .eq(
-          'symbol',
-          symbol
-        );
-
-    if (
-      error
-    ) {
-
-      showMsg(
-        'Hisse silinemedi: ' +
-          error.message,
-        'error'
-      );
-
-      return;
-
-    }
-
-    loadHoldings();
-
-  }
+   
 
   /*
    * HİSSE EKLE
