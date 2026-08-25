@@ -8,7 +8,7 @@
 
 <meta
   name="description"
-  content="Varlığım hesabınızla giriş yapın, hisse ve kripto portföyünüzü web üzerinden görüntüleyin ve yönetin."
+  content="Varlığım hesabınızla giriş yapın, hisse, kripto ve döviz portföyünüzü web üzerinden görüntüleyin ve yönetin."
 />
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -430,7 +430,7 @@
 
       <p class="lead">
         Varlığım uygulamasındaki hesabınla giriş yaparak
-        hisse ve kripto portföyünü web üzerinden de yönetebilirsin.
+        hisse, kripto ve döviz portföyünü web üzerinden de yönetebilirsin.
       </p>
 
       <div class="card">
@@ -518,6 +518,13 @@
           id="cryptoTab"
         >
           Kripto
+        </div>
+
+        <div
+          class="tab"
+          id="currencyTab"
+        >
+          Döviz
         </div>
 
       </div>
@@ -711,6 +718,98 @@
 
       </div>
 
+      <!-- DÖVİZ -->
+
+      <div
+        id="currencyView"
+        style="display:none;"
+      >
+
+        <h1>
+          Döviz Portföyüm
+        </h1>
+
+        <p class="lead">
+          Bu liste, telefonundaki Varlığım uygulamasıyla
+          aynı hesaba bağlı ve otomatik senkronize.
+        </p>
+
+        <div class="card">
+
+          <div class="section-title">
+            Döviz Varlıkları
+          </div>
+
+          <table id="currencyTable">
+
+            <thead>
+              <tr>
+                <th>Döviz</th>
+                <th class="num">Miktar</th>
+                <th class="num">Maliyet</th>
+                <th></th>
+              </tr>
+            </thead>
+
+            <tbody id="currencyBody"></tbody>
+
+          </table>
+
+          <div
+            id="currencyEmptyState"
+            class="empty"
+            style="display:none;"
+          >
+            Henüz döviz eklenmemiş.
+          </div>
+
+          <div class="add-form">
+
+            <div
+              class="full section-title"
+              style="margin:0;"
+            >
+              Döviz ekle / güncelle
+            </div>
+
+            <input
+              id="newCurrencySearch"
+              class="full"
+              list="currencyOptions"
+              autocomplete="off"
+              placeholder="Döviz ara veya seç (örn. USD)"
+            />
+
+            <datalist id="currencyOptions"></datalist>
+
+            <input
+              id="newCurrencyAmount"
+              type="number"
+              step="any"
+              placeholder="Miktar"
+            />
+
+            <input
+              id="newCurrencyCost"
+              type="number"
+              step="any"
+              placeholder="Birim maliyet (₺) - isteğe bağlı"
+            />
+
+            <button
+              class="btn primary full"
+              id="addCurrencyBtn"
+              type="button"
+            >
+              Ekle / Güncelle
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
 
   </div>
@@ -751,6 +850,11 @@
       'cryptoView'
     );
 
+  const currencyView =
+    document.getElementById(
+      'currencyView'
+    );
+
   const stockTab =
     document.getElementById(
       'stockTab'
@@ -759,6 +863,11 @@
   const cryptoTab =
     document.getElementById(
       'cryptoTab'
+    );
+
+  const currencyTab =
+    document.getElementById(
+      'currencyTab'
     );
 
   const userBadge =
@@ -927,62 +1036,71 @@
    * PORTFÖY SEKMELERİ
    */
 
+  function showPortfolioSection(section) {
+
+    const isStock =
+      section === 'stock';
+
+    const isCrypto =
+      section === 'crypto';
+
+    const isCurrency =
+      section === 'currency';
+
+    stockTab.classList.toggle(
+      'active',
+      isStock
+    );
+
+    cryptoTab.classList.toggle(
+      'active',
+      isCrypto
+    );
+
+    currencyTab.classList.toggle(
+      'active',
+      isCurrency
+    );
+
+    stockView.style.display =
+      isStock ? '' : 'none';
+
+    cryptoView.style.display =
+      isCrypto ? '' : 'none';
+
+    currencyView.style.display =
+      isCurrency ? '' : 'none';
+
+    if (isStock) {
+      loadHoldings();
+      loadStockOptions();
+    }
+
+    if (isCrypto) {
+      loadCryptoHoldings();
+      loadCryptoOptions();
+    }
+
+    if (isCurrency) {
+      loadCurrencyHoldings();
+      loadCurrencyOptions();
+    }
+
+  }
+
   stockTab.addEventListener(
     'click',
-    () => {
-
-      stockTab
-        .classList
-        .add(
-          'active'
-        );
-
-      cryptoTab
-        .classList
-        .remove(
-          'active'
-        );
-
-      stockView.style.display =
-        '';
-
-      cryptoView.style.display =
-        'none';
-
-      loadHoldings();
-
-      loadStockOptions();
-
-    }
+    () => showPortfolioSection('stock')
   );
 
   cryptoTab.addEventListener(
     'click',
-    () => {
+    () => showPortfolioSection('crypto')
+  );
 
-      cryptoTab
-        .classList
-        .add(
-          'active'
-        );
-
-      stockTab
-        .classList
-        .remove(
-          'active'
-        );
-
-      stockView.style.display =
-        'none';
-
-      cryptoView.style.display =
-        '';
-
-      loadCryptoHoldings();
-
-      loadCryptoOptions();
-
-    }
+  currencyTab.addEventListener(
+    'click',
+    () => showPortfolioSection('currency')
   );
 
   /*
@@ -1167,29 +1285,12 @@
           session.user.email ||
           '';
 
-        stockTab
-          .classList
-          .add(
-            'active'
-          );
-
-        cryptoTab
-          .classList
-          .remove(
-            'active'
-          );
-
-        stockView.style.display =
-          '';
-
-        cryptoView.style.display =
-          'none';
-
-        loadHoldings();
-
-        loadStockOptions();
+        showPortfolioSection(
+          'stock'
+        );
 
         loadCryptoOptions();
+        loadCurrencyOptions();
 
       } else {
 
@@ -1667,6 +1768,338 @@
             '';
 
         loadHoldings();
+
+      }
+    );
+
+  /*
+   * ======================================
+   * DÖVİZ
+   * ======================================
+   */
+
+  const currencyMarketList = [
+    { code:'TRY', name:'Türk Lirası' },
+    { code:'USD', name:'Amerikan Doları' },
+    { code:'EUR', name:'Euro' },
+    { code:'GBP', name:'İngiliz Sterlini' },
+    { code:'JPY', name:'Japon Yeni' },
+    { code:'CHF', name:'İsviçre Frangı' },
+    { code:'AUD', name:'Avustralya Doları' },
+    { code:'CAD', name:'Kanada Doları' },
+    { code:'CNY', name:'Çin Yuanı' },
+    { code:'RUB', name:'Rus Rublesi' },
+    { code:'UAH', name:'Ukrayna Grivnası' }
+  ];
+
+  function loadCurrencyOptions() {
+
+    const list =
+      document.getElementById(
+        'currencyOptions'
+      );
+
+    if (!list) {
+      return;
+    }
+
+    list.innerHTML = '';
+
+    for (
+      const currency
+      of currencyMarketList
+    ) {
+
+      const option =
+        document.createElement(
+          'option'
+        );
+
+      option.value =
+        `${currency.code} — ${currency.name}`;
+
+      list.appendChild(
+        option
+      );
+
+    }
+
+  }
+
+  function resolveCurrency(
+    rawValue
+  ) {
+
+    const value =
+      String(rawValue || '')
+        .trim()
+        .toLocaleUpperCase('tr-TR');
+
+    if (!value) {
+      return null;
+    }
+
+    return currencyMarketList.find(
+      currency => {
+
+        const code =
+          currency.code
+            .toLocaleUpperCase('tr-TR');
+
+        const name =
+          currency.name
+            .toLocaleUpperCase('tr-TR');
+
+        return value === code ||
+          value.startsWith(`${code} —`) ||
+          value === name ||
+          value.includes(code) ||
+          value.includes(name);
+
+      }
+    ) || null;
+
+  }
+
+  async function loadCurrencyHoldings() {
+
+    const { data, error } =
+      await supa
+        .from('currency_holdings')
+        .select('*')
+        .is('deleted_at', null)
+        .order(
+          'currency_code',
+          {
+            ascending: true
+          }
+        );
+
+    const tbody =
+      document.getElementById(
+        'currencyBody'
+      );
+
+    const emptyState =
+      document.getElementById(
+        'currencyEmptyState'
+      );
+
+    if (!tbody || !emptyState) {
+      return;
+    }
+
+    tbody.innerHTML = '';
+
+    if (error) {
+      showMsg(
+        'Döviz verileri yüklenemedi: ' +
+          error.message,
+        'error'
+      );
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      emptyState.style.display =
+        'block';
+      return;
+    }
+
+    emptyState.style.display =
+      'none';
+
+    for (const row of data) {
+
+      const tr =
+        document.createElement(
+          'tr'
+        );
+
+      const costText =
+        row.cost == null
+          ? '—'
+          : fmtTL(row.cost);
+
+      tr.innerHTML = `
+        <td>
+          <div class="sym">
+            ${escapeHtml(row.currency_code)}
+          </div>
+          <div class="name">
+            ${escapeHtml(row.currency_name || '')}
+          </div>
+        </td>
+
+        <td class="num">
+          ${fmtNumber(row.amount)}
+        </td>
+
+        <td class="num">
+          ${costText}
+        </td>
+
+        <td class="num">
+          <button
+            type="button"
+            class="del"
+            title="Sil"
+            onclick="deleteCurrencyHolding('${escapeHtml(row.currency_code)}')"
+          >
+            ✕
+          </button>
+        </td>
+      `;
+
+      tbody.appendChild(
+        tr
+      );
+
+    }
+
+  }
+
+  async function deleteCurrencyHolding(
+    currencyCode
+  ) {
+
+    const {
+      data: { user }
+    } = await supa.auth.getUser();
+
+    if (!user) {
+      return;
+    }
+
+    const { error } =
+      await supa
+        .from('currency_holdings')
+        .update({
+          deleted_at:
+            new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq(
+          'currency_code',
+          currencyCode
+        );
+
+    if (error) {
+      showMsg(
+        'Döviz silinemedi: ' +
+          error.message,
+        'error'
+      );
+      return;
+    }
+
+    await loadCurrencyHoldings();
+
+  }
+
+  document
+    .getElementById(
+      'addCurrencyBtn'
+    )
+    .addEventListener(
+      'click',
+      async () => {
+
+        hideMsg();
+
+        const {
+          data: { user }
+        } = await supa.auth.getUser();
+
+        if (!user) {
+          return;
+        }
+
+        const searchInput =
+          document.getElementById(
+            'newCurrencySearch'
+          );
+
+        const currency =
+          resolveCurrency(
+            searchInput.value
+          );
+
+        const amount =
+          parseFloat(
+            document.getElementById(
+              'newCurrencyAmount'
+            ).value
+          );
+
+        const costRaw =
+          document.getElementById(
+            'newCurrencyCost'
+          ).value.trim();
+
+        const cost =
+          costRaw === ''
+            ? null
+            : parseFloat(costRaw);
+
+        if (
+          !currency ||
+          isNaN(amount) ||
+          amount <= 0 ||
+          (cost !== null &&
+            (isNaN(cost) || cost < 0))
+        ) {
+          showMsg(
+            'Lütfen dövizi seçip geçerli bir miktar gir.',
+            'error'
+          );
+          return;
+        }
+
+        const { error } =
+          await supa
+            .from('currency_holdings')
+            .upsert(
+              {
+                user_id:
+                  user.id,
+                currency_code:
+                  currency.code,
+                currency_name:
+                  currency.name,
+                amount:
+                  amount,
+                cost:
+                  cost,
+                deleted_at:
+                  null
+              },
+              {
+                onConflict:
+                  'user_id,currency_code'
+              }
+            );
+
+        if (error) {
+          showMsg(
+            'Döviz eklenemedi: ' +
+              error.message,
+            'error'
+          );
+          return;
+        }
+
+        searchInput.value = '';
+
+        document.getElementById(
+          'newCurrencyAmount'
+        ).value = '';
+
+        document.getElementById(
+          'newCurrencyCost'
+        ).value = '';
+
+        await loadCurrencyHoldings();
 
       }
     );
