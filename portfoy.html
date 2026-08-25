@@ -1816,19 +1816,15 @@
       error
     } =
       await supa
-        .from(
-          'crypto_holdings'
-        )
-        .select(
-          '*'
-        )
-        .order(
-          'symbol',
-          {
-            ascending:
-              true
-          }
-        );
+        .from('crypto_holdings')
+.select('*')
+.is('deleted_at', null)
+.order(
+  'symbol',
+  {
+    ascending: true
+  }
+);
 
     const tbody =
       document
@@ -2124,10 +2120,13 @@
             .upsert(
               {
                 user_id:
-                  user.id,
+  user.id,
 
-                crypto_id:
-                  cryptoId,
+deleted_at:
+  null,
+
+crypto_id:
+  cryptoId,
 
                 symbol:
                   symbol,
