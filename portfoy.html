@@ -1982,58 +1982,34 @@
 
   }
 
-  async function deleteCryptoHolding(
-    cryptoId
-  ) {
+  async function deleteCryptoHolding(cryptoId) {
 
-    const {
-      data:{
-        user
-      }
-    } =
-      await supa.auth
-        .getUser();
+  const {
+    data: { user }
+  } = await supa.auth.getUser();
 
-    if (
-      !user
-    ) {
-      return;
-    }
-
-    const {
-      error
-    } =
-      await supa
-        .from(
-          'crypto_holdings'
-        )
-        .delete()
-        .eq(
-          'user_id',
-          user.id
-        )
-        .eq(
-          'crypto_id',
-          cryptoId
-        );
-
-    if (
-      error
-    ) {
-
-      showMsg(
-        'Kripto silinemedi: ' +
-          error.message,
-        'error'
-      );
-
-      return;
-
-    }
-
-    loadCryptoHoldings();
-
+  if (!user) {
+    return;
   }
+
+  const { error } = await supa
+    .from('crypto_holdings')
+    .update({
+      deleted_at: new Date().toISOString()
+    })
+    .eq('user_id', user.id)
+    .eq('crypto_id', cryptoId);
+
+  if (error) {
+    showMsg(
+      'Kripto silinemedi: ' + error.message,
+      'error'
+    );
+    return;
+  }
+
+  await loadCryptoHoldings();
+}
 
   /*
    * KRİPTO EKLE
