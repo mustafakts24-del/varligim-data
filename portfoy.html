@@ -1680,129 +1680,205 @@
   let cryptoMarketList =
     [];
 
-  async function loadCryptoOptions() {
+ async function loadCryptoOptions() {
+  const select =
+    document.getElementById(
+      'newCryptoSelect'
+    );
 
-    const select =
-      document
-        .getElementById(
-          'newCryptoSelect'
-        );
-
-    if (
-      !select
-    ) {
-      return;
-    }
-
-    if (
-      cryptoMarketList.length >
-        0
-    ) {
-
-      fillCryptoSelect();
-
-      return;
-
-    }
-
-    try {
-
-      const response =
-        await fetch(
-          'https://api.coingecko.com/api/v3/coins/markets' +
-          '?vs_currency=try' +
-          '&order=market_cap_desc' +
-          '&per_page=250' +
-          '&page=1' +
-          '&sparkline=false'
-        );
-
-      if (
-        !response.ok
-      ) {
-
-        throw new Error(
-          'Kripto listesi alınamadı.'
-        );
-
-      }
-
-      cryptoMarketList =
-        await response.json();
-
-      fillCryptoSelect();
-
-    } catch (
-      err
-    ) {
-
-      console.error(
-        'Kripto listesi yüklenemedi:',
-        err
-      );
-
-      showMsg(
-        'Kripto seçim listesi yüklenemedi. Sayfayı yenileyip tekrar deneyin.',
-        'error'
-      );
-
-    }
-
+  if (!select) {
+    return;
   }
 
-  function fillCryptoSelect() {
+  const cryptos = [
+    {
+      id: 'bitcoin',
+      symbol: 'BTC',
+      name: 'Bitcoin'
+    },
+    {
+      id: 'ethereum',
+      symbol: 'ETH',
+      name: 'Ethereum'
+    },
+    {
+      id: 'tether',
+      symbol: 'USDT',
+      name: 'Tether'
+    },
+    {
+      id: 'binancecoin',
+      symbol: 'BNB',
+      name: 'BNB'
+    },
+    {
+      id: 'solana',
+      symbol: 'SOL',
+      name: 'Solana'
+    },
+    {
+      id: 'usd-coin',
+      symbol: 'USDC',
+      name: 'USDC'
+    },
+    {
+      id: 'ripple',
+      symbol: 'XRP',
+      name: 'XRP'
+    },
+    {
+      id: 'dogecoin',
+      symbol: 'DOGE',
+      name: 'Dogecoin'
+    },
+    {
+      id: 'cardano',
+      symbol: 'ADA',
+      name: 'Cardano'
+    },
+    {
+      id: 'avalanche-2',
+      symbol: 'AVAX',
+      name: 'Avalanche'
+    },
+    {
+      id: 'tron',
+      symbol: 'TRX',
+      name: 'TRON'
+    },
+    {
+      id: 'chainlink',
+      symbol: 'LINK',
+      name: 'Chainlink'
+    },
+    {
+      id: 'polkadot',
+      symbol: 'DOT',
+      name: 'Polkadot'
+    },
+    {
+      id: 'matic-network',
+      symbol: 'POL',
+      name: 'Polygon'
+    },
+    {
+      id: 'litecoin',
+      symbol: 'LTC',
+      name: 'Litecoin'
+    },
+    {
+      id: 'shiba-inu',
+      symbol: 'SHIB',
+      name: 'Shiba Inu'
+    },
+    {
+      id: 'bitcoin-cash',
+      symbol: 'BCH',
+      name: 'Bitcoin Cash'
+    },
+    {
+      id: 'uniswap',
+      symbol: 'UNI',
+      name: 'Uniswap'
+    },
+    {
+      id: 'stellar',
+      symbol: 'XLM',
+      name: 'Stellar'
+    },
+    {
+      id: 'near',
+      symbol: 'NEAR',
+      name: 'NEAR Protocol'
+    },
+    {
+      id: 'internet-computer',
+      symbol: 'ICP',
+      name: 'Internet Computer'
+    },
+    {
+      id: 'aptos',
+      symbol: 'APT',
+      name: 'Aptos'
+    },
+    {
+      id: 'arbitrum',
+      symbol: 'ARB',
+      name: 'Arbitrum'
+    },
+    {
+      id: 'optimism',
+      symbol: 'OP',
+      name: 'Optimism'
+    },
+    {
+      id: 'cosmos',
+      symbol: 'ATOM',
+      name: 'Cosmos'
+    },
+    {
+      id: 'filecoin',
+      symbol: 'FIL',
+      name: 'Filecoin'
+    },
+    {
+      id: 'hedera-hashgraph',
+      symbol: 'HBAR',
+      name: 'Hedera'
+    },
+    {
+      id: 'vechain',
+      symbol: 'VET',
+      name: 'VeChain'
+    },
+    {
+      id: 'the-open-network',
+      symbol: 'TON',
+      name: 'Toncoin'
+    },
+    {
+      id: 'sui',
+      symbol: 'SUI',
+      name: 'Sui'
+    },
+    {
+      id: 'pepe',
+      symbol: 'PEPE',
+      name: 'Pepe'
+    }
+  ];
 
-    const select =
-      document
-        .getElementById(
-          'newCryptoSelect'
+  select.innerHTML =
+    '<option value="">Kripto seç...</option>';
+
+  cryptos.forEach(
+    (crypto) => {
+      const option =
+        document.createElement(
+          'option'
         );
 
-    if (
-      !select
-    ) {
-      return;
-    }
-
-    select.innerHTML =
-      '<option value="">Kripto seç...</option>';
-
-    for (
-      const asset
-      of cryptoMarketList
-    ) {
-
-      const option =
-        document
-          .createElement(
-            'option'
-          );
-
       option.value =
-        asset.id;
+        crypto.id;
 
       option.textContent =
-        `${asset.symbol.toUpperCase()} — ${asset.name}`;
+        `${crypto.symbol} — ${crypto.name}`;
 
       option.dataset.symbol =
-        asset.symbol
-          .toUpperCase();
+        crypto.symbol;
 
       option.dataset.name =
-        asset.name;
+        crypto.name;
 
       option.dataset.image =
-        asset.image ||
         '';
 
       select.appendChild(
         option
       );
-
     }
-
-  }
-
+  );
+}
   /*
    * ======================================
    * KRİPTO PORTFÖYÜ
