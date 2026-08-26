@@ -3303,23 +3303,6 @@ crypto_id:
      * daha önce geçmiş mi diye kontrol ediyoruz.
      * Varsa gerçek kayıtlı adı hemen kullanılır.
      */
-    const { data: savedRows } = await supa
-      .from('fund_holdings')
-      .select('code,name')
-      .eq('code', code)
-      .limit(1);
-
-    if (
-      savedRows &&
-      savedRows.length > 0 &&
-      savedRows[0].code === code &&
-      savedRows[0].name
-    ) {
-      return {
-        code: code,
-        name: savedRows[0].name
-      };
-    }
 
     /*
      * Daha önce portföyde olmayan kodlarda TEFAS'ın güncel
