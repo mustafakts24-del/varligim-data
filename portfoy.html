@@ -534,6 +534,13 @@
           Emtia
         </div>
 
+        <div
+          class="tab"
+          id="fundTab"
+        >
+          Fon
+        </div>
+
       </div>
 
       <!-- HİSSE -->
@@ -901,6 +908,95 @@
 
       </div>
 
+      <!-- FON -->
+
+      <div id="fundView" style="display:none;">
+
+        <h1>Fon Portföyüm</h1>
+
+        <p class="lead">
+          Bu liste, telefonundaki Varlığım uygulamasıyla
+          aynı hesaba bağlı ve otomatik senkronize.
+        </p>
+
+        <div class="card">
+
+          <div class="section-title">
+            Fon Varlıkları
+          </div>
+
+          <table id="fundTable">
+            <thead>
+              <tr>
+                <th>Fon</th>
+                <th class="num">Adet</th>
+                <th class="num">Maliyet</th>
+                <th class="num">Yatırılan</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="fundBody"></tbody>
+          </table>
+
+          <div
+            id="fundEmptyState"
+            class="empty"
+            style="display:none;"
+          >
+            Henüz fon eklenmemiş.
+          </div>
+
+          <div class="add-form">
+
+            <div
+              class="full section-title"
+              style="margin:0;"
+            >
+              Fon ekle / güncelle
+            </div>
+
+            <input
+              id="newFundCode"
+              type="text"
+              autocomplete="off"
+              placeholder="Fon kodu (örn. GUM)"
+            />
+
+            <input
+              id="newFundName"
+              type="text"
+              autocomplete="off"
+              placeholder="Fon adı"
+            />
+
+            <input
+              id="newFundUnits"
+              type="number"
+              step="any"
+              placeholder="Adet"
+            />
+
+            <input
+              id="newFundCost"
+              type="number"
+              step="any"
+              placeholder="Birim maliyet (₺)"
+            />
+
+            <button
+              class="btn primary full"
+              id="addFundBtn"
+              type="button"
+            >
+              Ekle / Güncelle
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
 
   </div>
@@ -951,6 +1047,11 @@
       'commodityView'
     );
 
+  const fundView =
+    document.getElementById(
+      'fundView'
+    );
+
   const stockTab =
     document.getElementById(
       'stockTab'
@@ -969,6 +1070,11 @@
   const commodityTab =
     document.getElementById(
       'commodityTab'
+    );
+
+  const fundTab =
+    document.getElementById(
+      'fundTab'
     );
 
   const userBadge =
@@ -1151,6 +1257,9 @@
     const isCommodity =
       section === 'commodity';
 
+    const isFund =
+      section === 'fund';
+
     stockTab.classList.toggle(
       'active',
       isStock
@@ -1171,6 +1280,11 @@
       isCommodity
     );
 
+    fundTab.classList.toggle(
+      'active',
+      isFund
+    );
+
     stockView.style.display =
       isStock ? '' : 'none';
 
@@ -1182,6 +1296,9 @@
 
     commodityView.style.display =
       isCommodity ? '' : 'none';
+
+    fundView.style.display =
+      isFund ? '' : 'none';
 
     if (isStock) {
       loadHoldings();
@@ -1201,6 +1318,10 @@
     if (isCommodity) {
       loadCommodityHoldings();
       loadCommodityOptions();
+    }
+
+    if (isFund) {
+      loadFundHoldings();
     }
 
   }
@@ -1223,6 +1344,11 @@
   commodityTab.addEventListener(
     'click',
     () => showPortfolioSection('commodity')
+  );
+
+  fundTab.addEventListener(
+    'click',
+    () => showPortfolioSection('fund')
   );
 
   /*
@@ -3043,6 +3169,202 @@ crypto_id:
 
         loadCryptoHoldings();
 
+      }
+    );
+
+
+  /*
+   * ======================================
+   * FON PORTFÖYÜ
+   * ======================================
+   */
+
+  async function loadFundHoldings() {
+
+    const { data, error } = await supa
+      .from('fund_holdings')
+      .select('*')
+      .is('deleted_at', null)
+      .order('code', { ascending: true });
+
+    const tbody =
+      document.getElementById('fundBody');
+
+    const emptyState =
+      document.getElementById('fundEmptyState');
+
+    if (!tbody || !emptyState) {
+      return;
+    }
+
+    tbody.innerHTML = '';
+
+    if (error) {
+      showMsg(
+        'Fon verileri yüklenemedi: ' + error.message,
+        'error'
+      );
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+
+    emptyState.style.display = 'none';
+
+    for (const row of data) {
+
+      const units = Number(row.units) || 0;
+      const cost = Number(row.cost) || 0;
+      const invested = units * cost;
+
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td>
+          <div class="sym">${escapeHtml(row.code || '')}</div>
+          <div class="name">${escapeHtml(row.name || '')}</div>
+        </td>
+        <td class="num">${fmtNumber(row.units)}</td>
+        <td class="num">${row.cost == null ? '—' : fmtTL(row.cost)}</td>
+        <td class="num">${fmtTL(invested)}</td>
+        <td class="num">
+          <button
+            type="button"
+            class="del fund-delete"
+            data-fund-code="${escapeHtml(row.code || '')}"
+            title="Sil"
+          >✕</button>
+        </td>
+      `;
+
+      const deleteBtn =
+        tr.querySelector('[data-fund-code]');
+
+      deleteBtn.addEventListener(
+        'click',
+        () => deleteFundHolding(row.code)
+      );
+
+      tbody.appendChild(tr);
+    }
+  }
+
+  async function deleteFundHolding(code) {
+
+    const {
+      data: { user }
+    } = await supa.auth.getUser();
+
+    if (!user) {
+      return;
+    }
+
+    const { error } = await supa
+      .from('fund_holdings')
+      .update({
+        deleted_at: new Date().toISOString()
+      })
+      .eq('user_id', user.id)
+      .eq('code', code);
+
+    if (error) {
+      showMsg(
+        'Fon silinemedi: ' + error.message,
+        'error'
+      );
+      return;
+    }
+
+    await loadFundHoldings();
+  }
+
+  document
+    .getElementById('addFundBtn')
+    .addEventListener(
+      'click',
+      async () => {
+
+        hideMsg();
+
+        const {
+          data: { user }
+        } = await supa.auth.getUser();
+
+        if (!user) {
+          return;
+        }
+
+        const codeInput =
+          document.getElementById('newFundCode');
+
+        const nameInput =
+          document.getElementById('newFundName');
+
+        const code =
+          String(codeInput.value || '')
+            .trim()
+            .toLocaleUpperCase('tr-TR');
+
+        const name =
+          String(nameInput.value || '')
+            .trim();
+
+        const units = parseFloat(
+          document.getElementById('newFundUnits').value
+        );
+
+        const cost = parseFloat(
+          document.getElementById('newFundCost').value
+        );
+
+        if (
+          !code ||
+          !name ||
+          isNaN(units) ||
+          units <= 0 ||
+          isNaN(cost) ||
+          cost < 0
+        ) {
+          showMsg(
+            'Lütfen fon kodu, fon adı, adet ve maliyeti eksiksiz gir.',
+            'error'
+          );
+          return;
+        }
+
+        const { error } = await supa
+          .from('fund_holdings')
+          .upsert(
+            {
+              user_id: user.id,
+              code: code,
+              name: name,
+              units: units,
+              cost: cost,
+              deleted_at: null
+            },
+            {
+              onConflict: 'user_id,code'
+            }
+          );
+
+        if (error) {
+          showMsg(
+            'Fon eklenemedi: ' + error.message,
+            'error'
+          );
+          return;
+        }
+
+        codeInput.value = '';
+        nameInput.value = '';
+        document.getElementById('newFundUnits').value = '';
+        document.getElementById('newFundCost').value = '';
+
+        await loadFundHoldings();
       }
     );
 
