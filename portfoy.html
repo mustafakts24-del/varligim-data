@@ -548,6 +548,13 @@
           Gayrimenkul
         </div>
 
+        <div
+          class="tab"
+          id="vehicleTab"
+        >
+          Araç
+        </div>
+
       </div>
 
       <!-- HİSSE -->
@@ -1129,6 +1136,46 @@
 
       </div>
 
+      <!-- ARAÇ -->
+      <div id="vehicleView" style="display:none;">
+        <h1>Araç Portföyüm</h1>
+        <p class="lead">
+          Bu liste, telefonundaki Varlığım uygulamasıyla
+          aynı hesaba bağlı ve otomatik senkronize.
+        </p>
+        <div class="card">
+          <div class="section-title">Araçlar</div>
+          <table id="vehicleTable">
+            <thead><tr>
+              <th>Araç</th><th class="num">Yıl</th>
+              <th class="num">Alış</th><th class="num">Güncel</th><th></th>
+            </tr></thead>
+            <tbody id="vehicleBody"></tbody>
+          </table>
+          <div id="vehicleEmptyState" class="empty" style="display:none;">
+            Henüz araç eklenmemiş.
+          </div>
+          <div class="add-form">
+            <div class="full section-title" style="margin:0;">Araç ekle</div>
+            <select id="newVehicleType" class="full">
+              <option value="Otomobil">Otomobil</option>
+              <option value="Motosiklet">Motosiklet</option>
+              <option value="Ticari Araç">Ticari Araç</option>
+              <option value="Karavan">Karavan</option>
+              <option value="Diğer">Diğer</option>
+            </select>
+            <input id="newVehicleBrand" type="text" placeholder="Marka" />
+            <input id="newVehicleModel" type="text" placeholder="Model" />
+            <input id="newVehicleModelYear" type="number" min="1900" max="2100" step="1" placeholder="Model yılı" />
+            <input id="newVehiclePlate" type="text" placeholder="Plaka" />
+            <input id="newVehiclePurchasePrice" type="number" step="any" min="0" placeholder="Alış değeri (₺)" />
+            <input id="newVehicleCurrentValue" type="number" step="any" min="0" placeholder="Güncel değer (₺)" />
+            <input id="newVehiclePurchaseDate" class="full" type="date" />
+            <button class="btn primary full" id="addVehicleBtn" type="button">Ekle</button>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -1189,6 +1236,11 @@
       'realEstateView'
     );
 
+  const vehicleView =
+    document.getElementById(
+      'vehicleView'
+    );
+
   const stockTab =
     document.getElementById(
       'stockTab'
@@ -1217,6 +1269,11 @@
   const realEstateTab =
     document.getElementById(
       'realEstateTab'
+    );
+
+  const vehicleTab =
+    document.getElementById(
+      'vehicleTab'
     );
 
   const userBadge =
@@ -1405,6 +1462,9 @@
     const isRealEstate =
       section === 'realEstate';
 
+    const isVehicle =
+      section === 'vehicle';
+
     stockTab.classList.toggle(
       'active',
       isStock
@@ -1435,6 +1495,11 @@
       isRealEstate
     );
 
+    vehicleTab.classList.toggle(
+      'active',
+      isVehicle
+    );
+
     stockView.style.display =
       isStock ? '' : 'none';
 
@@ -1452,6 +1517,9 @@
 
     realEstateView.style.display =
       isRealEstate ? '' : 'none';
+
+    vehicleView.style.display =
+      isVehicle ? '' : 'none';
 
     if (isStock) {
       loadHoldings();
@@ -1479,6 +1547,10 @@
 
     if (isRealEstate) {
       loadRealEstateHoldings();
+    }
+
+    if (isVehicle) {
+      loadVehicleHoldings();
     }
 
   }
@@ -1511,6 +1583,11 @@
   realEstateTab.addEventListener(
     'click',
     () => showPortfolioSection('realEstate')
+  );
+
+  vehicleTab.addEventListener(
+    'click',
+    () => showPortfolioSection('vehicle')
   );
 
   /*
@@ -4023,6 +4100,118 @@ crypto_id:
         await loadRealEstateHoldings();
       }
     );
+
+
+  /* ARAÇ PORTFÖYÜ */
+
+  async function loadVehicleHoldings() {
+    const { data, error } = await supa
+      .from('vehicle_holdings')
+      .select('*')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    const tbody = document.getElementById('vehicleBody');
+    const emptyState = document.getElementById('vehicleEmptyState');
+    if (!tbody || !emptyState) return;
+    tbody.innerHTML = '';
+
+    if (error) {
+      showMsg('Araç verileri yüklenemedi: ' + error.message, 'error');
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+
+    emptyState.style.display = 'none';
+
+    for (const row of data) {
+      const tr = document.createElement('tr');
+      const title = [row.brand, row.model].filter(Boolean).join(' ');
+      const detail = [row.type, row.plate].filter(Boolean).join(' • ');
+
+      tr.innerHTML = `
+        <td>
+          <div class="sym">${escapeHtml(title || row.type || 'Araç')}</div>
+          <div class="name">${escapeHtml(detail)}</div>
+        </td>
+        <td class="num">${escapeHtml(row.model_year ?? '')}</td>
+        <td class="num">${fmtTL(row.purchase_price)}</td>
+        <td class="num">${fmtTL(row.current_value)}</td>
+        <td class="num">
+          <button type="button" class="del vehicle-delete"
+            data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
+        </td>`;
+
+      tr.querySelector('.vehicle-delete').addEventListener(
+        'click', () => deleteVehicleHolding(row.id)
+      );
+      tbody.appendChild(tr);
+    }
+  }
+
+  async function deleteVehicleHolding(id) {
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user || !id) return;
+
+    const { error } = await supa
+      .from('vehicle_holdings')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .eq('id', id);
+
+    if (error) {
+      showMsg('Araç silinemedi: ' + error.message, 'error');
+      return;
+    }
+    await loadVehicleHoldings();
+  }
+
+  document.getElementById('addVehicleBtn').addEventListener('click', async () => {
+    hideMsg();
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user) return;
+
+    const type = document.getElementById('newVehicleType').value.trim();
+    const brand = document.getElementById('newVehicleBrand').value.trim();
+    const model = document.getElementById('newVehicleModel').value.trim();
+    const modelYear = parseInt(document.getElementById('newVehicleModelYear').value, 10);
+    const plate = document.getElementById('newVehiclePlate').value.trim();
+    const purchasePrice = parseFloat(document.getElementById('newVehiclePurchasePrice').value);
+    const currentValue = parseFloat(document.getElementById('newVehicleCurrentValue').value);
+    const purchaseDateRaw = document.getElementById('newVehiclePurchaseDate').value;
+
+    if (!type || !brand || !model || isNaN(modelYear) ||
+        modelYear < 1900 || modelYear > 2100 ||
+        isNaN(purchasePrice) || purchasePrice < 0 ||
+        isNaN(currentValue) || currentValue < 0 || !purchaseDateRaw) {
+      showMsg('Lütfen araç bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
+      return;
+    }
+
+    const id = `${Date.now()}${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
+    const purchaseDate = new Date(`${purchaseDateRaw}T12:00:00`).toISOString();
+
+    const { error } = await supa.from('vehicle_holdings').upsert({
+      id, user_id:user.id, type, brand, model, model_year:modelYear, plate,
+      purchase_price:purchasePrice, current_value:currentValue,
+      purchase_date:purchaseDate, deleted_at:null
+    }, { onConflict:'user_id,id' });
+
+    if (error) {
+      showMsg('Araç eklenemedi: ' + error.message, 'error');
+      return;
+    }
+
+    ['newVehicleBrand','newVehicleModel','newVehicleModelYear','newVehiclePlate',
+     'newVehiclePurchasePrice','newVehicleCurrentValue','newVehiclePurchaseDate']
+      .forEach(id => document.getElementById(id).value = '');
+
+    await loadVehicleHoldings();
+  });
 
 </script>
 
