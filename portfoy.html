@@ -527,6 +527,13 @@
           Döviz
         </div>
 
+        <div
+          class="tab"
+          id="commodityTab"
+        >
+          Emtia
+        </div>
+
       </div>
 
       <!-- HİSSE -->
@@ -810,6 +817,90 @@
 
       </div>
 
+      <!-- EMTİA -->
+
+      <div id="commodityView" style="display:none;">
+
+        <h1>Emtia Portföyüm</h1>
+
+        <p class="lead">
+          Bu liste, telefonundaki Varlığım uygulamasıyla
+          aynı hesaba bağlı ve otomatik senkronize.
+        </p>
+
+        <div class="card">
+
+          <div class="section-title">
+            Emtia Varlıkları
+          </div>
+
+          <table id="commodityTable">
+            <thead>
+              <tr>
+                <th>Emtia</th>
+                <th class="num">Miktar</th>
+                <th class="num">Maliyet</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="commodityBody"></tbody>
+          </table>
+
+          <div
+            id="commodityEmptyState"
+            class="empty"
+            style="display:none;"
+          >
+            Henüz emtia eklenmemiş.
+          </div>
+
+          <div class="add-form">
+
+            <div
+              class="full section-title"
+              style="margin:0;"
+            >
+              Emtia ekle / güncelle
+            </div>
+
+            <input
+              id="newCommoditySearch"
+              class="full"
+              list="commodityOptions"
+              autocomplete="off"
+              placeholder="Emtia ara veya seç (örn. Altın)"
+            />
+
+            <datalist id="commodityOptions"></datalist>
+
+            <input
+              id="newCommodityAmount"
+              type="number"
+              step="any"
+              placeholder="Miktar"
+            />
+
+            <input
+              id="newCommodityCost"
+              type="number"
+              step="any"
+              placeholder="Birim maliyet (₺) - isteğe bağlı"
+            />
+
+            <button
+              class="btn primary full"
+              id="addCommodityBtn"
+              type="button"
+            >
+              Ekle / Güncelle
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
 
   </div>
@@ -855,6 +946,11 @@
       'currencyView'
     );
 
+  const commodityView =
+    document.getElementById(
+      'commodityView'
+    );
+
   const stockTab =
     document.getElementById(
       'stockTab'
@@ -868,6 +964,11 @@
   const currencyTab =
     document.getElementById(
       'currencyTab'
+    );
+
+  const commodityTab =
+    document.getElementById(
+      'commodityTab'
     );
 
   const userBadge =
@@ -1047,6 +1148,9 @@
     const isCurrency =
       section === 'currency';
 
+    const isCommodity =
+      section === 'commodity';
+
     stockTab.classList.toggle(
       'active',
       isStock
@@ -1062,6 +1166,11 @@
       isCurrency
     );
 
+    commodityTab.classList.toggle(
+      'active',
+      isCommodity
+    );
+
     stockView.style.display =
       isStock ? '' : 'none';
 
@@ -1070,6 +1179,9 @@
 
     currencyView.style.display =
       isCurrency ? '' : 'none';
+
+    commodityView.style.display =
+      isCommodity ? '' : 'none';
 
     if (isStock) {
       loadHoldings();
@@ -1084,6 +1196,11 @@
     if (isCurrency) {
       loadCurrencyHoldings();
       loadCurrencyOptions();
+    }
+
+    if (isCommodity) {
+      loadCommodityHoldings();
+      loadCommodityOptions();
     }
 
   }
@@ -1101,6 +1218,11 @@
   currencyTab.addEventListener(
     'click',
     () => showPortfolioSection('currency')
+  );
+
+  commodityTab.addEventListener(
+    'click',
+    () => showPortfolioSection('commodity')
   );
 
   /*
@@ -1291,6 +1413,7 @@
 
         loadCryptoOptions();
         loadCurrencyOptions();
+        loadCommodityOptions();
 
       } else {
 
@@ -2101,6 +2224,235 @@
 
         await loadCurrencyHoldings();
 
+      }
+    );
+
+  /*
+   * ======================================
+   * EMTİA
+   * ======================================
+   */
+
+  const commodityMarketList = [
+    { key:'GOLD', symbol:'Au', name:'Altın', unit:'Gram' },
+    { key:'SILVER', symbol:'Ag', name:'Gümüş', unit:'Gram' },
+    { key:'COPPER', symbol:'Cu', name:'Bakır', unit:'Gram' },
+    { key:'PLATINUM', symbol:'Pt', name:'Platin', unit:'Gram' },
+    { key:'PALLADIUM', symbol:'Pd', name:'Paladyum', unit:'Gram' },
+    { key:'BRENT', symbol:'BRENT', name:'Brent Petrol', unit:'Varil' }
+  ];
+
+  function loadCommodityOptions() {
+    const list = document.getElementById('commodityOptions');
+    if (!list) return;
+
+    list.innerHTML = '';
+
+    for (const commodity of commodityMarketList) {
+      const option = document.createElement('option');
+      option.value = `${commodity.name} — ${commodity.key}`;
+      list.appendChild(option);
+    }
+  }
+
+  function resolveCommodity(rawValue) {
+    const value = String(rawValue || '')
+      .trim()
+      .toLocaleUpperCase('tr-TR');
+
+    if (!value) return null;
+
+    return commodityMarketList.find(
+      commodity => {
+        const key = commodity.key.toLocaleUpperCase('tr-TR');
+        const symbol = commodity.symbol.toLocaleUpperCase('tr-TR');
+        const name = commodity.name.toLocaleUpperCase('tr-TR');
+
+        return value === key ||
+          value === symbol ||
+          value === name ||
+          value.startsWith(`${name} —`) ||
+          value.includes(key) ||
+          value.includes(name);
+      }
+    ) || null;
+  }
+
+  async function loadCommodityHoldings() {
+    const { data, error } = await supa
+      .from('commodity_holdings')
+      .select('*')
+      .is('deleted_at', null)
+      .order('commodity_key', { ascending: true });
+
+    const tbody = document.getElementById('commodityBody');
+    const emptyState = document.getElementById('commodityEmptyState');
+
+    if (!tbody || !emptyState) return;
+
+    tbody.innerHTML = '';
+
+    if (error) {
+      showMsg(
+        'Emtia verileri yüklenemedi: ' + error.message,
+        'error'
+      );
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+
+    emptyState.style.display = 'none';
+
+    for (const row of data) {
+      const tr = document.createElement('tr');
+      const costText =
+        row.cost == null ? '—' : fmtTL(row.cost);
+
+      tr.innerHTML = `
+        <td>
+          <div class="sym">${escapeHtml(row.name || row.commodity_key)}</div>
+          <div class="name">
+            ${escapeHtml(row.symbol || '')}
+            ${row.unit ? ' · ' + escapeHtml(row.unit) : ''}
+          </div>
+        </td>
+        <td class="num">${fmtNumber(row.amount)}</td>
+        <td class="num">${costText}</td>
+        <td class="num">
+          <button
+            type="button"
+            class="del"
+            title="Sil"
+            data-commodity-key="${escapeHtml(row.commodity_key)}"
+          >✕</button>
+        </td>
+      `;
+
+      const deleteBtn = tr.querySelector('[data-commodity-key]');
+      deleteBtn.addEventListener(
+        'click',
+        () => deleteCommodityHolding(row.commodity_key)
+      );
+
+      tbody.appendChild(tr);
+    }
+  }
+
+  async function deleteCommodityHolding(commodityKey) {
+    const {
+      data: { user }
+    } = await supa.auth.getUser();
+
+    if (!user) return;
+
+    const { error } = await supa
+      .from('commodity_holdings')
+      .update({
+        deleted_at: new Date().toISOString()
+      })
+      .eq('user_id', user.id)
+      .eq('commodity_key', commodityKey);
+
+    if (error) {
+      showMsg(
+        'Emtia silinemedi: ' + error.message,
+        'error'
+      );
+      return;
+    }
+
+    await loadCommodityHoldings();
+  }
+
+  document
+    .getElementById('addCommodityBtn')
+    .addEventListener(
+      'click',
+      async () => {
+        hideMsg();
+
+        const {
+          data: { user }
+        } = await supa.auth.getUser();
+
+        if (!user) return;
+
+        const searchInput =
+          document.getElementById('newCommoditySearch');
+
+        const commodity =
+          resolveCommodity(searchInput.value);
+
+        const amount =
+          parseFloat(
+            document.getElementById(
+              'newCommodityAmount'
+            ).value
+          );
+
+        const costRaw =
+          document.getElementById(
+            'newCommodityCost'
+          ).value.trim();
+
+        const cost =
+          costRaw === ''
+            ? null
+            : parseFloat(costRaw);
+
+        if (
+          !commodity ||
+          isNaN(amount) ||
+          amount <= 0 ||
+          (cost !== null &&
+            (isNaN(cost) || cost < 0))
+        ) {
+          showMsg(
+            'Lütfen emtiayı seçip geçerli bir miktar gir.',
+            'error'
+          );
+          return;
+        }
+
+        const { error } = await supa
+          .from('commodity_holdings')
+          .upsert(
+            {
+              user_id: user.id,
+              commodity_key: commodity.key,
+              symbol: commodity.symbol,
+              name: commodity.name,
+              unit: commodity.unit,
+              amount: amount,
+              cost: cost,
+              deleted_at: null
+            },
+            {
+              onConflict: 'user_id,commodity_key'
+            }
+          );
+
+        if (error) {
+          showMsg(
+            'Emtia eklenemedi: ' + error.message,
+            'error'
+          );
+          return;
+        }
+
+        searchInput.value = '';
+        document.getElementById(
+          'newCommodityAmount'
+        ).value = '';
+        document.getElementById(
+          'newCommodityCost'
+        ).value = '';
+
+        await loadCommodityHoldings();
       }
     );
 
