@@ -3298,67 +3298,39 @@ crypto_id:
       return null;
     }
 
-    /*
-     * Önce kullanıcının kendi Supabase portföyünde aynı kod
-     * daha önce geçmiş mi diye kontrol ediyoruz.
-     * Varsa gerçek kayıtlı adı hemen kullanılır.
-     */
+    const { data, error } = await supa
+      .from('fund_catalog')
+      .select('code,name')
+      .eq('code', code)
+      .maybeSingle();
 
-    /*
-     * Daha önce portföyde olmayan kodlarda TEFAS'ın güncel
-     * resmi fon bilgi endpoint'i kullanılır.
-     * Eşleşme yine yalnızca TAM fon koduna göre kabul edilir.
-     */
-    const response = await fetch(
-      'https://www.tefas.gov.tr/api/funds/fonBilgiGetir',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          fonKodu: code
-        })
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        'TEFAS sorgusu başarısız: HTTP ' +
-        response.status
-      );
+    if (error) {
+      throw error;
     }
 
-    const payload = await response.json();
-
-    const rows =
-      Array.isArray(payload?.resultList)
-        ? payload.resultList
-        : [];
-
-    const exact = rows.find(
-      row =>
-        String(row?.fonKodu || '')
-          .trim()
-          .toLocaleUpperCase('tr-TR') === code
-    );
-
-    if (!exact) {
+    if (!data) {
       return null;
     }
 
-    const name =
-      String(exact.fonUnvan || '')
+    const foundCode =
+      String(data.code || '')
+        .trim()
+        .toLocaleUpperCase('tr-TR');
+
+    const foundName =
+      String(data.name || '')
         .trim();
 
-    if (!name) {
+    if (
+      foundCode !== code ||
+      !foundName
+    ) {
       return null;
     }
 
     return {
-      code: code,
-      name: name
+      code: foundCode,
+      name: foundName
     };
   }
 
@@ -3421,7 +3393,7 @@ crypto_id:
       nameInput.value = '';
 
       showMsg(
-        'Fon bilgisi alınamadı: ' +
+        'Fon kataloğu okunamadı: ' +
           (err?.message || 'Bilinmeyen hata'),
         'error'
       );
