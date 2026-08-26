@@ -541,6 +541,13 @@
           Fon
         </div>
 
+        <div
+          class="tab"
+          id="realEstateTab"
+        >
+          Gayrimenkul
+        </div>
+
       </div>
 
       <!-- HİSSE -->
@@ -1001,6 +1008,127 @@
 
       </div>
 
+      <!-- GAYRİMENKUL -->
+
+      <div id="realEstateView" style="display:none;">
+
+        <h1>Gayrimenkul Portföyüm</h1>
+
+        <p class="lead">
+          Bu liste, telefonundaki Varlığım uygulamasıyla
+          aynı hesaba bağlı ve otomatik senkronize.
+        </p>
+
+        <div class="card">
+
+          <div class="section-title">
+            Gayrimenkuller
+          </div>
+
+          <table id="realEstateTable">
+            <thead>
+              <tr>
+                <th>Gayrimenkul</th>
+                <th class="num">Alış</th>
+                <th class="num">Güncel</th>
+                <th class="num">Kira</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="realEstateBody"></tbody>
+          </table>
+
+          <div
+            id="realEstateEmptyState"
+            class="empty"
+            style="display:none;"
+          >
+            Henüz gayrimenkul eklenmemiş.
+          </div>
+
+          <div class="add-form">
+
+            <div
+              class="full section-title"
+              style="margin:0;"
+            >
+              Gayrimenkul ekle
+            </div>
+
+            <select id="newRealEstateType" class="full">
+              <option value="Konut">Konut</option>
+              <option value="Arsa">Arsa</option>
+              <option value="İşyeri">İşyeri</option>
+              <option value="Dükkan">Dükkan</option>
+              <option value="Ofis">Ofis</option>
+              <option value="Diğer">Diğer</option>
+            </select>
+
+            <input
+              id="newRealEstateTitle"
+              class="full"
+              type="text"
+              autocomplete="off"
+              placeholder="İsim / başlık (örn. Alanya Daire)"
+            />
+
+            <input
+              id="newRealEstateCity"
+              type="text"
+              autocomplete="off"
+              placeholder="Şehir"
+            />
+
+            <input
+              id="newRealEstateDistrict"
+              type="text"
+              autocomplete="off"
+              placeholder="İlçe"
+            />
+
+            <input
+              id="newRealEstatePurchasePrice"
+              type="number"
+              step="any"
+              min="0"
+              placeholder="Alış değeri (₺)"
+            />
+
+            <input
+              id="newRealEstateCurrentValue"
+              type="number"
+              step="any"
+              min="0"
+              placeholder="Güncel değer (₺)"
+            />
+
+            <input
+              id="newRealEstateMonthlyRent"
+              type="number"
+              step="any"
+              min="0"
+              placeholder="Aylık kira (₺)"
+            />
+
+            <input
+              id="newRealEstatePurchaseDate"
+              type="date"
+            />
+
+            <button
+              class="btn primary full"
+              id="addRealEstateBtn"
+              type="button"
+            >
+              Ekle
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
 
   </div>
@@ -1056,6 +1184,11 @@
       'fundView'
     );
 
+  const realEstateView =
+    document.getElementById(
+      'realEstateView'
+    );
+
   const stockTab =
     document.getElementById(
       'stockTab'
@@ -1079,6 +1212,11 @@
   const fundTab =
     document.getElementById(
       'fundTab'
+    );
+
+  const realEstateTab =
+    document.getElementById(
+      'realEstateTab'
     );
 
   const userBadge =
@@ -1264,6 +1402,9 @@
     const isFund =
       section === 'fund';
 
+    const isRealEstate =
+      section === 'realEstate';
+
     stockTab.classList.toggle(
       'active',
       isStock
@@ -1289,6 +1430,11 @@
       isFund
     );
 
+    realEstateTab.classList.toggle(
+      'active',
+      isRealEstate
+    );
+
     stockView.style.display =
       isStock ? '' : 'none';
 
@@ -1303,6 +1449,9 @@
 
     fundView.style.display =
       isFund ? '' : 'none';
+
+    realEstateView.style.display =
+      isRealEstate ? '' : 'none';
 
     if (isStock) {
       loadHoldings();
@@ -1326,6 +1475,10 @@
 
     if (isFund) {
       loadFundHoldings();
+    }
+
+    if (isRealEstate) {
+      loadRealEstateHoldings();
     }
 
   }
@@ -1353,6 +1506,11 @@
   fundTab.addEventListener(
     'click',
     () => showPortfolioSection('fund')
+  );
+
+  realEstateTab.addEventListener(
+    'click',
+    () => showPortfolioSection('realEstate')
   );
 
   /*
@@ -3560,6 +3718,309 @@ crypto_id:
         selectedFundForWeb = null;
 
         await loadFundHoldings();
+      }
+    );
+
+
+  /*
+   * ======================================
+   * GAYRİMENKUL PORTFÖYÜ
+   * ======================================
+   */
+
+  async function loadRealEstateHoldings() {
+
+    const { data, error } = await supa
+      .from('real_estate_holdings')
+      .select('*')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    const tbody =
+      document.getElementById('realEstateBody');
+
+    const emptyState =
+      document.getElementById('realEstateEmptyState');
+
+    if (!tbody || !emptyState) {
+      return;
+    }
+
+    tbody.innerHTML = '';
+
+    if (error) {
+      showMsg(
+        'Gayrimenkul verileri yüklenemedi: ' +
+          error.message,
+        'error'
+      );
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+
+    emptyState.style.display = 'none';
+
+    for (const row of data) {
+
+      const tr =
+        document.createElement('tr');
+
+      const locationText =
+        [row.city, row.district]
+          .filter(Boolean)
+          .join(' / ');
+
+      tr.innerHTML = `
+        <td>
+          <div class="sym">
+            ${escapeHtml(row.title || row.type || 'Gayrimenkul')}
+          </div>
+          <div class="name">
+            ${escapeHtml(
+              [
+                row.type || '',
+                locationText
+              ]
+                .filter(Boolean)
+                .join(' • ')
+            )}
+          </div>
+        </td>
+
+        <td class="num">
+          ${fmtTL(row.purchase_price)}
+        </td>
+
+        <td class="num">
+          ${fmtTL(row.current_value)}
+        </td>
+
+        <td class="num">
+          ${fmtTL(row.monthly_rent)}
+        </td>
+
+        <td class="num">
+          <button
+            type="button"
+            class="del real-estate-delete"
+            data-id="${escapeHtml(row.id || '')}"
+            title="Sil"
+          >
+            ✕
+          </button>
+        </td>
+      `;
+
+      const deleteBtn =
+        tr.querySelector('.real-estate-delete');
+
+      deleteBtn.addEventListener(
+        'click',
+        () => deleteRealEstateHolding(row.id)
+      );
+
+      tbody.appendChild(tr);
+    }
+  }
+
+  async function deleteRealEstateHolding(id) {
+
+    const {
+      data: { user }
+    } = await supa.auth.getUser();
+
+    if (!user || !id) {
+      return;
+    }
+
+    const { error } = await supa
+      .from('real_estate_holdings')
+      .update({
+        deleted_at:
+          new Date().toISOString()
+      })
+      .eq('user_id', user.id)
+      .eq('id', id);
+
+    if (error) {
+      showMsg(
+        'Gayrimenkul silinemedi: ' +
+          error.message,
+        'error'
+      );
+      return;
+    }
+
+    await loadRealEstateHoldings();
+  }
+
+  document
+    .getElementById('addRealEstateBtn')
+    .addEventListener(
+      'click',
+      async () => {
+
+        hideMsg();
+
+        const {
+          data: { user }
+        } = await supa.auth.getUser();
+
+        if (!user) {
+          return;
+        }
+
+        const type =
+          document
+            .getElementById('newRealEstateType')
+            .value
+            .trim();
+
+        const title =
+          document
+            .getElementById('newRealEstateTitle')
+            .value
+            .trim();
+
+        const city =
+          document
+            .getElementById('newRealEstateCity')
+            .value
+            .trim();
+
+        const district =
+          document
+            .getElementById('newRealEstateDistrict')
+            .value
+            .trim();
+
+        const purchasePrice =
+          parseFloat(
+            document
+              .getElementById('newRealEstatePurchasePrice')
+              .value
+          );
+
+        const currentValue =
+          parseFloat(
+            document
+              .getElementById('newRealEstateCurrentValue')
+              .value
+          );
+
+        const monthlyRentRaw =
+          document
+            .getElementById('newRealEstateMonthlyRent')
+            .value
+            .trim();
+
+        const monthlyRent =
+          monthlyRentRaw === ''
+            ? 0
+            : parseFloat(monthlyRentRaw);
+
+        const purchaseDateRaw =
+          document
+            .getElementById('newRealEstatePurchaseDate')
+            .value;
+
+        if (
+          !type ||
+          !title ||
+          !city ||
+          !district ||
+          isNaN(purchasePrice) ||
+          purchasePrice < 0 ||
+          isNaN(currentValue) ||
+          currentValue < 0 ||
+          isNaN(monthlyRent) ||
+          monthlyRent < 0 ||
+          !purchaseDateRaw
+        ) {
+          showMsg(
+            'Lütfen gayrimenkul bilgilerini eksiksiz ve geçerli şekilde gir.',
+            'error'
+          );
+          return;
+        }
+
+        /*
+         * Mobil uygulamadaki String id yapısıyla uyumlu,
+         * benzersiz bir metin kimliği oluşturuyoruz.
+         */
+        const id =
+          `${Date.now()}${Math.floor(Math.random() * 1000)
+            .toString()
+            .padStart(3, '0')}`;
+
+        const purchaseDate =
+          new Date(
+            `${purchaseDateRaw}T12:00:00`
+          ).toISOString();
+
+        const { error } = await supa
+          .from('real_estate_holdings')
+          .upsert(
+            {
+              id: id,
+              user_id: user.id,
+              type: type,
+              title: title,
+              city: city,
+              district: district,
+              purchase_price: purchasePrice,
+              current_value: currentValue,
+              monthly_rent: monthlyRent,
+              purchase_date: purchaseDate,
+              deleted_at: null
+            },
+            {
+              onConflict: 'user_id,id'
+            }
+          );
+
+        if (error) {
+          showMsg(
+            'Gayrimenkul eklenemedi: ' +
+              error.message,
+            'error'
+          );
+          return;
+        }
+
+        document
+          .getElementById('newRealEstateTitle')
+          .value = '';
+
+        document
+          .getElementById('newRealEstateCity')
+          .value = '';
+
+        document
+          .getElementById('newRealEstateDistrict')
+          .value = '';
+
+        document
+          .getElementById('newRealEstatePurchasePrice')
+          .value = '';
+
+        document
+          .getElementById('newRealEstateCurrentValue')
+          .value = '';
+
+        document
+          .getElementById('newRealEstateMonthlyRent')
+          .value = '';
+
+        document
+          .getElementById('newRealEstatePurchaseDate')
+          .value = '';
+
+        await loadRealEstateHoldings();
       }
     );
 
