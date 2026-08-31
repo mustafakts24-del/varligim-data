@@ -332,6 +332,9 @@
       padding-right:6px;
     }
   }
+  .pl-pos{ color:#0a7d2c; font-weight:600; }
+  .pl-neg{ color:#c0392b; font-weight:600; }
+  .pl-zero{ color:inherit; }
 </style>
 </head>
 <body>
@@ -413,6 +416,12 @@
       >
         <div
           class="tab active"
+          id="summaryTab"
+        >
+          Özet
+        </div>
+        <div
+          class="tab"
           id="stockTab"
         >
           Hisse
@@ -466,8 +475,31 @@
           Bütçe
         </div>
       </div>
+      <!-- ÖZET -->
+      <div id="summaryView">
+        <h1>
+          Net Varlık Özeti
+        </h1>
+        <p class="lead">
+          Telefon uygulamanla senkronize tüm varlıkların canlı fiyatlarla
+          hesaplanmış toplamı. Fiyatlar yüklenirken birkaç saniye
+          sürebilir.
+        </p>
+        <div class="card">
+          <div class="section-title">Toplam Net Varlık</div>
+          <div id="summaryTotal" style="font-size:28px; font-weight:700; margin:8px 0 4px;">…</div>
+          <div id="summaryUpdatedAt" style="font-size:12px; opacity:0.65;"></div>
+        </div>
+        <div class="card">
+          <div class="section-title">Varlık Dağılımı</div>
+          <div id="summaryBreakdown"></div>
+          <div id="summaryEmptyState" class="empty" style="display:none;">
+            Henüz hiçbir varlık eklenmemiş.
+          </div>
+        </div>
+      </div>
       <!-- HİSSE -->
-      <div id="stockView">
+      <div id="stockView" style="display:none;">
         <h1>
           Hisse Portföyüm
         </h1>
@@ -486,6 +518,9 @@
                 <th class="num">Lot</th>
                 <th class="num">Maliyet</th>
                 <th class="num">Yatırılan</th>
+                <th class="num">Güncel Fiyat</th>
+                <th class="num">Güncel Değer</th>
+                <th class="num">Kâr/Zarar</th>
                 <th></th>
               </tr>
             </thead>
@@ -558,6 +593,9 @@
                 <th class="num">Miktar</th>
                 <th class="num">Maliyet</th>
                 <th class="num">Yatırılan</th>
+                <th class="num">Güncel Fiyat</th>
+                <th class="num">Güncel Değer</th>
+                <th class="num">Kâr/Zarar</th>
                 <th></th>
               </tr>
             </thead>
@@ -629,6 +667,9 @@
                 <th>Döviz</th>
                 <th class="num">Miktar</th>
                 <th class="num">Maliyet</th>
+                <th class="num">Güncel Kur</th>
+                <th class="num">Güncel Değer</th>
+                <th class="num">Kâr/Zarar</th>
                 <th></th>
               </tr>
             </thead>
@@ -695,6 +736,9 @@
                 <th>Emtia</th>
                 <th class="num">Miktar</th>
                 <th class="num">Maliyet</th>
+                <th class="num">Güncel Fiyat</th>
+                <th class="num">Güncel Değer</th>
+                <th class="num">Kâr/Zarar</th>
                 <th></th>
               </tr>
             </thead>
@@ -762,6 +806,9 @@
                 <th class="num">Adet</th>
                 <th class="num">Maliyet</th>
                 <th class="num">Yatırılan</th>
+                <th class="num">Güncel Fiyat</th>
+                <th class="num">Güncel Değer</th>
+                <th class="num">Kâr/Zarar</th>
                 <th></th>
               </tr>
             </thead>
@@ -1043,6 +1090,10 @@
     document.getElementById(
       'portfolioView'
     );
+  const summaryView =
+    document.getElementById(
+      'summaryView'
+    );
   const stockView =
     document.getElementById(
       'stockView'
@@ -1078,6 +1129,10 @@
   const budgetView =
     document.getElementById(
       'budgetView'
+    );
+  const summaryTab =
+    document.getElementById(
+      'summaryTab'
     );
   const stockTab =
     document.getElementById(
@@ -1263,6 +1318,8 @@
    * PORTFÖY SEKMELERİ
    */
   function showPortfolioSection(section) {
+    const isSummary =
+      section === 'summary';
     const isStock =
       section === 'stock';
     const isCrypto =
@@ -1281,6 +1338,10 @@
       section === 'deposit';
     const isBudget =
       section === 'budget';
+    summaryTab.classList.toggle(
+      'active',
+      isSummary
+    );
     stockTab.classList.toggle(
       'active',
       isStock
@@ -1317,6 +1378,8 @@
       'active',
       isBudget
     );
+    summaryView.style.display =
+      isSummary ? '' : 'none';
     stockView.style.display =
       isStock ? '' : 'none';
     cryptoView.style.display =
@@ -1335,6 +1398,9 @@
       isDeposit ? '' : 'none';
     budgetView.style.display =
       isBudget ? '' : 'none';
+    if (isSummary) {
+      loadSummary();
+    }
     if (isStock) {
       loadHoldings();
       loadStockOptions();
@@ -1367,6 +1433,10 @@
       loadBudgetHoldings();
     }
   }
+  summaryTab.addEventListener(
+    'click',
+    () => showPortfolioSection('summary')
+  );
   stockTab.addEventListener(
     'click',
     () => showPortfolioSection('stock')
@@ -1543,7 +1613,7 @@
           session.user.email ||
           '';
         showPortfolioSection(
-          'stock'
+          'summary'
         );
         loadCryptoOptions();
         loadCurrencyOptions();
@@ -1577,6 +1647,30 @@
       0
     );
   }
+  function fmtUSD(
+    n
+  ) {
+    return new Intl.NumberFormat(
+      'tr-TR',
+      {
+        style: 'currency',
+        currency: 'USD'
+      }
+    ).format(Number(n) || 0);
+  }
+  function fmtTLPrecise(
+    n
+  ) {
+    return new Intl.NumberFormat(
+      'tr-TR',
+      {
+        style: 'currency',
+        currency: 'TRY',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 6
+      }
+    ).format(Number(n) || 0);
+  }
   function fmtNumber(
     n
   ) {
@@ -1607,6 +1701,256 @@
         "'":'&#39;'
       }[c])
     );
+  }
+  /*
+   * ======================================
+   * CANLI FİYAT YARDIMCILARI
+   * ======================================
+   * Hisse/Döviz/Emtia/Fon fiyatları tarayıcıdan doğrudan
+   * çekilemediği için (CORS / Origin doğrulaması), Supabase'e
+   * deploy edilen `price-proxy` Edge Function'ı üzerinden çekilir.
+   * Kripto için CoinGecko'nun genel API'si doğrudan çağrılabildiği
+   * için ayrı bir yardımcı (fetchCryptoPrices) kullanılıyor.
+   */
+  async function fetchPriceProxy(params) {
+    const url =
+      `${SUPABASE_URL}/functions/v1/price-proxy?${params}`;
+    const res = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'apikey': SUPABASE_ANON_KEY
+      }
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(
+        (data && data.error) ? data.error : `HTTP ${res.status}`
+      );
+    }
+    return data;
+  }
+  async function fetchCryptoPricesTry(ids) {
+    const uniqueIds = [...new Set(ids)].filter(Boolean);
+    if (uniqueIds.length === 0) return {};
+    const url =
+      'https://api.coingecko.com/api/v3/simple/price?ids=' +
+      encodeURIComponent(uniqueIds.join(',')) +
+      '&vs_currencies=try';
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`Kripto fiyat hatası: HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    const result = {};
+    for (const id of uniqueIds) {
+      const price = data && data[id] && data[id].try;
+      if (typeof price === 'number' && price > 0) {
+        result[id] = price;
+      }
+    }
+    return result;
+  }
+  /**
+   * Bir tabloda "Güncel Fiyat / Güncel Değer / Kâr-Zarar" hücrelerini
+   * canlı fiyat gelene kadar "..." ile gösterir, fiyat gelince
+   * doldurur, hata olursa "—" ile sessizce bırakır (tek bir satırın
+   * fiyat hatası tüm tabloyu bozmasın diye).
+   */
+  function profitLossHtml(invested, currentValue, fmt) {
+    const formatter = fmt || fmtTL;
+    const diff = currentValue - invested;
+    const pct = invested > 0 ? (diff / invested) * 100 : 0;
+    const cls = diff > 0 ? 'pl-pos' : (diff < 0 ? 'pl-neg' : 'pl-zero');
+    const sign = diff > 0 ? '+' : '';
+    return `<span class="${cls}">${sign}${formatter(diff)} (${sign}${pct.toFixed(2)}%)</span>`;
+  }
+  /*
+   * ======================================
+   * ÖZET (NET VARLIK PANELİ)
+   * ======================================
+   * Tüm varlık türlerinin canlı fiyatlarla hesaplanmış toplamını
+   * gösterir. Hisse/Döviz/Emtia/Fon fiyatları price-proxy'den, Kripto
+   * CoinGecko'dan gelir; Gayrimenkul/Araç zaten kullanıcı tarafından
+   * girilen güncel değeri kullanır; Mevduat, mobil uygulamadaki
+   * basit faiz formülüyle (DepositCalculatorService) aynı şekilde
+   * anlık tahakkuk eden değer olarak hesaplanır.
+   */
+  function depositCurrentValue(row) {
+    const principal = Number(row.principal) || 0;
+    const annualRate = Number(row.annual_rate) || 0;
+    const withholdingRate = Number(row.withholding_rate) || 0;
+    const startMs = new Date(row.start_date).getTime();
+    const maturityMs = new Date(row.maturity_date).getTime();
+    let totalDays = Math.round((maturityMs - startMs) / 86400000);
+    if (!Number.isFinite(totalDays) || totalDays < 1) totalDays = 1;
+    let elapsedDays = Math.round((Date.now() - startMs) / 86400000);
+    if (!Number.isFinite(elapsedDays) || elapsedDays < 0) elapsedDays = 0;
+    if (elapsedDays > totalDays) elapsedDays = totalDays;
+    const accruedGross = principal * (annualRate / 100) * (elapsedDays / 365);
+    const accruedTax = accruedGross * (withholdingRate / 100);
+    const accruedNet = accruedGross - accruedTax;
+    return principal + accruedNet;
+  }
+  async function loadSummary() {
+    const totalEl = document.getElementById('summaryTotal');
+    const updatedEl = document.getElementById('summaryUpdatedAt');
+    const breakdownEl = document.getElementById('summaryBreakdown');
+    const emptyEl = document.getElementById('summaryEmptyState');
+    if (!totalEl || !breakdownEl || !emptyEl) return;
+
+    totalEl.textContent = '…';
+    updatedEl.textContent = '';
+    breakdownEl.innerHTML = '';
+    emptyEl.style.display = 'none';
+
+    const [
+      stockRes, cryptoRes, currencyRes, commodityRes,
+      fundRes, realEstateRes, vehicleRes, depositRes
+    ] = await Promise.all([
+      supa.from('stock_holdings').select('*').is('deleted_at', null),
+      supa.from('crypto_holdings').select('*').is('deleted_at', null),
+      supa.from('currency_holdings').select('*').is('deleted_at', null),
+      supa.from('commodity_holdings').select('*').is('deleted_at', null),
+      supa.from('fund_holdings').select('*').is('deleted_at', null),
+      supa.from('real_estate_holdings').select('*').is('deleted_at', null),
+      supa.from('vehicle_holdings').select('*').is('deleted_at', null),
+      supa.from('deposit_holdings').select('*').is('deleted_at', null)
+    ]);
+
+    const categories = [];
+
+    {
+      const rows = stockRes.data || [];
+      let total = 0;
+      await Promise.all(rows.map(async row => {
+        try {
+          const quote = await fetchPriceProxy(
+            `type=stock&symbol=${encodeURIComponent(row.symbol)}`
+          );
+          total += (Number(row.lot) || 0) * quote.price;
+        } catch (e) {}
+      }));
+      categories.push({ label: 'Hisse', value: total });
+    }
+
+    {
+      const rows = cryptoRes.data || [];
+      let total = 0;
+      try {
+        const prices = await fetchCryptoPricesTry(
+          rows.map(r => r.crypto_id)
+        );
+        for (const row of rows) {
+          const price = prices[row.crypto_id];
+          if (price) total += (Number(row.amount) || 0) * price;
+        }
+      } catch (e) {}
+      categories.push({ label: 'Kripto', value: total });
+    }
+
+    {
+      const rows = currencyRes.data || [];
+      let total = 0;
+      await Promise.all(rows.map(async row => {
+        try {
+          const quote = await fetchPriceProxy(
+            `type=currency&code=${encodeURIComponent(row.currency_code)}`
+          );
+          total += (Number(row.amount) || 0) * quote.price;
+        } catch (e) {}
+      }));
+      categories.push({ label: 'Döviz', value: total });
+    }
+
+    {
+      const rows = commodityRes.data || [];
+      let total = 0;
+      let usdTry = null;
+      await Promise.all(rows.map(async row => {
+        try {
+          const quote = await fetchPriceProxy(
+            `type=commodity&key=${encodeURIComponent(row.commodity_key)}`
+          );
+          let priceTry = quote.price;
+          if (row.commodity_key === 'BRENT_USD') {
+            if (usdTry == null) {
+              const usdQuote = await fetchPriceProxy('type=currency&code=USD');
+              usdTry = usdQuote.price;
+            }
+            priceTry = quote.price * usdTry;
+          }
+          total += (Number(row.amount) || 0) * priceTry;
+        } catch (e) {}
+      }));
+      categories.push({ label: 'Emtia', value: total });
+    }
+
+    {
+      const rows = fundRes.data || [];
+      let total = 0;
+      await Promise.all(rows.map(async row => {
+        try {
+          const quote = await fetchPriceProxy(
+            `type=fund&code=${encodeURIComponent(row.code)}`
+          );
+          total += (Number(row.units) || 0) * quote.price;
+        } catch (e) {}
+      }));
+      categories.push({ label: 'Fon', value: total });
+    }
+
+    {
+      const rows = realEstateRes.data || [];
+      const total = rows.reduce(
+        (sum, r) => sum + (Number(r.current_value) || 0), 0
+      );
+      categories.push({ label: 'Gayrimenkul', value: total });
+    }
+
+    {
+      const rows = vehicleRes.data || [];
+      const total = rows.reduce(
+        (sum, r) => sum + (Number(r.current_value) || 0), 0
+      );
+      categories.push({ label: 'Araç', value: total });
+    }
+
+    {
+      const rows = depositRes.data || [];
+      const total = rows.reduce(
+        (sum, r) => sum + depositCurrentValue(r), 0
+      );
+      categories.push({ label: 'Mevduat', value: total });
+    }
+
+    const grandTotal = categories.reduce((sum, c) => sum + c.value, 0);
+    totalEl.textContent = fmtTL(grandTotal);
+    updatedEl.textContent =
+      'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
+
+    if (grandTotal <= 0) {
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    const sorted = categories
+      .filter(c => c.value > 0)
+      .sort((a, b) => b.value - a.value);
+
+    breakdownEl.innerHTML = sorted.map(c => {
+      const pct = grandTotal > 0 ? (c.value / grandTotal) * 100 : 0;
+      return `
+        <div style="margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;">
+            <span>${escapeHtml(c.label)}</span>
+            <span>${fmtTL(c.value)} (${pct.toFixed(1)}%)</span>
+          </div>
+          <div style="background:#eee; border-radius:6px; height:10px; overflow:hidden;">
+            <div style="background:#4f7cff; width:${pct.toFixed(2)}%; height:100%;"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
   /*
    * ======================================
@@ -1758,6 +2102,9 @@
             invested
           )}
         </td>
+        <td class="num" id="stock-price-${escapeHtml(row.symbol)}">…</td>
+        <td class="num" id="stock-value-${escapeHtml(row.symbol)}">…</td>
+        <td class="num" id="stock-pl-${escapeHtml(row.symbol)}">…</td>
         <td class="num">
           <button
   type="button"
@@ -1773,6 +2120,30 @@
         tr
       );
     }
+    loadStockLivePrices(data);
+  }
+  async function loadStockLivePrices(rows) {
+    await Promise.all(rows.map(async (row) => {
+      const priceEl = document.getElementById(`stock-price-${row.symbol}`);
+      const valueEl = document.getElementById(`stock-value-${row.symbol}`);
+      const plEl = document.getElementById(`stock-pl-${row.symbol}`);
+      if (!priceEl || !valueEl || !plEl) return;
+      try {
+        const quote = await fetchPriceProxy(
+          `type=stock&symbol=${encodeURIComponent(row.symbol)}`
+        );
+        const lot = Number(row.lot) || 0;
+        const invested = lot * (Number(row.cost) || 0);
+        const currentValue = lot * quote.price;
+        priceEl.textContent = fmtTL(quote.price);
+        valueEl.textContent = fmtTL(currentValue);
+        plEl.innerHTML = profitLossHtml(invested, currentValue);
+      } catch (e) {
+        priceEl.textContent = '—';
+        valueEl.textContent = '—';
+        plEl.textContent = '—';
+      }
+    }));
   }
   async function deleteHolding(symbol) {
   const {
@@ -2059,6 +2430,9 @@
         <td class="num">
           ${costText}
         </td>
+        <td class="num" id="currency-price-${escapeHtml(row.currency_code)}">…</td>
+        <td class="num" id="currency-value-${escapeHtml(row.currency_code)}">…</td>
+        <td class="num" id="currency-pl-${escapeHtml(row.currency_code)}">…</td>
         <td class="num">
           <button
             type="button"
@@ -2074,6 +2448,34 @@
         tr
       );
     }
+    loadCurrencyLivePrices(data);
+  }
+  async function loadCurrencyLivePrices(rows) {
+    await Promise.all(rows.map(async (row) => {
+      const priceEl = document.getElementById(`currency-price-${row.currency_code}`);
+      const valueEl = document.getElementById(`currency-value-${row.currency_code}`);
+      const plEl = document.getElementById(`currency-pl-${row.currency_code}`);
+      if (!priceEl || !valueEl || !plEl) return;
+      try {
+        const quote = await fetchPriceProxy(
+          `type=currency&code=${encodeURIComponent(row.currency_code)}`
+        );
+        const amount = Number(row.amount) || 0;
+        const currentValue = amount * quote.price;
+        priceEl.textContent = fmtTL(quote.price);
+        valueEl.textContent = fmtTL(currentValue);
+        if (row.cost != null) {
+          const invested = amount * Number(row.cost);
+          plEl.innerHTML = profitLossHtml(invested, currentValue);
+        } else {
+          plEl.textContent = '—';
+        }
+      } catch (e) {
+        priceEl.textContent = '—';
+        valueEl.textContent = '—';
+        plEl.textContent = '—';
+      }
+    }));
   }
   async function deleteCurrencyHolding(
     currencyCode
@@ -2275,6 +2677,9 @@
         </td>
         <td class="num">${fmtNumber(row.amount)}</td>
         <td class="num">${costText}</td>
+        <td class="num" id="commodity-price-${escapeHtml(row.commodity_key)}">…</td>
+        <td class="num" id="commodity-value-${escapeHtml(row.commodity_key)}">…</td>
+        <td class="num" id="commodity-pl-${escapeHtml(row.commodity_key)}">…</td>
         <td class="num">
           <button
             type="button"
@@ -2291,6 +2696,36 @@
       );
       tbody.appendChild(tr);
     }
+    loadCommodityLivePrices(data);
+  }
+  async function loadCommodityLivePrices(rows) {
+    await Promise.all(rows.map(async (row) => {
+      const priceEl = document.getElementById(`commodity-price-${row.commodity_key}`);
+      const valueEl = document.getElementById(`commodity-value-${row.commodity_key}`);
+      const plEl = document.getElementById(`commodity-pl-${row.commodity_key}`);
+      if (!priceEl || !valueEl || !plEl) return;
+      try {
+        const quote = await fetchPriceProxy(
+          `type=commodity&key=${encodeURIComponent(row.commodity_key)}`
+        );
+        const isUsd = row.commodity_key === 'BRENT_USD';
+        const fmt = isUsd ? fmtUSD : fmtTL;
+        const amount = Number(row.amount) || 0;
+        const currentValue = amount * quote.price;
+        priceEl.textContent = fmt(quote.price);
+        valueEl.textContent = fmt(currentValue);
+        if (row.cost != null) {
+          const invested = amount * Number(row.cost);
+          plEl.innerHTML = profitLossHtml(invested, currentValue, fmt);
+        } else {
+          plEl.textContent = '—';
+        }
+      } catch (e) {
+        priceEl.textContent = '—';
+        valueEl.textContent = '—';
+        plEl.textContent = '—';
+      }
+    }));
   }
   async function deleteCommodityHolding(commodityKey) {
     const {
@@ -2589,6 +3024,35 @@
    * KRİPTO PORTFÖYÜ
    * ======================================
    */
+  async function loadCryptoLivePrices(rows) {
+    let prices = {};
+    try {
+      prices = await fetchCryptoPricesTry(
+        rows.map(row => row.crypto_id)
+      );
+    } catch (e) {
+      // Toplu istek başarısız olduysa her satır aşağıda '—' gösterecek.
+    }
+    for (const row of rows) {
+      const priceEl = document.getElementById(`crypto-price-${row.crypto_id}`);
+      const valueEl = document.getElementById(`crypto-value-${row.crypto_id}`);
+      const plEl = document.getElementById(`crypto-pl-${row.crypto_id}`);
+      if (!priceEl || !valueEl || !plEl) continue;
+      const price = prices[row.crypto_id];
+      if (!price) {
+        priceEl.textContent = '—';
+        valueEl.textContent = '—';
+        plEl.textContent = '—';
+        continue;
+      }
+      const amount = Number(row.amount) || 0;
+      const invested = amount * (Number(row.cost) || 0);
+      const currentValue = amount * price;
+      priceEl.textContent = fmtTL(price);
+      valueEl.textContent = fmtTL(currentValue);
+      plEl.innerHTML = profitLossHtml(invested, currentValue);
+    }
+  }
   async function loadCryptoHoldings() {
     const {
       data,
@@ -2693,6 +3157,9 @@
             invested
           )}
         </td>
+        <td class="num" id="crypto-price-${escapeHtml(row.crypto_id)}">…</td>
+        <td class="num" id="crypto-value-${escapeHtml(row.crypto_id)}">…</td>
+        <td class="num" id="crypto-pl-${escapeHtml(row.crypto_id)}">…</td>
         <td class="num">
           <button
             class="del crypto-delete"
@@ -2709,6 +3176,7 @@
         tr
       );
     }
+    loadCryptoLivePrices(data);
     tbody
       .querySelectorAll(
         '.crypto-delete'
@@ -2936,6 +3404,9 @@ crypto_id:
         <td class="num">${fmtNumber(row.units)}</td>
         <td class="num">${row.cost == null ? '—' : fmtTL(row.cost)}</td>
         <td class="num">${fmtTL(invested)}</td>
+        <td class="num" id="fund-price-${escapeHtml(row.code || '')}">…</td>
+        <td class="num" id="fund-value-${escapeHtml(row.code || '')}">…</td>
+        <td class="num" id="fund-pl-${escapeHtml(row.code || '')}">…</td>
         <td class="num">
           <button
             type="button"
@@ -2953,6 +3424,35 @@ crypto_id:
       );
       tbody.appendChild(tr);
     }
+    loadFundLivePrices(data);
+  }
+  async function loadFundLivePrices(rows) {
+    await Promise.all(rows.map(async (row) => {
+      const code = row.code || '';
+      const priceEl = document.getElementById(`fund-price-${code}`);
+      const valueEl = document.getElementById(`fund-value-${code}`);
+      const plEl = document.getElementById(`fund-pl-${code}`);
+      if (!priceEl || !valueEl || !plEl) return;
+      try {
+        const quote = await fetchPriceProxy(
+          `type=fund&code=${encodeURIComponent(code)}`
+        );
+        const units = Number(row.units) || 0;
+        const currentValue = units * quote.price;
+        priceEl.textContent = fmtTLPrecise(quote.price);
+        valueEl.textContent = fmtTL(currentValue);
+        if (row.cost != null) {
+          const invested = units * Number(row.cost);
+          plEl.innerHTML = profitLossHtml(invested, currentValue);
+        } else {
+          plEl.textContent = '—';
+        }
+      } catch (e) {
+        priceEl.textContent = '—';
+        valueEl.textContent = '—';
+        plEl.textContent = '—';
+      }
+    }));
   }
   async function deleteFundHolding(code) {
     const {
