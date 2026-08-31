@@ -459,6 +459,12 @@
         >
           Mevduat
         </div>
+        <div
+          class="tab"
+          id="budgetTab"
+        >
+          Bütçe
+        </div>
       </div>
       <!-- HİSSE -->
       <div id="stockView">
@@ -982,6 +988,40 @@
           </div>
         </div>
       </div>
+      <!-- BÜTÇE -->
+      <div id="budgetView" style="display:none;">
+        <h1>Bütçe</h1>
+        <p class="lead">
+          Bu liste, telefonundaki Varlığım uygulamasıyla
+          aynı hesaba bağlı ve otomatik senkronize.
+        </p>
+        <div class="card">
+          <div class="section-title">Gelir / Gider İşlemleri</div>
+          <table id="budgetTable">
+            <thead><tr>
+              <th>İşlem</th><th class="num">Tür</th>
+              <th class="num">Tutar</th><th class="num">Tarih</th><th></th>
+            </tr></thead>
+            <tbody id="budgetBody"></tbody>
+          </table>
+          <div id="budgetEmptyState" class="empty" style="display:none;">
+            Henüz işlem eklenmemiş.
+          </div>
+          <div class="add-form">
+            <div class="full section-title" style="margin:0;">İşlem ekle</div>
+            <select id="newBudgetType" class="full">
+              <option value="Gider">Gider</option>
+              <option value="Gelir">Gelir</option>
+            </select>
+            <input id="newBudgetCategory" type="text" autocomplete="off" placeholder="Kategori (örn. Market)" />
+            <input id="newBudgetTitle" type="text" autocomplete="off" placeholder="Açıklama" />
+            <input id="newBudgetAmount" type="number" step="any" min="0" placeholder="Tutar (₺)" />
+            <input id="newBudgetDate" class="full" type="date" />
+            <input id="newBudgetNote" class="full" type="text" autocomplete="off" placeholder="Not (isteğe bağlı)" />
+            <button class="btn primary full" id="addBudgetBtn" type="button">Ekle</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </main>
@@ -1035,6 +1075,10 @@
     document.getElementById(
       'depositView'
     );
+  const budgetView =
+    document.getElementById(
+      'budgetView'
+    );
   const stockTab =
     document.getElementById(
       'stockTab'
@@ -1066,6 +1110,10 @@
   const depositTab =
     document.getElementById(
       'depositTab'
+    );
+  const budgetTab =
+    document.getElementById(
+      'budgetTab'
     );
   const userBadge =
     document.getElementById(
@@ -1231,6 +1279,8 @@
       section === 'vehicle';
     const isDeposit =
       section === 'deposit';
+    const isBudget =
+      section === 'budget';
     stockTab.classList.toggle(
       'active',
       isStock
@@ -1263,6 +1313,10 @@
       'active',
       isDeposit
     );
+    budgetTab.classList.toggle(
+      'active',
+      isBudget
+    );
     stockView.style.display =
       isStock ? '' : 'none';
     cryptoView.style.display =
@@ -1279,6 +1333,8 @@
       isVehicle ? '' : 'none';
     depositView.style.display =
       isDeposit ? '' : 'none';
+    budgetView.style.display =
+      isBudget ? '' : 'none';
     if (isStock) {
       loadHoldings();
       loadStockOptions();
@@ -1306,6 +1362,9 @@
     }
     if (isDeposit) {
       loadDepositHoldings();
+    }
+    if (isBudget) {
+      loadBudgetHoldings();
     }
   }
   stockTab.addEventListener(
@@ -1339,6 +1398,10 @@
   depositTab.addEventListener(
     'click',
     () => showPortfolioSection('deposit')
+  );
+  budgetTab.addEventListener(
+    'click',
+    () => showPortfolioSection('budget')
   );
   /*
    * MESAJ
@@ -3478,6 +3541,99 @@ crypto_id:
      'newVehiclePurchasePrice','newVehicleCurrentValue','newVehiclePurchaseDate']
       .forEach(id => document.getElementById(id).value = '');
     await loadVehicleHoldings();
+  });
+  /* BÜTÇE (GELİR/GİDER) */
+  async function loadBudgetHoldings() {
+    const { data, error } = await supa
+      .from('budget_transactions')
+      .select('*')
+      .is('deleted_at', null)
+      .order('transaction_date', { ascending: false });
+    const tbody = document.getElementById('budgetBody');
+    const emptyState = document.getElementById('budgetEmptyState');
+    if (!tbody || !emptyState) return;
+    tbody.innerHTML = '';
+    if (error) {
+      showMsg('Bütçe verileri yüklenemedi: ' + error.message, 'error');
+      return;
+    }
+    if (!data || data.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
+    for (const row of data) {
+      const tr = document.createElement('tr');
+      const dateText =
+        row.transaction_date
+          ? new Date(row.transaction_date).toLocaleDateString('tr-TR')
+          : '—';
+      tr.innerHTML = `
+        <td>
+          <div class="sym">${escapeHtml(row.title || '')}</div>
+          <div class="name">${escapeHtml(row.category || '')}</div>
+        </td>
+        <td class="num">${escapeHtml(row.type || '')}</td>
+        <td class="num">${fmtTL(row.amount)}</td>
+        <td class="num">${escapeHtml(dateText)}</td>
+        <td class="num">
+          <button type="button" class="del budget-delete"
+            data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
+        </td>`;
+      tr.querySelector('.budget-delete').addEventListener(
+        'click', () => deleteBudgetHolding(row.id)
+      );
+      tbody.appendChild(tr);
+    }
+  }
+  async function deleteBudgetHolding(id) {
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user || !id) return;
+    const { error } = await supa
+      .from('budget_transactions')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .eq('id', id);
+    if (error) {
+      showMsg('İşlem silinemedi: ' + error.message, 'error');
+      return;
+    }
+    await loadBudgetHoldings();
+  }
+  document.getElementById('addBudgetBtn').addEventListener('click', async () => {
+    hideMsg();
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user) return;
+    const type = document.getElementById('newBudgetType').value.trim();
+    const category = document.getElementById('newBudgetCategory').value.trim();
+    const title = document.getElementById('newBudgetTitle').value.trim();
+    const amount = parseFloat(document.getElementById('newBudgetAmount').value);
+    const dateRaw = document.getElementById('newBudgetDate').value;
+    const note = document.getElementById('newBudgetNote').value.trim();
+    if (!type || !category || !title || isNaN(amount) || amount <= 0 || !dateRaw) {
+      showMsg('Lütfen işlem bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
+      return;
+    }
+    const id = `${Date.now()}${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
+    const transactionDate = new Date(`${dateRaw}T12:00:00`).toISOString();
+    const { error } = await supa.from('budget_transactions').upsert({
+      id,
+      user_id: user.id,
+      type,
+      category,
+      title,
+      note,
+      amount,
+      transaction_date: transactionDate,
+      deleted_at: null
+    }, { onConflict: 'user_id,id' });
+    if (error) {
+      showMsg('İşlem eklenemedi: ' + error.message, 'error');
+      return;
+    }
+    ['newBudgetCategory','newBudgetTitle','newBudgetAmount','newBudgetDate','newBudgetNote']
+      .forEach(id => document.getElementById(id).value = '');
+    await loadBudgetHoldings();
   });
   /* MEVDUAT PORTFÖYÜ */
   async function loadDepositHoldings() {
