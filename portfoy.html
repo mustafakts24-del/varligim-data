@@ -3,16 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-
 <title>Portföyüm — Varlığım</title>
-
 <meta
   name="description"
   content="Varlığım hesabınızla giriş yapın, hisse, kripto ve döviz portföyünüzü web üzerinden görüntüleyin ve yönetin."
 />
-
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
 <style>
   :root{
     --bg:#0b0f14;
@@ -27,21 +23,17 @@
     --radius:14px;
     --maxw:760px;
   }
-
   *{
     box-sizing:border-box;
   }
-
   html{
     scroll-behavior:smooth;
   }
-
   html,
   body{
     margin:0;
     padding:0;
   }
-
   body{
     background:
       radial-gradient(
@@ -49,9 +41,7 @@
         #16324a 0%,
         var(--bg) 55%
       ) fixed;
-
     color:var(--text);
-
     font-family:
       -apple-system,
       BlinkMacSystemFont,
@@ -60,22 +50,18 @@
       "Helvetica Neue",
       Arial,
       sans-serif;
-
     line-height:1.5;
     min-height:100vh;
     -webkit-font-smoothing:antialiased;
   }
-
   a{
     color:inherit;
   }
-
   .wrap{
     max-width:var(--maxw);
     margin:0 auto;
     padding:0 20px;
   }
-
   header.top{
     position:sticky;
     top:0;
@@ -84,7 +70,6 @@
     background:rgba(11,15,20,0.7);
     border-bottom:1px solid var(--border);
   }
-
   .topbar{
     display:flex;
     align-items:center;
@@ -93,7 +78,6 @@
     max-width:var(--maxw);
     margin:0 auto;
   }
-
   .brand{
     display:flex;
     align-items:center;
@@ -103,28 +87,23 @@
     letter-spacing:-0.02em;
     text-decoration:none;
   }
-
   .brand .logo{
     width:32px;
     height:32px;
     border-radius:9px;
-
     background:
       linear-gradient(
         135deg,
         var(--brand),
         var(--brand-2)
       );
-
     display:flex;
     align-items:center;
     justify-content:center;
-
     font-size:16px;
     font-weight:800;
     color:#06110d;
   }
-
   #userBadge{
     font-size:13px;
     color:var(--text-dim);
@@ -132,7 +111,6 @@
     align-items:center;
     gap:10px;
   }
-
   #userBadge button{
     background:transparent;
     border:1px solid var(--border);
@@ -142,42 +120,35 @@
     font-size:12.5px;
     cursor:pointer;
   }
-
   #userBadge button:hover{
     border-color:#33415a;
     color:var(--text);
   }
-
   main{
     padding:48px 0 80px;
   }
-
   h1{
     font-size:26px;
     margin:0 0 6px;
     letter-spacing:-0.02em;
   }
-
   .lead{
     color:var(--text-dim);
     font-size:14.5px;
     margin:0 0 32px;
   }
-
   .card{
     background:var(--card);
     border:1px solid var(--border);
     border-radius:var(--radius);
     padding:28px;
   }
-
   label{
     display:block;
     font-size:13px;
     color:var(--text-dim);
     margin:0 0 6px;
   }
-
   input,
   select{
     width:100%;
@@ -188,22 +159,18 @@
     padding:11px 13px;
     font-size:14.5px;
   }
-
   input{
     margin-bottom:16px;
   }
-
   input:focus,
   select:focus{
     outline:none;
     border-color:var(--brand-2);
   }
-
   select option{
     background:var(--bg-elev);
     color:var(--text);
   }
-
   .btn{
     display:inline-flex;
     align-items:center;
@@ -219,11 +186,9 @@
     transition:transform .15s, border-color .15s;
     width:100%;
   }
-
   .btn:hover{
     transform:translateY(-1px);
   }
-
   .btn.primary{
     background:
       linear-gradient(
@@ -231,17 +196,14 @@
         var(--brand),
         var(--brand-2)
       );
-
     color:#04110c;
     border-color:transparent;
   }
-
   .tab-row{
     display:flex;
     gap:8px;
     margin-bottom:22px;
   }
-
   .tab{
     flex:1;
     text-align:center;
@@ -252,17 +214,14 @@
     cursor:pointer;
     border:1px solid transparent;
   }
-
   .tab.active{
     background:var(--bg-elev);
     color:var(--text);
     border-color:var(--border);
   }
-
   #portfolioTabs{
     margin-bottom:30px;
   }
-
   #msg{
     font-size:13.5px;
     padding:10px 14px;
@@ -270,27 +229,23 @@
     margin-bottom:16px;
     display:none;
   }
-
   #msg.error{
     background:rgba(255,107,107,0.1);
     color:var(--danger);
     border:1px solid rgba(255,107,107,0.25);
     display:block;
   }
-
   #msg.ok{
     background:rgba(45,212,167,0.1);
     color:var(--brand);
     border:1px solid rgba(45,212,167,0.25);
     display:block;
   }
-
   table{
     width:100%;
     border-collapse:collapse;
     font-size:14px;
   }
-
   th{
     text-align:left;
     color:var(--text-dim);
@@ -300,30 +255,24 @@
     letter-spacing:.04em;
     padding:0 10px 10px;
   }
-
   td{
     padding:14px 10px;
     border-top:1px solid var(--border);
   }
-
   td.num{
     text-align:right;
     font-variant-numeric:tabular-nums;
   }
-
   tr:hover td{
     background:rgba(255,255,255,0.02);
   }
-
   .sym{
     font-weight:700;
   }
-
   .name{
     color:var(--text-dim);
     font-size:12px;
   }
-
   .del{
     background:transparent;
     border:none;
@@ -333,19 +282,16 @@
     padding:4px 8px;
     border-radius:6px;
   }
-
   .del:hover{
     color:var(--danger);
     background:rgba(255,107,107,0.1);
   }
-
   .empty{
     text-align:center;
     color:var(--text-dim);
     padding:40px 0;
     font-size:14px;
   }
-
   .add-form{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -354,15 +300,12 @@
     padding-top:20px;
     border-top:1px solid var(--border);
   }
-
   .add-form input{
     margin-bottom:0;
   }
-
   .add-form .full{
     grid-column:1 / -1;
   }
-
   .section-title{
     font-size:13px;
     color:var(--text-dim);
@@ -370,25 +313,19 @@
     letter-spacing:.06em;
     margin:0 0 14px;
   }
-
   @media(max-width:600px){
-
     .card{
       padding:20px;
     }
-
     .add-form{
       grid-template-columns:1fr;
     }
-
     .add-form .full{
       grid-column:1;
     }
-
     table{
       font-size:12px;
     }
-
     th,
     td{
       padding-left:6px;
@@ -397,81 +334,57 @@
   }
 </style>
 </head>
-
 <body>
-
 <header class="top">
-
   <div class="topbar">
-
     <a class="brand" href="./">
       <span class="logo">V</span>
       Varlığım
     </a>
-
     <div id="userBadge">
       <span id="userEmail"></span>
       <button id="signOutBtn">Çıkış yap</button>
     </div>
-
   </div>
-
 </header>
-
 <main>
-
   <div class="wrap">
-
     <!-- GİRİŞ -->
-
     <div id="authView">
-
       <h1>Portföyüme giriş yap</h1>
-
       <p class="lead">
         Varlığım uygulamasındaki hesabınla giriş yaparak
         hisse, kripto ve döviz portföyünü web üzerinden de yönetebilirsin.
       </p>
-
       <div class="card">
-
         <div class="tab-row">
-
           <div
             class="tab active"
             data-tab="login"
           >
             Giriş Yap
           </div>
-
           <div
             class="tab"
             data-tab="signup"
           >
             Hesap Oluştur
           </div>
-
         </div>
-
         <div id="msg"></div>
-
         <form id="authForm">
-
           <label for="email">
             E-posta
           </label>
-
           <input
             id="email"
             type="email"
             required
             autocomplete="email"
           />
-
           <label for="password">
             Şifre
           </label>
-
           <input
             id="password"
             type="password"
@@ -479,7 +392,6 @@
             autocomplete="current-password"
             minlength="6"
           />
-
           <button
             class="btn primary"
             type="submit"
@@ -487,115 +399,92 @@
           >
             Giriş Yap
           </button>
-
         </form>
-
       </div>
-
     </div>
-
     <!-- PORTFÖY -->
-
     <div
       id="portfolioView"
       style="display:none;"
     >
-
       <div
         class="tab-row"
         id="portfolioTabs"
       >
-
         <div
           class="tab active"
           id="stockTab"
         >
           Hisse
         </div>
-
         <div
           class="tab"
           id="cryptoTab"
         >
           Kripto
         </div>
-
         <div
           class="tab"
           id="currencyTab"
         >
           Döviz
         </div>
-
         <div
           class="tab"
           id="commodityTab"
         >
           Emtia
         </div>
-
         <div
           class="tab"
           id="fundTab"
         >
           Fon
         </div>
-
         <div
           class="tab"
           id="realEstateTab"
         >
           Gayrimenkul
         </div>
-
         <div
           class="tab"
           id="vehicleTab"
         >
           Araç
         </div>
-
+        <div
+          class="tab"
+          id="depositTab"
+        >
+          Mevduat
+        </div>
       </div>
-
       <!-- HİSSE -->
-
       <div id="stockView">
-
         <h1>
           Hisse Portföyüm
         </h1>
-
         <p class="lead">
           Bu liste, telefonundaki Varlığım uygulamasıyla
           aynı hesaba bağlı ve otomatik senkronize.
         </p>
-
         <div class="card">
-
           <div class="section-title">
             Hisseler
           </div>
-
           <table id="holdingsTable">
-
             <thead>
-
               <tr>
-
                 <th>Hisse</th>
                 <th class="num">Lot</th>
                 <th class="num">Maliyet</th>
                 <th class="num">Yatırılan</th>
                 <th></th>
-
               </tr>
-
             </thead>
-
             <tbody id="holdingsBody"></tbody>
-
           </table>
-
           <div
             id="emptyState"
             class="empty"
@@ -603,16 +492,13 @@
           >
             Henüz hisse eklenmemiş.
           </div>
-
           <div class="add-form">
-
             <div
               class="full section-title"
               style="margin:0;"
             >
               Yeni hisse ekle
             </div>
-
             <select
               id="newStockSelect"
               class="full"
@@ -621,21 +507,18 @@
                 Hisse seç...
               </option>
             </select>
-
             <input
               id="newLot"
               type="number"
               step="any"
               placeholder="Lot"
             />
-
             <input
               id="newCost"
               type="number"
               step="any"
               placeholder="Maliyet (₺)"
             />
-
             <button
               class="btn primary full"
               id="addBtn"
@@ -643,55 +526,37 @@
             >
               Ekle
             </button>
-
           </div>
-
         </div>
-
       </div>
-
       <!-- KRİPTO -->
-
       <div
         id="cryptoView"
         style="display:none;"
       >
-
         <h1>
           Kripto Portföyüm
         </h1>
-
         <p class="lead">
           Bu liste, telefonundaki Varlığım uygulamasıyla
           aynı hesaba bağlı ve otomatik senkronize.
         </p>
-
         <div class="card">
-
           <div class="section-title">
             Kripto Varlıklar
           </div>
-
           <table id="cryptoTable">
-
             <thead>
-
               <tr>
-
                 <th>Kripto</th>
                 <th class="num">Miktar</th>
                 <th class="num">Maliyet</th>
                 <th class="num">Yatırılan</th>
                 <th></th>
-
               </tr>
-
             </thead>
-
             <tbody id="cryptoBody"></tbody>
-
           </table>
-
           <div
             id="cryptoEmptyState"
             class="empty"
@@ -699,16 +564,13 @@
           >
             Henüz kripto eklenmemiş.
           </div>
-
           <div class="add-form">
-
             <div
               class="full section-title"
               style="margin:0;"
             >
               Yeni kripto ekle
             </div>
-
             <select
               id="newCryptoSelect"
               class="full"
@@ -717,21 +579,18 @@
                 Kripto seç...
               </option>
             </select>
-
             <input
               id="newCryptoAmount"
               type="number"
               step="any"
               placeholder="Miktar"
             />
-
             <input
               id="newCryptoCost"
               type="number"
               step="any"
               placeholder="Birim maliyet (₺)"
             />
-
             <button
               class="btn primary full"
               id="addCryptoBtn"
@@ -739,37 +598,26 @@
             >
               Ekle
             </button>
-
           </div>
-
         </div>
-
       </div>
-
       <!-- DÖVİZ -->
-
       <div
         id="currencyView"
         style="display:none;"
       >
-
         <h1>
           Döviz Portföyüm
         </h1>
-
         <p class="lead">
           Bu liste, telefonundaki Varlığım uygulamasıyla
           aynı hesaba bağlı ve otomatik senkronize.
         </p>
-
         <div class="card">
-
           <div class="section-title">
             Döviz Varlıkları
           </div>
-
           <table id="currencyTable">
-
             <thead>
               <tr>
                 <th>Döviz</th>
@@ -778,11 +626,8 @@
                 <th></th>
               </tr>
             </thead>
-
             <tbody id="currencyBody"></tbody>
-
           </table>
-
           <div
             id="currencyEmptyState"
             class="empty"
@@ -790,16 +635,13 @@
           >
             Henüz döviz eklenmemiş.
           </div>
-
           <div class="add-form">
-
             <div
               class="full section-title"
               style="margin:0;"
             >
               Döviz ekle / güncelle
             </div>
-
             <input
               id="newCurrencySearch"
               class="full"
@@ -807,23 +649,19 @@
               autocomplete="off"
               placeholder="Döviz ara veya seç (örn. USD)"
             />
-
             <datalist id="currencyOptions"></datalist>
-
             <input
               id="newCurrencyAmount"
               type="number"
               step="any"
               placeholder="Miktar"
             />
-
             <input
               id="newCurrencyCost"
               type="number"
               step="any"
               placeholder="Birim maliyet (₺) - isteğe bağlı"
             />
-
             <button
               class="btn primary full"
               id="addCurrencyBtn"
@@ -831,30 +669,20 @@
             >
               Ekle / Güncelle
             </button>
-
           </div>
-
         </div>
-
       </div>
-
       <!-- EMTİA -->
-
       <div id="commodityView" style="display:none;">
-
         <h1>Emtia Portföyüm</h1>
-
         <p class="lead">
           Bu liste, telefonundaki Varlığım uygulamasıyla
           aynı hesaba bağlı ve otomatik senkronize.
         </p>
-
         <div class="card">
-
           <div class="section-title">
             Emtia Varlıkları
           </div>
-
           <table id="commodityTable">
             <thead>
               <tr>
@@ -866,7 +694,6 @@
             </thead>
             <tbody id="commodityBody"></tbody>
           </table>
-
           <div
             id="commodityEmptyState"
             class="empty"
@@ -874,16 +701,13 @@
           >
             Henüz emtia eklenmemiş.
           </div>
-
           <div class="add-form">
-
             <div
               class="full section-title"
               style="margin:0;"
             >
               Emtia ekle / güncelle
             </div>
-
             <input
               id="newCommoditySearch"
               class="full"
@@ -891,23 +715,19 @@
               autocomplete="off"
               placeholder="Emtia ara veya seç (örn. Altın)"
             />
-
             <datalist id="commodityOptions"></datalist>
-
             <input
               id="newCommodityAmount"
               type="number"
               step="any"
               placeholder="Miktar"
             />
-
             <input
               id="newCommodityCost"
               type="number"
               step="any"
               placeholder="Birim maliyet (₺) - isteğe bağlı"
             />
-
             <button
               class="btn primary full"
               id="addCommodityBtn"
@@ -915,30 +735,20 @@
             >
               Ekle / Güncelle
             </button>
-
           </div>
-
         </div>
-
       </div>
-
       <!-- FON -->
-
       <div id="fundView" style="display:none;">
-
         <h1>Fon Portföyüm</h1>
-
         <p class="lead">
           Bu liste, telefonundaki Varlığım uygulamasıyla
           aynı hesaba bağlı ve otomatik senkronize.
         </p>
-
         <div class="card">
-
           <div class="section-title">
             Fon Varlıkları
           </div>
-
           <table id="fundTable">
             <thead>
               <tr>
@@ -951,7 +761,6 @@
             </thead>
             <tbody id="fundBody"></tbody>
           </table>
-
           <div
             id="fundEmptyState"
             class="empty"
@@ -959,16 +768,13 @@
           >
             Henüz fon eklenmemiş.
           </div>
-
           <div class="add-form">
-
             <div
               class="full section-title"
               style="margin:0;"
             >
               Fon ekle / güncelle
             </div>
-
             <input
               id="newFundCode"
               class="full"
@@ -977,7 +783,6 @@
               maxlength="8"
               placeholder="Fon kodunu yaz (örn. GUM)"
             />
-
             <input
               id="newFundName"
               class="full"
@@ -986,21 +791,18 @@
               placeholder="Fon adı otomatik bulunacak"
               readonly
             />
-
             <input
               id="newFundUnits"
               type="number"
               step="any"
               placeholder="Adet"
             />
-
             <input
               id="newFundCost"
               type="number"
               step="any"
               placeholder="Birim maliyet (₺)"
             />
-
             <button
               class="btn primary full"
               id="addFundBtn"
@@ -1008,30 +810,20 @@
             >
               Ekle / Güncelle
             </button>
-
           </div>
-
         </div>
-
       </div>
-
       <!-- GAYRİMENKUL -->
-
       <div id="realEstateView" style="display:none;">
-
         <h1>Gayrimenkul Portföyüm</h1>
-
         <p class="lead">
           Bu liste, telefonundaki Varlığım uygulamasıyla
           aynı hesaba bağlı ve otomatik senkronize.
         </p>
-
         <div class="card">
-
           <div class="section-title">
             Gayrimenkuller
           </div>
-
           <table id="realEstateTable">
             <thead>
               <tr>
@@ -1044,7 +836,6 @@
             </thead>
             <tbody id="realEstateBody"></tbody>
           </table>
-
           <div
             id="realEstateEmptyState"
             class="empty"
@@ -1052,16 +843,13 @@
           >
             Henüz gayrimenkul eklenmemiş.
           </div>
-
           <div class="add-form">
-
             <div
               class="full section-title"
               style="margin:0;"
             >
               Gayrimenkul ekle
             </div>
-
             <select id="newRealEstateType" class="full">
               <option value="Konut">Konut</option>
               <option value="Arsa">Arsa</option>
@@ -1070,7 +858,6 @@
               <option value="Ofis">Ofis</option>
               <option value="Diğer">Diğer</option>
             </select>
-
             <input
               id="newRealEstateTitle"
               class="full"
@@ -1078,21 +865,18 @@
               autocomplete="off"
               placeholder="İsim / başlık (örn. Alanya Daire)"
             />
-
             <input
               id="newRealEstateCity"
               type="text"
               autocomplete="off"
               placeholder="Şehir"
             />
-
             <input
               id="newRealEstateDistrict"
               type="text"
               autocomplete="off"
               placeholder="İlçe"
             />
-
             <input
               id="newRealEstatePurchasePrice"
               type="number"
@@ -1100,7 +884,6 @@
               min="0"
               placeholder="Alış değeri (₺)"
             />
-
             <input
               id="newRealEstateCurrentValue"
               type="number"
@@ -1108,7 +891,6 @@
               min="0"
               placeholder="Güncel değer (₺)"
             />
-
             <input
               id="newRealEstateMonthlyRent"
               type="number"
@@ -1116,12 +898,10 @@
               min="0"
               placeholder="Aylık kira (₺)"
             />
-
             <input
               id="newRealEstatePurchaseDate"
               type="date"
             />
-
             <button
               class="btn primary full"
               id="addRealEstateBtn"
@@ -1129,13 +909,9 @@
             >
               Ekle
             </button>
-
           </div>
-
         </div>
-
       </div>
-
       <!-- ARAÇ -->
       <div id="vehicleView" style="display:none;">
         <h1>Araç Portföyüm</h1>
@@ -1175,125 +951,136 @@
           </div>
         </div>
       </div>
-
+      <!-- MEVDUAT -->
+      <div id="depositView" style="display:none;">
+        <h1>Mevduat Portföyüm</h1>
+        <p class="lead">
+          Bu liste, telefonundaki Varlığım uygulamasıyla
+          aynı hesaba bağlı ve otomatik senkronize.
+        </p>
+        <div class="card">
+          <div class="section-title">Mevduatlar</div>
+          <table id="depositTable">
+            <thead><tr>
+              <th>Banka</th><th class="num">Anapara</th>
+              <th class="num">Faiz</th><th class="num">Vade</th><th></th>
+            </tr></thead>
+            <tbody id="depositBody"></tbody>
+          </table>
+          <div id="depositEmptyState" class="empty" style="display:none;">
+            Henüz mevduat eklenmemiş.
+          </div>
+          <div class="add-form">
+            <div class="full section-title" style="margin:0;">Mevduat ekle</div>
+            <input id="newDepositBankName" class="full" type="text" autocomplete="off" placeholder="Banka adı" />
+            <input id="newDepositPrincipal" type="number" step="any" min="0" placeholder="Anapara (₺)" />
+            <input id="newDepositAnnualRate" type="number" step="any" min="0" placeholder="Yıllık faiz oranı (%)" />
+            <input id="newDepositWithholdingRate" type="number" step="any" min="0" placeholder="Stopaj oranı (%)" />
+            <input id="newDepositStartDate" type="date" />
+            <input id="newDepositMaturityDate" type="date" />
+            <button class="btn primary full" id="addDepositBtn" type="button">Ekle</button>
+          </div>
+        </div>
+      </div>
     </div>
-
   </div>
-
 </main>
-
 <script>
-
   const SUPABASE_URL =
     'https://dybyvluatryiflljogro.supabase.co';
-
   const SUPABASE_ANON_KEY =
     'sb_publishable_9lHBXG5EHmjwL05Mr9Ly6A_Tywh2-Wh';
-
   const supa =
     window.supabase.createClient(
       SUPABASE_URL,
       SUPABASE_ANON_KEY
     );
-
   const authView =
     document.getElementById(
       'authView'
     );
-
   const portfolioView =
     document.getElementById(
       'portfolioView'
     );
-
   const stockView =
     document.getElementById(
       'stockView'
     );
-
   const cryptoView =
     document.getElementById(
       'cryptoView'
     );
-
   const currencyView =
     document.getElementById(
       'currencyView'
     );
-
   const commodityView =
     document.getElementById(
       'commodityView'
     );
-
   const fundView =
     document.getElementById(
       'fundView'
     );
-
   const realEstateView =
     document.getElementById(
       'realEstateView'
     );
-
   const vehicleView =
     document.getElementById(
       'vehicleView'
     );
-
+  const depositView =
+    document.getElementById(
+      'depositView'
+    );
   const stockTab =
     document.getElementById(
       'stockTab'
     );
-
   const cryptoTab =
     document.getElementById(
       'cryptoTab'
     );
-
   const currencyTab =
     document.getElementById(
       'currencyTab'
     );
-
   const commodityTab =
     document.getElementById(
       'commodityTab'
     );
-
   const fundTab =
     document.getElementById(
       'fundTab'
     );
-
   const realEstateTab =
     document.getElementById(
       'realEstateTab'
     );
-
   const vehicleTab =
     document.getElementById(
       'vehicleTab'
     );
-
+  const depositTab =
+    document.getElementById(
+      'depositTab'
+    );
   const userBadge =
     document.getElementById(
       'userBadge'
     );
-
   const userEmailEl =
     document.getElementById(
       'userEmail'
     );
-
   const msgEl =
     document.getElementById(
       'msg'
     );
-
   let mode =
     'login';
-
   /*
    * ======================================
    * BIST HİSSE LİSTESİ
@@ -1304,9 +1091,7 @@
    *
    * Seçim buradan yapılır.
    */
-
   const stockMarketList = [
-
     { symbol:'AEFES', name:'Anadolu Efes' },
     { symbol:'AGHOL', name:'AG Anadolu Grubu Holding' },
     { symbol:'AKBNK', name:'Akbank' },
@@ -1385,24 +1170,19 @@
     { symbol:'VESTL', name:'Vestel Elektronik' },
     { symbol:'YKBNK', name:'Yapı Kredi' },
     { symbol:'ZOREN', name:'Zorlu Enerji' }
-
   ];
-
   /*
    * GİRİŞ SEKMELERİ
    */
-
   document
     .querySelectorAll(
       '#authView .tab'
     )
     .forEach(
       tab => {
-
         tab.addEventListener(
           'click',
           () => {
-
             document
               .querySelectorAll(
                 '#authView .tab'
@@ -1413,14 +1193,11 @@
                     'active'
                   )
               );
-
             tab.classList.add(
               'active'
             );
-
             mode =
               tab.dataset.tab;
-
             document
               .getElementById(
                 'authSubmitBtn'
@@ -1429,198 +1206,161 @@
                 mode === 'login'
                   ? 'Giriş Yap'
                   : 'Hesap Oluştur';
-
             hideMsg();
-
           }
         );
-
       }
     );
-
   /*
    * PORTFÖY SEKMELERİ
    */
-
   function showPortfolioSection(section) {
-
     const isStock =
       section === 'stock';
-
     const isCrypto =
       section === 'crypto';
-
     const isCurrency =
       section === 'currency';
-
     const isCommodity =
       section === 'commodity';
-
     const isFund =
       section === 'fund';
-
     const isRealEstate =
       section === 'realEstate';
-
     const isVehicle =
       section === 'vehicle';
-
+    const isDeposit =
+      section === 'deposit';
     stockTab.classList.toggle(
       'active',
       isStock
     );
-
     cryptoTab.classList.toggle(
       'active',
       isCrypto
     );
-
     currencyTab.classList.toggle(
       'active',
       isCurrency
     );
-
     commodityTab.classList.toggle(
       'active',
       isCommodity
     );
-
     fundTab.classList.toggle(
       'active',
       isFund
     );
-
     realEstateTab.classList.toggle(
       'active',
       isRealEstate
     );
-
     vehicleTab.classList.toggle(
       'active',
       isVehicle
     );
-
+    depositTab.classList.toggle(
+      'active',
+      isDeposit
+    );
     stockView.style.display =
       isStock ? '' : 'none';
-
     cryptoView.style.display =
       isCrypto ? '' : 'none';
-
     currencyView.style.display =
       isCurrency ? '' : 'none';
-
     commodityView.style.display =
       isCommodity ? '' : 'none';
-
     fundView.style.display =
       isFund ? '' : 'none';
-
     realEstateView.style.display =
       isRealEstate ? '' : 'none';
-
     vehicleView.style.display =
       isVehicle ? '' : 'none';
-
+    depositView.style.display =
+      isDeposit ? '' : 'none';
     if (isStock) {
       loadHoldings();
       loadStockOptions();
     }
-
     if (isCrypto) {
       loadCryptoHoldings();
       loadCryptoOptions();
     }
-
     if (isCurrency) {
       loadCurrencyHoldings();
       loadCurrencyOptions();
     }
-
     if (isCommodity) {
       loadCommodityHoldings();
       loadCommodityOptions();
     }
-
     if (isFund) {
       loadFundHoldings();
     }
-
     if (isRealEstate) {
       loadRealEstateHoldings();
     }
-
     if (isVehicle) {
       loadVehicleHoldings();
     }
-
+    if (isDeposit) {
+      loadDepositHoldings();
+    }
   }
-
   stockTab.addEventListener(
     'click',
     () => showPortfolioSection('stock')
   );
-
   cryptoTab.addEventListener(
     'click',
     () => showPortfolioSection('crypto')
   );
-
   currencyTab.addEventListener(
     'click',
     () => showPortfolioSection('currency')
   );
-
   commodityTab.addEventListener(
     'click',
     () => showPortfolioSection('commodity')
   );
-
   fundTab.addEventListener(
     'click',
     () => showPortfolioSection('fund')
   );
-
   realEstateTab.addEventListener(
     'click',
     () => showPortfolioSection('realEstate')
   );
-
   vehicleTab.addEventListener(
     'click',
     () => showPortfolioSection('vehicle')
   );
-
+  depositTab.addEventListener(
+    'click',
+    () => showPortfolioSection('deposit')
+  );
   /*
    * MESAJ
    */
-
   function showMsg(
     text,
     type
   ) {
-
     msgEl.textContent =
       text;
-
     msgEl.className =
       type;
-
   }
-
   function hideMsg() {
-
     msgEl.className =
       '';
-
     msgEl.textContent =
       '';
-
   }
-
   /*
    * GİRİŞ
    */
-
   document
     .getElementById(
       'authForm'
@@ -1628,11 +1368,8 @@
     .addEventListener(
       'submit',
       async (e) => {
-
         e.preventDefault();
-
         hideMsg();
-
         const email =
           document
             .getElementById(
@@ -1640,29 +1377,23 @@
             )
             .value
             .trim();
-
         const password =
           document
             .getElementById(
               'password'
             )
             .value;
-
         const btn =
           document
             .getElementById(
               'authSubmitBtn'
             );
-
         btn.disabled =
           true;
-
         try {
-
           if (
             mode === 'login'
           ) {
-
             const {
               error
             } =
@@ -1673,15 +1404,12 @@
                     password
                   }
                 );
-
             if (
               error
             ) {
               throw error;
             }
-
           } else {
-
             const {
               error
             } =
@@ -1692,44 +1420,33 @@
                     password
                   }
                 );
-
             if (
               error
             ) {
               throw error;
             }
-
             showMsg(
               'Hesap oluşturuldu. E-postana gelen onay linkine tıkladıktan sonra giriş yapabilirsin.',
               'ok'
             );
-
           }
-
         } catch (
           err
         ) {
-
           showMsg(
             err.message ||
               'Bir hata oluştu.',
             'error'
           );
-
         } finally {
-
           btn.disabled =
             false;
-
         }
-
       }
     );
-
   /*
    * ÇIKIŞ
    */
-
   document
     .getElementById(
       'signOutBtn'
@@ -1737,79 +1454,58 @@
     .addEventListener(
       'click',
       async () => {
-
         await supa.auth
           .signOut();
-
       }
     );
-
   /*
    * OTURUM
    */
-
   supa.auth.onAuthStateChange(
     (
       _event,
       session
     ) => {
-
       if (
         session &&
         session.user
       ) {
-
         authView.style.display =
           'none';
-
         portfolioView.style.display =
           '';
-
         userBadge.style.display =
           'flex';
-
         userEmailEl.textContent =
           session.user.email ||
           '';
-
         showPortfolioSection(
           'stock'
         );
-
         loadCryptoOptions();
         loadCurrencyOptions();
         loadCommodityOptions();
-
       } else {
-
         authView.style.display =
           '';
-
         portfolioView.style.display =
           'none';
-
         userBadge.style.display =
           'none';
-
       }
-
     }
   );
-
   /*
    * FORMAT
    */
-
   function fmtTL(
     n
   ) {
-
     return new Intl.NumberFormat(
       'tr-TR',
       {
         style:
           'currency',
-
         currency:
           'TRY'
       }
@@ -1817,13 +1513,10 @@
       Number(n) ||
       0
     );
-
   }
-
   function fmtNumber(
     n
   ) {
-
     return new Intl.NumberFormat(
       'tr-TR',
       {
@@ -1834,13 +1527,10 @@
       Number(n) ||
       0
     );
-
   }
-
   function escapeHtml(
     s
   ) {
-
     return String(
       s ??
       ''
@@ -1854,32 +1544,25 @@
         "'":'&#39;'
       }[c])
     );
-
   }
-
   /*
    * ======================================
    * HİSSE SEÇİM LİSTESİ
    * ======================================
    */
-
   function loadStockOptions() {
-
     const select =
       document
         .getElementById(
           'newStockSelect'
         );
-
     if (
       !select
     ) {
       return;
     }
-
     select.innerHTML =
       '<option value="">Hisse seç...</option>';
-
     const sorted =
       [...stockMarketList]
         .sort(
@@ -1892,99 +1575,74 @@
               'tr'
             )
         );
-
     for (
       const stock
       of sorted
     ) {
-
       const option =
         document
           .createElement(
             'option'
           );
-
       option.value =
         stock.symbol;
-
       option.textContent =
         `${stock.symbol} — ${stock.name}`;
-
       option.dataset.name =
         stock.name;
-
       select.appendChild(
         option
       );
-
     }
-
   }
-
   /*
    * ======================================
    * HİSSE PORTFÖYÜ
    * ======================================
    */
-
   async function loadHoldings() {
-
     const { data, error } = await supa
   .from('stock_holdings')
   .select('*')
   .is('deleted_at', null)
   .order('symbol', { ascending: true });
-
     const tbody =
       document
         .getElementById(
           'holdingsBody'
         );
-
     const emptyState =
       document
         .getElementById(
           'emptyState'
         );
-
     tbody.innerHTML =
       '';
-
     if (
       error
     ) {
-
       showMsg(
         'Hisse verileri yüklenemedi: ' +
           error.message,
         'error'
       );
-
       return;
-
     }
-
     if (
       !data ||
       data.length ===
         0
     ) {
-
       emptyState.style.display =
         'block';
-
       return;
-
     }
-
     emptyState.style.display =
       'none';
-
     for (
       const row
       of data
     ) {
-
       const invested =
         (
           Number(
@@ -1998,22 +1656,18 @@
           ) ||
           0
         );
-
       const tr =
         document
           .createElement(
             'tr'
           );
-
       tr.innerHTML = `
         <td>
-
           <div class="sym">
             ${escapeHtml(
               row.symbol
             )}
           </div>
-
           ${
             row.name
               ? `
@@ -2025,29 +1679,23 @@
               `
               : ''
           }
-
         </td>
-
         <td class="num">
           ${fmtNumber(
             row.lot
           )}
         </td>
-
         <td class="num">
           ${fmtTL(
             row.cost
           )}
         </td>
-
         <td class="num">
           ${fmtTL(
             invested
           )}
         </td>
-
         <td class="num">
-
           <button
   type="button"
   class="del stock-delete"
@@ -2056,28 +1704,20 @@
 >
   ✕
 </button>
-
         </td>
       `;
-
       tbody.appendChild(
         tr
       );
-
     }
-
   }
-
   async function deleteHolding(symbol) {
-
   const {
     data: { user }
   } = await supa.auth.getUser();
-
   if (!user) {
     return;
   }
-
   const { error } =
     await supa
       .from('stock_holdings')
@@ -2087,27 +1727,20 @@
       })
       .eq('user_id', user.id)
       .eq('symbol', symbol);
-
   if (error) {
-
     showMsg(
       'Hisse silinemedi: ' +
         error.message,
       'error'
     );
-
     return;
   }
-
   loadHoldings();
 }
-
-   
 
   /*
    * HİSSE EKLE
    */
-
   document
     .getElementById(
       'addBtn'
@@ -2115,9 +1748,7 @@
     .addEventListener(
       'click',
       async () => {
-
         hideMsg();
-
         const {
           data:{
             user
@@ -2125,33 +1756,27 @@
         } =
           await supa.auth
             .getUser();
-
         if (
           !user
         ) {
           return;
         }
-
         const select =
           document
             .getElementById(
               'newStockSelect'
             );
-
         const selectedOption =
           select.options[
             select.selectedIndex
           ];
-
         const symbol =
           select.value;
-
         const name =
           selectedOption
             ?.dataset
             ?.name ||
           '';
-
         const lot =
           parseFloat(
             document
@@ -2160,7 +1785,6 @@
               )
               .value
           );
-
         const cost =
           parseFloat(
             document
@@ -2169,7 +1793,6 @@
               )
               .value
           );
-
         if (
           !symbol ||
           !name ||
@@ -2184,16 +1807,12 @@
           cost <=
             0
         ) {
-
           showMsg(
             'Lütfen hisseyi seçip lot ve maliyeti eksiksiz gir.',
             'error'
           );
-
           return;
-
         }
-
         const {
           error
         } =
@@ -2205,16 +1824,12 @@
               {
                 user_id:
                   user.id,
-
                 symbol:
                   symbol,
-
                 name:
                   name,
-
                 lot:
                   lot,
-
                 cost:
                   cost
               },
@@ -2223,49 +1838,38 @@
                   'user_id,symbol'
               }
             );
-
         if (
           error
         ) {
-
           showMsg(
             'Hisse eklenemedi: ' +
               error.message,
             'error'
           );
-
           return;
-
         }
-
         select.value =
           '';
-
         document
           .getElementById(
             'newLot'
           )
           .value =
             '';
-
         document
           .getElementById(
             'newCost'
           )
           .value =
             '';
-
         loadHoldings();
-
       }
     );
-
   /*
    * ======================================
    * DÖVİZ
    * ======================================
    */
-
   const currencyMarketList = [
     { code:'TRY', name:'Türk Lirası' },
     { code:'USD', name:'Amerikan Doları' },
@@ -2279,78 +1883,57 @@
     { code:'RUB', name:'Rus Rublesi' },
     { code:'UAH', name:'Ukrayna Grivnası' }
   ];
-
   function loadCurrencyOptions() {
-
     const list =
       document.getElementById(
         'currencyOptions'
       );
-
     if (!list) {
       return;
     }
-
     list.innerHTML = '';
-
     for (
       const currency
       of currencyMarketList
     ) {
-
       const option =
         document.createElement(
           'option'
         );
-
       option.value =
         `${currency.code} — ${currency.name}`;
-
       list.appendChild(
         option
       );
-
     }
-
   }
-
   function resolveCurrency(
     rawValue
   ) {
-
     const value =
       String(rawValue || '')
         .trim()
         .toLocaleUpperCase('tr-TR');
-
     if (!value) {
       return null;
     }
-
     return currencyMarketList.find(
       currency => {
-
         const code =
           currency.code
             .toLocaleUpperCase('tr-TR');
-
         const name =
           currency.name
             .toLocaleUpperCase('tr-TR');
-
         return value === code ||
           value.startsWith(`${code} —`) ||
           value === name ||
           value.includes(code) ||
           value.includes(name);
-
       }
     ) || null;
-
   }
-
   async function loadCurrencyHoldings() {
-
     const { data, error } =
       await supa
         .from('currency_holdings')
@@ -2362,23 +1945,18 @@
             ascending: true
           }
         );
-
     const tbody =
       document.getElementById(
         'currencyBody'
       );
-
     const emptyState =
       document.getElementById(
         'currencyEmptyState'
       );
-
     if (!tbody || !emptyState) {
       return;
     }
-
     tbody.innerHTML = '';
-
     if (error) {
       showMsg(
         'Döviz verileri yüklenemedi: ' +
@@ -2387,28 +1965,22 @@
       );
       return;
     }
-
     if (!data || data.length === 0) {
       emptyState.style.display =
         'block';
       return;
     }
-
     emptyState.style.display =
       'none';
-
     for (const row of data) {
-
       const tr =
         document.createElement(
           'tr'
         );
-
       const costText =
         row.cost == null
           ? '—'
           : fmtTL(row.cost);
-
       tr.innerHTML = `
         <td>
           <div class="sym">
@@ -2418,15 +1990,12 @@
             ${escapeHtml(row.currency_name || '')}
           </div>
         </td>
-
         <td class="num">
           ${fmtNumber(row.amount)}
         </td>
-
         <td class="num">
           ${costText}
         </td>
-
         <td class="num">
           <button
             type="button"
@@ -2438,27 +2007,20 @@
           </button>
         </td>
       `;
-
       tbody.appendChild(
         tr
       );
-
     }
-
   }
-
   async function deleteCurrencyHolding(
     currencyCode
   ) {
-
     const {
       data: { user }
     } = await supa.auth.getUser();
-
     if (!user) {
       return;
     }
-
     const { error } =
       await supa
         .from('currency_holdings')
@@ -2471,7 +2033,6 @@
           'currency_code',
           currencyCode
         );
-
     if (error) {
       showMsg(
         'Döviz silinemedi: ' +
@@ -2480,11 +2041,8 @@
       );
       return;
     }
-
     await loadCurrencyHoldings();
-
   }
-
   document
     .getElementById(
       'addCurrencyBtn'
@@ -2492,44 +2050,35 @@
     .addEventListener(
       'click',
       async () => {
-
         hideMsg();
-
         const {
           data: { user }
         } = await supa.auth.getUser();
-
         if (!user) {
           return;
         }
-
         const searchInput =
           document.getElementById(
             'newCurrencySearch'
           );
-
         const currency =
           resolveCurrency(
             searchInput.value
           );
-
         const amount =
           parseFloat(
             document.getElementById(
               'newCurrencyAmount'
             ).value
           );
-
         const costRaw =
           document.getElementById(
             'newCurrencyCost'
           ).value.trim();
-
         const cost =
           costRaw === ''
             ? null
             : parseFloat(costRaw);
-
         if (
           !currency ||
           isNaN(amount) ||
@@ -2543,7 +2092,6 @@
           );
           return;
         }
-
         const { error } =
           await supa
             .from('currency_holdings')
@@ -2567,7 +2115,6 @@
                   'user_id,currency_code'
               }
             );
-
         if (error) {
           showMsg(
             'Döviz eklenemedi: ' +
@@ -2576,28 +2123,21 @@
           );
           return;
         }
-
         searchInput.value = '';
-
         document.getElementById(
           'newCurrencyAmount'
         ).value = '';
-
         document.getElementById(
           'newCurrencyCost'
         ).value = '';
-
         await loadCurrencyHoldings();
-
       }
     );
-
   /*
    * ======================================
    * EMTİA
    * ======================================
    */
-
   const commodityMarketList = [
     { key:'GOLD', symbol:'Au', name:'Altın', unit:'Gram' },
     { key:'SILVER', symbol:'Ag', name:'Gümüş', unit:'Gram' },
@@ -2606,33 +2146,26 @@
     { key:'PALLADIUM', symbol:'Pd', name:'Paladyum', unit:'Gram' },
     { key:'BRENT_USD', symbol:'BRENT_USD', name:'Brent Petrol (USD)', unit: 'Varil' }
   ];
-
   function loadCommodityOptions() {
     const list = document.getElementById('commodityOptions');
     if (!list) return;
-
     list.innerHTML = '';
-
     for (const commodity of commodityMarketList) {
       const option = document.createElement('option');
       option.value = `${commodity.name} — ${commodity.key}`;
       list.appendChild(option);
     }
   }
-
   function resolveCommodity(rawValue) {
     const value = String(rawValue || '')
       .trim()
       .toLocaleUpperCase('tr-TR');
-
     if (!value) return null;
-
     return commodityMarketList.find(
       commodity => {
         const key = commodity.key.toLocaleUpperCase('tr-TR');
         const symbol = commodity.symbol.toLocaleUpperCase('tr-TR');
         const name = commodity.name.toLocaleUpperCase('tr-TR');
-
         return value === key ||
           value === symbol ||
           value === name ||
@@ -2642,21 +2175,16 @@
       }
     ) || null;
   }
-
   async function loadCommodityHoldings() {
     const { data, error } = await supa
       .from('commodity_holdings')
       .select('*')
       .is('deleted_at', null)
       .order('commodity_key', { ascending: true });
-
     const tbody = document.getElementById('commodityBody');
     const emptyState = document.getElementById('commodityEmptyState');
-
     if (!tbody || !emptyState) return;
-
     tbody.innerHTML = '';
-
     if (error) {
       showMsg(
         'Emtia verileri yüklenemedi: ' + error.message,
@@ -2664,19 +2192,15 @@
       );
       return;
     }
-
     if (!data || data.length === 0) {
       emptyState.style.display = 'block';
       return;
     }
-
     emptyState.style.display = 'none';
-
     for (const row of data) {
       const tr = document.createElement('tr');
       const costText =
         row.cost == null ? '—' : fmtTL(row.cost);
-
       tr.innerHTML = `
         <td>
           <div class="sym">${escapeHtml(row.name || row.commodity_key)}</div>
@@ -2696,24 +2220,19 @@
           >✕</button>
         </td>
       `;
-
       const deleteBtn = tr.querySelector('[data-commodity-key]');
       deleteBtn.addEventListener(
         'click',
         () => deleteCommodityHolding(row.commodity_key)
       );
-
       tbody.appendChild(tr);
     }
   }
-
   async function deleteCommodityHolding(commodityKey) {
     const {
       data: { user }
     } = await supa.auth.getUser();
-
     if (!user) return;
-
     const { error } = await supa
       .from('commodity_holdings')
       .update({
@@ -2721,7 +2240,6 @@
       })
       .eq('user_id', user.id)
       .eq('commodity_key', commodityKey);
-
     if (error) {
       showMsg(
         'Emtia silinemedi: ' + error.message,
@@ -2729,46 +2247,36 @@
       );
       return;
     }
-
     await loadCommodityHoldings();
   }
-
   document
     .getElementById('addCommodityBtn')
     .addEventListener(
       'click',
       async () => {
         hideMsg();
-
         const {
           data: { user }
         } = await supa.auth.getUser();
-
         if (!user) return;
-
         const searchInput =
           document.getElementById('newCommoditySearch');
-
         const commodity =
           resolveCommodity(searchInput.value);
-
         const amount =
           parseFloat(
             document.getElementById(
               'newCommodityAmount'
             ).value
           );
-
         const costRaw =
           document.getElementById(
             'newCommodityCost'
           ).value.trim();
-
         const cost =
           costRaw === ''
             ? null
             : parseFloat(costRaw);
-
         if (
           !commodity ||
           isNaN(amount) ||
@@ -2782,7 +2290,6 @@
           );
           return;
         }
-
         const { error } = await supa
           .from('commodity_holdings')
           .upsert(
@@ -2800,7 +2307,6 @@
               onConflict: 'user_id,commodity_key'
             }
           );
-
         if (error) {
           showMsg(
             'Emtia eklenemedi: ' + error.message,
@@ -2808,7 +2314,6 @@
           );
           return;
         }
-
         searchInput.value = '';
         document.getElementById(
           'newCommodityAmount'
@@ -2816,30 +2321,24 @@
         document.getElementById(
           'newCommodityCost'
         ).value = '';
-
         await loadCommodityHoldings();
       }
     );
-
   /*
    * ======================================
    * KRİPTO SEÇİM LİSTESİ
    * ======================================
    */
-
   let cryptoMarketList =
     [];
-
  async function loadCryptoOptions() {
   const select =
     document.getElementById(
       'newCryptoSelect'
     );
-
   if (!select) {
     return;
   }
-
   const cryptos = [
     {
       id: 'bitcoin',
@@ -2997,32 +2496,24 @@
       name: 'Pepe'
     }
   ];
-
   select.innerHTML =
     '<option value="">Kripto seç...</option>';
-
   cryptos.forEach(
     (crypto) => {
       const option =
         document.createElement(
           'option'
         );
-
       option.value =
         crypto.id;
-
       option.textContent =
         `${crypto.symbol} — ${crypto.name}`;
-
       option.dataset.symbol =
         crypto.symbol;
-
       option.dataset.name =
         crypto.name;
-
       option.dataset.image =
         '';
-
       select.appendChild(
         option
       );
@@ -3034,9 +2525,7 @@
    * KRİPTO PORTFÖYÜ
    * ======================================
    */
-
   async function loadCryptoHoldings() {
-
     const {
       data,
       error
@@ -3051,57 +2540,43 @@
     ascending: true
   }
 );
-
     const tbody =
       document
         .getElementById(
           'cryptoBody'
         );
-
     const emptyState =
       document
         .getElementById(
           'cryptoEmptyState'
         );
-
     tbody.innerHTML =
       '';
-
     if (
       error
     ) {
-
       showMsg(
         'Kripto verileri yüklenemedi: ' +
           error.message,
         'error'
       );
-
       return;
-
     }
-
     if (
       !data ||
       data.length ===
         0
     ) {
-
       emptyState.style.display =
         'block';
-
       return;
-
     }
-
     emptyState.style.display =
       'none';
-
     for (
       const row
       of data
     ) {
-
       const invested =
         (
           Number(
@@ -3115,22 +2590,18 @@
           ) ||
           0
         );
-
       const tr =
         document
           .createElement(
             'tr'
           );
-
       tr.innerHTML = `
         <td>
-
           <div class="sym">
             ${escapeHtml(
               row.symbol
             )}
           </div>
-
           ${
             row.name
               ? `
@@ -3142,29 +2613,23 @@
               `
               : ''
           }
-
         </td>
-
         <td class="num">
           ${fmtNumber(
             row.amount
           )}
         </td>
-
         <td class="num">
           ${fmtTL(
             row.cost
           )}
         </td>
-
         <td class="num">
           ${fmtTL(
             invested
           )}
         </td>
-
         <td class="num">
-
           <button
             class="del crypto-delete"
             data-id="${escapeHtml(
@@ -3174,23 +2639,18 @@
           >
             ✕
           </button>
-
         </td>
       `;
-
       tbody.appendChild(
         tr
       );
-
     }
-
     tbody
       .querySelectorAll(
         '.crypto-delete'
       )
       .forEach(
         btn => {
-
           btn.addEventListener(
             'click',
             () =>
@@ -3198,22 +2658,16 @@
                 btn.dataset.id
               )
           );
-
         }
       );
-
   }
-
   async function deleteCryptoHolding(cryptoId) {
-
   const {
     data: { user }
   } = await supa.auth.getUser();
-
   if (!user) {
     return;
   }
-
   const { error } = await supa
     .from('crypto_holdings')
     .update({
@@ -3221,7 +2675,6 @@
     })
     .eq('user_id', user.id)
     .eq('crypto_id', cryptoId);
-
   if (error) {
     showMsg(
       'Kripto silinemedi: ' + error.message,
@@ -3229,14 +2682,11 @@
     );
     return;
   }
-
   await loadCryptoHoldings();
 }
-
   /*
    * KRİPTO EKLE
    */
-
   document
     .getElementById(
       'addCryptoBtn'
@@ -3244,9 +2694,7 @@
     .addEventListener(
       'click',
       async () => {
-
         hideMsg();
-
         const {
           data:{
             user
@@ -3254,45 +2702,37 @@
         } =
           await supa.auth
             .getUser();
-
         if (
           !user
         ) {
           return;
         }
-
         const select =
           document
             .getElementById(
               'newCryptoSelect'
             );
-
         const selectedOption =
           select.options[
             select.selectedIndex
           ];
-
         const cryptoId =
           select.value;
-
         const symbol =
           selectedOption
             ?.dataset
             ?.symbol ||
           '';
-
         const name =
           selectedOption
             ?.dataset
             ?.name ||
           '';
-
         const imageUrl =
           selectedOption
             ?.dataset
             ?.image ||
           null;
-
         const amount =
           parseFloat(
             document
@@ -3301,7 +2741,6 @@
               )
               .value
           );
-
         const cost =
           parseFloat(
             document
@@ -3310,7 +2749,6 @@
               )
               .value
           );
-
         if (
           !cryptoId ||
           !symbol ||
@@ -3326,16 +2764,12 @@
           cost <=
             0
         ) {
-
           showMsg(
             'Lütfen kriptoyu seçip miktar ve maliyeti eksiksiz gir.',
             'error'
           );
-
           return;
-
         }
-
         const {
           error
         } =
@@ -3347,25 +2781,18 @@
               {
                 user_id:
   user.id,
-
 deleted_at:
   null,
-
 crypto_id:
   cryptoId,
-
                 symbol:
                   symbol,
-
                 name:
                   name,
-
                 amount:
                   amount,
-
                 cost:
                   cost,
-
                 image_url:
                   imageUrl
               },
@@ -3374,70 +2801,52 @@ crypto_id:
                   'user_id,crypto_id'
               }
             );
-
         if (
           error
         ) {
-
           showMsg(
             'Kripto eklenemedi: ' +
               error.message,
             'error'
           );
-
           return;
-
         }
-
         select.value =
           '';
-
         document
           .getElementById(
             'newCryptoAmount'
           )
           .value =
             '';
-
         document
           .getElementById(
             'newCryptoCost'
           )
           .value =
             '';
-
         loadCryptoHoldings();
-
       }
     );
-
-
   /*
    * ======================================
    * FON PORTFÖYÜ
    * ======================================
    */
-
   async function loadFundHoldings() {
-
     const { data, error } = await supa
       .from('fund_holdings')
       .select('*')
       .is('deleted_at', null)
       .order('code', { ascending: true });
-
     const tbody =
       document.getElementById('fundBody');
-
     const emptyState =
       document.getElementById('fundEmptyState');
-
     if (!tbody || !emptyState) {
       return;
     }
-
     tbody.innerHTML = '';
-
     if (error) {
       showMsg(
         'Fon verileri yüklenemedi: ' + error.message,
@@ -3445,22 +2854,16 @@ crypto_id:
       );
       return;
     }
-
     if (!data || data.length === 0) {
       emptyState.style.display = 'block';
       return;
     }
-
     emptyState.style.display = 'none';
-
     for (const row of data) {
-
       const units = Number(row.units) || 0;
       const cost = Number(row.cost) || 0;
       const invested = units * cost;
-
       const tr = document.createElement('tr');
-
       tr.innerHTML = `
         <td>
           <div class="sym">${escapeHtml(row.code || '')}</div>
@@ -3478,29 +2881,22 @@ crypto_id:
           >✕</button>
         </td>
       `;
-
       const deleteBtn =
         tr.querySelector('[data-fund-code]');
-
       deleteBtn.addEventListener(
         'click',
         () => deleteFundHolding(row.code)
       );
-
       tbody.appendChild(tr);
     }
   }
-
   async function deleteFundHolding(code) {
-
     const {
       data: { user }
     } = await supa.auth.getUser();
-
     if (!user) {
       return;
     }
-
     const { error } = await supa
       .from('fund_holdings')
       .update({
@@ -3508,7 +2904,6 @@ crypto_id:
       })
       .eq('user_id', user.id)
       .eq('code', code);
-
     if (error) {
       showMsg(
         'Fon silinemedi: ' + error.message,
@@ -3516,93 +2911,72 @@ crypto_id:
       );
       return;
     }
-
     await loadFundHoldings();
   }
-
   let selectedFundForWeb = null;
   let fundLookupTimer = null;
   let fundLookupRequestId = 0;
-
   async function findFundByExactCode(rawCode) {
     const code = String(rawCode || '')
       .trim()
       .toLocaleUpperCase('tr-TR');
-
     if (!code) {
       return null;
     }
-
     const { data, error } = await supa
       .from('fund_catalog')
       .select('code,name')
       .eq('code', code)
       .maybeSingle();
-
     if (error) {
       throw error;
     }
-
     if (!data) {
       return null;
     }
-
     const foundCode =
       String(data.code || '')
         .trim()
         .toLocaleUpperCase('tr-TR');
-
     const foundName =
       String(data.name || '')
         .trim();
-
     if (
       foundCode !== code ||
       !foundName
     ) {
       return null;
     }
-
     return {
       code: foundCode,
       name: foundName
     };
   }
-
   async function resolveFundCodeInput() {
     const codeInput =
       document.getElementById('newFundCode');
-
     const nameInput =
       document.getElementById('newFundName');
-
     const code =
       String(codeInput.value || '')
         .trim()
         .toLocaleUpperCase('tr-TR');
-
     codeInput.value = code;
     nameInput.value = '';
     selectedFundForWeb = null;
-
     if (!code) {
       return;
     }
-
     const requestId =
       ++fundLookupRequestId;
-
     nameInput.value =
       'Fon aranıyor...';
-
     try {
       const fund =
         await findFundByExactCode(code);
-
       if (requestId !== fundLookupRequestId) {
         return;
       }
-
       if (!fund) {
         nameInput.value = '';
         showMsg(
@@ -3613,20 +2987,15 @@ crypto_id:
         );
         return;
       }
-
       selectedFundForWeb = fund;
-
       nameInput.value =
         fund.name;
-
       hideMsg();
     } catch (err) {
       if (requestId !== fundLookupRequestId) {
         return;
       }
-
       nameInput.value = '';
-
       showMsg(
         'Fon kataloğu okunamadı: ' +
           (err?.message || 'Bilinmeyen hata'),
@@ -3634,27 +3003,21 @@ crypto_id:
       );
     }
   }
-
   document
     .getElementById('newFundCode')
     .addEventListener(
       'input',
       () => {
         clearTimeout(fundLookupTimer);
-
         const codeInput =
           document.getElementById('newFundCode');
-
         codeInput.value =
           String(codeInput.value || '')
             .toLocaleUpperCase('tr-TR');
-
         selectedFundForWeb = null;
-
         document
           .getElementById('newFundName')
           .value = '';
-
         fundLookupTimer = setTimeout(
           () => {
             resolveFundCodeInput();
@@ -3663,7 +3026,6 @@ crypto_id:
         );
       }
     );
-
   document
     .getElementById('newFundCode')
     .addEventListener(
@@ -3673,34 +3035,26 @@ crypto_id:
         resolveFundCodeInput();
       }
     );
-
   document
     .getElementById('addFundBtn')
     .addEventListener(
       'click',
       async () => {
-
         hideMsg();
-
         const {
           data: { user }
         } = await supa.auth.getUser();
-
         if (!user) {
           return;
         }
-
         const codeInput =
           document.getElementById('newFundCode');
-
         const nameInput =
           document.getElementById('newFundName');
-
         const code =
           String(codeInput.value || '')
             .trim()
             .toLocaleUpperCase('tr-TR');
-
         /*
          * Kullanıcı kodu değiştirdiyse veya henüz fon
          * bulunmadıysa Ekle'ye basıldığında son kez TAM kod
@@ -3712,7 +3066,6 @@ crypto_id:
         ) {
           await resolveFundCodeInput();
         }
-
         if (
           !selectedFundForWeb ||
           selectedFundForWeb.code !== code
@@ -3723,24 +3076,20 @@ crypto_id:
           );
           return;
         }
-
         const name =
           selectedFundForWeb.name;
-
         const units =
           parseFloat(
             document
               .getElementById('newFundUnits')
               .value
           );
-
         const cost =
           parseFloat(
             document
               .getElementById('newFundCost')
               .value
           );
-
         if (
           !code ||
           !name ||
@@ -3755,7 +3104,6 @@ crypto_id:
           );
           return;
         }
-
         const { error } = await supa
           .from('fund_holdings')
           .upsert(
@@ -3771,7 +3119,6 @@ crypto_id:
               onConflict: 'user_id,code'
             }
           );
-
         if (error) {
           showMsg(
             'Fon eklenemedi: ' +
@@ -3780,51 +3127,37 @@ crypto_id:
           );
           return;
         }
-
         codeInput.value = '';
         nameInput.value = '';
-
         document
           .getElementById('newFundUnits')
           .value = '';
-
         document
           .getElementById('newFundCost')
           .value = '';
-
         selectedFundForWeb = null;
-
         await loadFundHoldings();
       }
     );
-
-
   /*
    * ======================================
    * GAYRİMENKUL PORTFÖYÜ
    * ======================================
    */
-
   async function loadRealEstateHoldings() {
-
     const { data, error } = await supa
       .from('real_estate_holdings')
       .select('*')
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
-
     const tbody =
       document.getElementById('realEstateBody');
-
     const emptyState =
       document.getElementById('realEstateEmptyState');
-
     if (!tbody || !emptyState) {
       return;
     }
-
     tbody.innerHTML = '';
-
     if (error) {
       showMsg(
         'Gayrimenkul verileri yüklenemedi: ' +
@@ -3833,24 +3166,18 @@ crypto_id:
       );
       return;
     }
-
     if (!data || data.length === 0) {
       emptyState.style.display = 'block';
       return;
     }
-
     emptyState.style.display = 'none';
-
     for (const row of data) {
-
       const tr =
         document.createElement('tr');
-
       const locationText =
         [row.city, row.district]
           .filter(Boolean)
           .join(' / ');
-
       tr.innerHTML = `
         <td>
           <div class="sym">
@@ -3867,19 +3194,15 @@ crypto_id:
             )}
           </div>
         </td>
-
         <td class="num">
           ${fmtTL(row.purchase_price)}
         </td>
-
         <td class="num">
           ${fmtTL(row.current_value)}
         </td>
-
         <td class="num">
           ${fmtTL(row.monthly_rent)}
         </td>
-
         <td class="num">
           <button
             type="button"
@@ -3891,29 +3214,22 @@ crypto_id:
           </button>
         </td>
       `;
-
       const deleteBtn =
         tr.querySelector('.real-estate-delete');
-
       deleteBtn.addEventListener(
         'click',
         () => deleteRealEstateHolding(row.id)
       );
-
       tbody.appendChild(tr);
     }
   }
-
   async function deleteRealEstateHolding(id) {
-
     const {
       data: { user }
     } = await supa.auth.getUser();
-
     if (!user || !id) {
       return;
     }
-
     const { error } = await supa
       .from('real_estate_holdings')
       .update({
@@ -3922,7 +3238,6 @@ crypto_id:
       })
       .eq('user_id', user.id)
       .eq('id', id);
-
     if (error) {
       showMsg(
         'Gayrimenkul silinemedi: ' +
@@ -3931,80 +3246,65 @@ crypto_id:
       );
       return;
     }
-
     await loadRealEstateHoldings();
   }
-
   document
     .getElementById('addRealEstateBtn')
     .addEventListener(
       'click',
       async () => {
-
         hideMsg();
-
         const {
           data: { user }
         } = await supa.auth.getUser();
-
         if (!user) {
           return;
         }
-
         const type =
           document
             .getElementById('newRealEstateType')
             .value
             .trim();
-
         const title =
           document
             .getElementById('newRealEstateTitle')
             .value
             .trim();
-
         const city =
           document
             .getElementById('newRealEstateCity')
             .value
             .trim();
-
         const district =
           document
             .getElementById('newRealEstateDistrict')
             .value
             .trim();
-
         const purchasePrice =
           parseFloat(
             document
               .getElementById('newRealEstatePurchasePrice')
               .value
           );
-
         const currentValue =
           parseFloat(
             document
               .getElementById('newRealEstateCurrentValue')
               .value
           );
-
         const monthlyRentRaw =
           document
             .getElementById('newRealEstateMonthlyRent')
             .value
             .trim();
-
         const monthlyRent =
           monthlyRentRaw === ''
             ? 0
             : parseFloat(monthlyRentRaw);
-
         const purchaseDateRaw =
           document
             .getElementById('newRealEstatePurchaseDate')
             .value;
-
         if (
           !type ||
           !title ||
@@ -4024,7 +3324,6 @@ crypto_id:
           );
           return;
         }
-
         /*
          * Mobil uygulamadaki String id yapısıyla uyumlu,
          * benzersiz bir metin kimliği oluşturuyoruz.
@@ -4033,12 +3332,10 @@ crypto_id:
           `${Date.now()}${Math.floor(Math.random() * 1000)
             .toString()
             .padStart(3, '0')}`;
-
         const purchaseDate =
           new Date(
             `${purchaseDateRaw}T12:00:00`
           ).toISOString();
-
         const { error } = await supa
           .from('real_estate_holdings')
           .upsert(
@@ -4059,7 +3356,6 @@ crypto_id:
               onConflict: 'user_id,id'
             }
           );
-
         if (error) {
           showMsg(
             'Gayrimenkul eklenemedi: ' +
@@ -4068,71 +3364,54 @@ crypto_id:
           );
           return;
         }
-
         document
           .getElementById('newRealEstateTitle')
           .value = '';
-
         document
           .getElementById('newRealEstateCity')
           .value = '';
-
         document
           .getElementById('newRealEstateDistrict')
           .value = '';
-
         document
           .getElementById('newRealEstatePurchasePrice')
           .value = '';
-
         document
           .getElementById('newRealEstateCurrentValue')
           .value = '';
-
         document
           .getElementById('newRealEstateMonthlyRent')
           .value = '';
-
         document
           .getElementById('newRealEstatePurchaseDate')
           .value = '';
-
         await loadRealEstateHoldings();
       }
     );
-
-
   /* ARAÇ PORTFÖYÜ */
-
   async function loadVehicleHoldings() {
     const { data, error } = await supa
       .from('vehicle_holdings')
       .select('*')
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
-
     const tbody = document.getElementById('vehicleBody');
     const emptyState = document.getElementById('vehicleEmptyState');
     if (!tbody || !emptyState) return;
     tbody.innerHTML = '';
-
     if (error) {
       showMsg('Araç verileri yüklenemedi: ' + error.message, 'error');
       return;
     }
-
     if (!data || data.length === 0) {
       emptyState.style.display = 'block';
       return;
     }
-
     emptyState.style.display = 'none';
-
     for (const row of data) {
       const tr = document.createElement('tr');
       const title = [row.brand, row.model].filter(Boolean).join(' ');
       const detail = [row.type, row.plate].filter(Boolean).join(' • ');
-
       tr.innerHTML = `
         <td>
           <div class="sym">${escapeHtml(title || row.type || 'Araç')}</div>
@@ -4145,36 +3424,30 @@ crypto_id:
           <button type="button" class="del vehicle-delete"
             data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
         </td>`;
-
       tr.querySelector('.vehicle-delete').addEventListener(
         'click', () => deleteVehicleHolding(row.id)
       );
       tbody.appendChild(tr);
     }
   }
-
   async function deleteVehicleHolding(id) {
     const { data: { user } } = await supa.auth.getUser();
     if (!user || !id) return;
-
     const { error } = await supa
       .from('vehicle_holdings')
       .update({ deleted_at: new Date().toISOString() })
       .eq('user_id', user.id)
       .eq('id', id);
-
     if (error) {
       showMsg('Araç silinemedi: ' + error.message, 'error');
       return;
     }
     await loadVehicleHoldings();
   }
-
   document.getElementById('addVehicleBtn').addEventListener('click', async () => {
     hideMsg();
     const { data: { user } } = await supa.auth.getUser();
     if (!user) return;
-
     const type = document.getElementById('newVehicleType').value.trim();
     const brand = document.getElementById('newVehicleBrand').value.trim();
     const model = document.getElementById('newVehicleModel').value.trim();
@@ -4183,7 +3456,6 @@ crypto_id:
     const purchasePrice = parseFloat(document.getElementById('newVehiclePurchasePrice').value);
     const currentValue = parseFloat(document.getElementById('newVehicleCurrentValue').value);
     const purchaseDateRaw = document.getElementById('newVehiclePurchaseDate').value;
-
     if (!type || !brand || !model || isNaN(modelYear) ||
         modelYear < 1900 || modelYear > 2100 ||
         isNaN(purchasePrice) || purchasePrice < 0 ||
@@ -4191,29 +3463,127 @@ crypto_id:
       showMsg('Lütfen araç bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
       return;
     }
-
     const id = `${Date.now()}${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
     const purchaseDate = new Date(`${purchaseDateRaw}T12:00:00`).toISOString();
-
     const { error } = await supa.from('vehicle_holdings').upsert({
       id, user_id:user.id, type, brand, model, model_year:modelYear, plate,
       purchase_price:purchasePrice, current_value:currentValue,
       purchase_date:purchaseDate, deleted_at:null
     }, { onConflict:'user_id,id' });
-
     if (error) {
       showMsg('Araç eklenemedi: ' + error.message, 'error');
       return;
     }
-
     ['newVehicleBrand','newVehicleModel','newVehicleModelYear','newVehiclePlate',
      'newVehiclePurchasePrice','newVehicleCurrentValue','newVehiclePurchaseDate']
       .forEach(id => document.getElementById(id).value = '');
-
     await loadVehicleHoldings();
   });
-
+  /* MEVDUAT PORTFÖYÜ */
+  async function loadDepositHoldings() {
+    const { data, error } = await supa
+      .from('deposit_holdings')
+      .select('*')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+    const tbody = document.getElementById('depositBody');
+    const emptyState = document.getElementById('depositEmptyState');
+    if (!tbody || !emptyState) return;
+    tbody.innerHTML = '';
+    if (error) {
+      showMsg('Mevduat verileri yüklenemedi: ' + error.message, 'error');
+      return;
+    }
+    if (!data || data.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
+    for (const row of data) {
+      const tr = document.createElement('tr');
+      const maturityText =
+        row.maturity_date
+          ? new Date(row.maturity_date).toLocaleDateString('tr-TR')
+          : '—';
+      const rateText =
+        row.annual_rate == null
+          ? '—'
+          : `%${fmtNumber(row.annual_rate)}`;
+      tr.innerHTML = `
+        <td>
+          <div class="sym">${escapeHtml(row.bank_name || 'Mevduat')}</div>
+        </td>
+        <td class="num">${fmtTL(row.principal)}</td>
+        <td class="num">${rateText}</td>
+        <td class="num">${escapeHtml(maturityText)}</td>
+        <td class="num">
+          <button type="button" class="del deposit-delete"
+            data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
+        </td>`;
+      tr.querySelector('.deposit-delete').addEventListener(
+        'click', () => deleteDepositHolding(row.id)
+      );
+      tbody.appendChild(tr);
+    }
+  }
+  async function deleteDepositHolding(id) {
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user || !id) return;
+    const { error } = await supa
+      .from('deposit_holdings')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .eq('id', id);
+    if (error) {
+      showMsg('Mevduat silinemedi: ' + error.message, 'error');
+      return;
+    }
+    await loadDepositHoldings();
+  }
+  document.getElementById('addDepositBtn').addEventListener('click', async () => {
+    hideMsg();
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user) return;
+    const bankName = document.getElementById('newDepositBankName').value.trim();
+    const principal = parseFloat(document.getElementById('newDepositPrincipal').value);
+    const annualRate = parseFloat(document.getElementById('newDepositAnnualRate').value);
+    const withholdingRateRaw =
+      document.getElementById('newDepositWithholdingRate').value.trim();
+    const withholdingRate =
+      withholdingRateRaw === '' ? 0 : parseFloat(withholdingRateRaw);
+    const startDateRaw = document.getElementById('newDepositStartDate').value;
+    const maturityDateRaw = document.getElementById('newDepositMaturityDate').value;
+    if (!bankName ||
+        isNaN(principal) || principal <= 0 ||
+        isNaN(annualRate) || annualRate < 0 ||
+        isNaN(withholdingRate) || withholdingRate < 0 ||
+        !startDateRaw || !maturityDateRaw) {
+      showMsg('Lütfen mevduat bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
+      return;
+    }
+    const id = `${Date.now()}${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
+    const startDate = new Date(`${startDateRaw}T12:00:00`).toISOString();
+    const maturityDate = new Date(`${maturityDateRaw}T12:00:00`).toISOString();
+    const { error } = await supa.from('deposit_holdings').upsert({
+      id,
+      user_id: user.id,
+      bank_name: bankName,
+      principal: principal,
+      annual_rate: annualRate,
+      withholding_rate: withholdingRate,
+      start_date: startDate,
+      maturity_date: maturityDate,
+      deleted_at: null
+    }, { onConflict: 'user_id,id' });
+    if (error) {
+      showMsg('Mevduat eklenemedi: ' + error.message, 'error');
+      return;
+    }
+    ['newDepositBankName','newDepositPrincipal','newDepositAnnualRate',
+     'newDepositWithholdingRate','newDepositStartDate','newDepositMaturityDate']
+      .forEach(id => document.getElementById(id).value = '');
+    await loadDepositHoldings();
+  });
 </script>
-
 </body>
 </html>
