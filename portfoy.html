@@ -452,6 +452,12 @@
         </div>
         <div
           class="tab"
+          id="viopTab"
+        >
+          VİOP
+        </div>
+        <div
+          class="tab"
           id="realEstateTab"
         >
           Gayrimenkul
@@ -461,6 +467,12 @@
           id="vehicleTab"
         >
           Araç
+        </div>
+        <div
+          class="tab"
+          id="otherAssetsTab"
+        >
+          Diğer Varlıklar
         </div>
         <div
           class="tab"
@@ -866,6 +878,90 @@
           </div>
         </div>
       </div>
+      <!-- VİOP -->
+      <div id="viopView" style="display:none;">
+        <h1>VİOP Portföyüm</h1>
+        <p class="lead">
+          Bu liste, telefonundaki Varlığım uygulamasıyla
+          aynı hesaba bağlı ve otomatik senkronize.
+        </p>
+        <div class="card">
+          <div class="section-title">
+            VİOP Pozisyonları
+          </div>
+          <table id="viopTable">
+            <thead>
+              <tr>
+                <th>Sözleşme</th>
+                <th class="num">Lot</th>
+                <th class="num">Maliyet</th>
+                <th class="num">Yatırılan</th>
+                <th class="num">Güncel Fiyat</th>
+                <th class="num">Güncel Değer</th>
+                <th class="num">Kâr/Zarar</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="viopBody"></tbody>
+          </table>
+          <div
+            id="viopEmptyState"
+            class="empty"
+            style="display:none;"
+          >
+            Henüz VİOP pozisyonu eklenmemiş.
+          </div>
+          <div class="add-form">
+            <div
+              class="full section-title"
+              style="margin:0;"
+            >
+              VİOP pozisyonu ekle
+            </div>
+            <input
+              id="newViopSymbol"
+              class="full"
+              type="text"
+              autocomplete="off"
+              placeholder="Sözleşme sembolü (örn. AKBNK Eylül 2026 Vadeli)"
+            />
+            <input
+              id="newViopUnderlying"
+              type="text"
+              autocomplete="off"
+              placeholder="Dayanak varlık (örn. AKBNK)"
+            />
+            <select id="newViopIsOption" class="full">
+              <option value="false">Vadeli İşlem</option>
+              <option value="true">Opsiyon</option>
+            </select>
+            <input
+              id="newViopLot"
+              type="number"
+              step="any"
+              placeholder="Lot"
+            />
+            <input
+              id="newViopCost"
+              type="number"
+              step="any"
+              placeholder="Maliyet (opsiyonel)"
+            />
+            <button
+              class="btn primary full"
+              id="addViopBtn"
+              type="button"
+            >
+              Ekle
+            </button>
+          </div>
+          <p style="font-size:12px; opacity:0.65; margin-top:10px;">
+            Sözleşme sembolünü, mobil uygulamadaki VİOP ekranında
+            gördüğün metinle birebir aynı şekilde yaz — canlı fiyat
+            bu metne göre eşleştirilir.
+          </p>
+        </div>
+      </div>
       <!-- GAYRİMENKUL -->
       <div id="realEstateView" style="display:none;">
         <h1>Gayrimenkul Portföyüm</h1>
@@ -1004,6 +1100,95 @@
           </div>
         </div>
       </div>
+      <!-- DİĞER VARLIKLAR -->
+      <div id="otherAssetsView" style="display:none;">
+        <h1>Diğer Varlıklarım</h1>
+        <p class="lead">
+          Bu liste, telefonundaki Varlığım uygulamasıyla
+          aynı hesaba bağlı ve otomatik senkronize.
+        </p>
+        <div class="card">
+          <div class="section-title">
+            Diğer Varlıklar
+          </div>
+          <table id="otherAssetsTable">
+            <thead>
+              <tr>
+                <th>Varlık</th>
+                <th class="num">Alış</th>
+                <th class="num">Güncel</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="otherAssetsBody"></tbody>
+          </table>
+          <div
+            id="otherAssetsEmptyState"
+            class="empty"
+            style="display:none;"
+          >
+            Henüz diğer varlık eklenmemiş.
+          </div>
+          <div class="add-form">
+            <div
+              class="full section-title"
+              style="margin:0;"
+            >
+              Diğer varlık ekle
+            </div>
+            <select id="newOtherAssetType" class="full">
+              <option value="Saat">Saat</option>
+              <option value="Mücevher">Mücevher</option>
+              <option value="Koleksiyon">Koleksiyon</option>
+              <option value="Elektronik">Elektronik</option>
+              <option value="Sanat Eseri">Sanat Eseri</option>
+              <option value="Şirket Ortaklığı">Şirket Ortaklığı</option>
+              <option value="Değerli Eşya">Değerli Eşya</option>
+              <option value="Diğer" selected>Diğer</option>
+            </select>
+            <input
+              id="newOtherAssetTitle"
+              class="full"
+              type="text"
+              autocomplete="off"
+              placeholder="İsim / başlık (örn. Rolex Submariner)"
+            />
+            <input
+              id="newOtherAssetDescription"
+              class="full"
+              type="text"
+              autocomplete="off"
+              placeholder="Açıklama (opsiyonel)"
+            />
+            <input
+              id="newOtherAssetPurchasePrice"
+              type="number"
+              step="any"
+              min="0"
+              placeholder="Alış değeri (₺)"
+            />
+            <input
+              id="newOtherAssetCurrentValue"
+              type="number"
+              step="any"
+              min="0"
+              placeholder="Güncel değer (₺)"
+            />
+            <input
+              id="newOtherAssetPurchaseDate"
+              class="full"
+              type="date"
+            />
+            <button
+              class="btn primary full"
+              id="addOtherAssetBtn"
+              type="button"
+            >
+              Ekle
+            </button>
+          </div>
+        </div>
+      </div>
       <!-- MEVDUAT -->
       <div id="depositView" style="display:none;">
         <h1>Mevduat Portföyüm</h1>
@@ -1114,6 +1299,10 @@
     document.getElementById(
       'fundView'
     );
+  const viopView =
+    document.getElementById(
+      'viopView'
+    );
   const realEstateView =
     document.getElementById(
       'realEstateView'
@@ -1121,6 +1310,10 @@
   const vehicleView =
     document.getElementById(
       'vehicleView'
+    );
+  const otherAssetsView =
+    document.getElementById(
+      'otherAssetsView'
     );
   const depositView =
     document.getElementById(
@@ -1154,6 +1347,10 @@
     document.getElementById(
       'fundTab'
     );
+  const viopTab =
+    document.getElementById(
+      'viopTab'
+    );
   const realEstateTab =
     document.getElementById(
       'realEstateTab'
@@ -1161,6 +1358,10 @@
   const vehicleTab =
     document.getElementById(
       'vehicleTab'
+    );
+  const otherAssetsTab =
+    document.getElementById(
+      'otherAssetsTab'
     );
   const depositTab =
     document.getElementById(
@@ -1330,10 +1531,14 @@
       section === 'commodity';
     const isFund =
       section === 'fund';
+    const isViop =
+      section === 'viop';
     const isRealEstate =
       section === 'realEstate';
     const isVehicle =
       section === 'vehicle';
+    const isOtherAssets =
+      section === 'otherAssets';
     const isDeposit =
       section === 'deposit';
     const isBudget =
@@ -1362,6 +1567,10 @@
       'active',
       isFund
     );
+    viopTab.classList.toggle(
+      'active',
+      isViop
+    );
     realEstateTab.classList.toggle(
       'active',
       isRealEstate
@@ -1369,6 +1578,10 @@
     vehicleTab.classList.toggle(
       'active',
       isVehicle
+    );
+    otherAssetsTab.classList.toggle(
+      'active',
+      isOtherAssets
     );
     depositTab.classList.toggle(
       'active',
@@ -1390,10 +1603,14 @@
       isCommodity ? '' : 'none';
     fundView.style.display =
       isFund ? '' : 'none';
+    viopView.style.display =
+      isViop ? '' : 'none';
     realEstateView.style.display =
       isRealEstate ? '' : 'none';
     vehicleView.style.display =
       isVehicle ? '' : 'none';
+    otherAssetsView.style.display =
+      isOtherAssets ? '' : 'none';
     depositView.style.display =
       isDeposit ? '' : 'none';
     budgetView.style.display =
@@ -1420,11 +1637,17 @@
     if (isFund) {
       loadFundHoldings();
     }
+    if (isViop) {
+      loadViopHoldings();
+    }
     if (isRealEstate) {
       loadRealEstateHoldings();
     }
     if (isVehicle) {
       loadVehicleHoldings();
+    }
+    if (isOtherAssets) {
+      loadOtherAssetsHoldings();
     }
     if (isDeposit) {
       loadDepositHoldings();
@@ -1457,6 +1680,10 @@
     'click',
     () => showPortfolioSection('fund')
   );
+  viopTab.addEventListener(
+    'click',
+    () => showPortfolioSection('viop')
+  );
   realEstateTab.addEventListener(
     'click',
     () => showPortfolioSection('realEstate')
@@ -1464,6 +1691,10 @@
   vehicleTab.addEventListener(
     'click',
     () => showPortfolioSection('vehicle')
+  );
+  otherAssetsTab.addEventListener(
+    'click',
+    () => showPortfolioSection('otherAssets')
   );
   depositTab.addEventListener(
     'click',
@@ -1805,15 +2036,17 @@
 
     const [
       stockRes, cryptoRes, currencyRes, commodityRes,
-      fundRes, realEstateRes, vehicleRes, depositRes
+      fundRes, viopRes, realEstateRes, vehicleRes, otherAssetsRes, depositRes
     ] = await Promise.all([
       supa.from('stock_holdings').select('*').is('deleted_at', null),
       supa.from('crypto_holdings').select('*').is('deleted_at', null),
       supa.from('currency_holdings').select('*').is('deleted_at', null),
       supa.from('commodity_holdings').select('*').is('deleted_at', null),
       supa.from('fund_holdings').select('*').is('deleted_at', null),
+      supa.from('viop_holdings').select('*').is('deleted_at', null),
       supa.from('real_estate_holdings').select('*').is('deleted_at', null),
       supa.from('vehicle_holdings').select('*').is('deleted_at', null),
+      supa.from('other_asset_holdings').select('*').is('deleted_at', null),
       supa.from('deposit_holdings').select('*').is('deleted_at', null)
     ]);
 
@@ -1900,6 +2133,20 @@
     }
 
     {
+      const rows = viopRes.data || [];
+      let total = 0;
+      await Promise.all(rows.map(async row => {
+        try {
+          const quote = await fetchPriceProxy(
+            `type=viop&symbol=${encodeURIComponent(row.symbol)}`
+          );
+          total += (Number(row.lot) || 0) * quote.price;
+        } catch (e) {}
+      }));
+      categories.push({ label: 'VİOP', value: total });
+    }
+
+    {
       const rows = realEstateRes.data || [];
       const total = rows.reduce(
         (sum, r) => sum + (Number(r.current_value) || 0), 0
@@ -1913,6 +2160,14 @@
         (sum, r) => sum + (Number(r.current_value) || 0), 0
       );
       categories.push({ label: 'Araç', value: total });
+    }
+
+    {
+      const rows = otherAssetsRes.data || [];
+      const total = rows.reduce(
+        (sum, r) => sum + (Number(r.current_value) || 0), 0
+      );
+      categories.push({ label: 'Diğer Varlıklar', value: total });
     }
 
     {
@@ -3705,6 +3960,139 @@ crypto_id:
     );
   /*
    * ======================================
+   * VİOP PORTFÖYÜ
+   * ======================================
+   */
+  async function loadViopHoldings() {
+    const { data, error } = await supa
+      .from('viop_holdings')
+      .select('*')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+    const tbody = document.getElementById('viopBody');
+    const emptyState = document.getElementById('viopEmptyState');
+    if (!tbody || !emptyState) return;
+    tbody.innerHTML = '';
+    if (error) {
+      showMsg('VİOP verileri yüklenemedi: ' + error.message, 'error');
+      return;
+    }
+    if (!data || data.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
+    for (const row of data) {
+      const lot = Number(row.lot) || 0;
+      const cost = row.cost == null ? null : Number(row.cost);
+      const invested = cost != null ? lot * cost : null;
+      const symKey = encodeURIComponent(row.symbol || '');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <div class="sym">${escapeHtml(row.symbol || '')}</div>
+          <div class="name">${escapeHtml(
+            [row.underlying, row.is_option ? 'Opsiyon' : 'Vadeli İşlem']
+              .filter(Boolean).join(' • ')
+          )}</div>
+        </td>
+        <td class="num">${fmtNumber(row.lot)}</td>
+        <td class="num">${cost == null ? '—' : fmtTL(cost)}</td>
+        <td class="num">${invested == null ? '—' : fmtTL(invested)}</td>
+        <td class="num" id="viop-price-${symKey}">…</td>
+        <td class="num" id="viop-value-${symKey}">…</td>
+        <td class="num" id="viop-pl-${symKey}">…</td>
+        <td class="num">
+          <button type="button" class="del viop-delete"
+            data-symbol="${escapeHtml(row.symbol || '')}" title="Sil">✕</button>
+        </td>
+      `;
+      tr.querySelector('.viop-delete').addEventListener(
+        'click', () => deleteViopHolding(row.symbol)
+      );
+      tbody.appendChild(tr);
+    }
+    loadViopLivePrices(data);
+  }
+  async function loadViopLivePrices(rows) {
+    await Promise.all(rows.map(async (row) => {
+      const symbol = row.symbol || '';
+      const symKey = encodeURIComponent(symbol);
+      const priceEl = document.getElementById(`viop-price-${symKey}`);
+      const valueEl = document.getElementById(`viop-value-${symKey}`);
+      const plEl = document.getElementById(`viop-pl-${symKey}`);
+      if (!priceEl || !valueEl || !plEl) return;
+      try {
+        const quote = await fetchPriceProxy(
+          `type=viop&symbol=${encodeURIComponent(symbol)}`
+        );
+        const lot = Number(row.lot) || 0;
+        const currentValue = lot * quote.price;
+        priceEl.textContent = fmtTLPrecise(quote.price);
+        valueEl.textContent = fmtTL(currentValue);
+        if (row.cost != null) {
+          const invested = lot * Number(row.cost);
+          plEl.innerHTML = profitLossHtml(invested, currentValue);
+        } else {
+          plEl.textContent = '—';
+        }
+      } catch (e) {
+        priceEl.textContent = '—';
+        valueEl.textContent = '—';
+        plEl.textContent = '—';
+      }
+    }));
+  }
+  async function deleteViopHolding(symbol) {
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user || !symbol) return;
+    const { error } = await supa
+      .from('viop_holdings')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .eq('symbol', symbol);
+    if (error) {
+      showMsg('VİOP pozisyonu silinemedi: ' + error.message, 'error');
+      return;
+    }
+    await loadViopHoldings();
+  }
+  document.getElementById('addViopBtn').addEventListener('click', async () => {
+    hideMsg();
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user) return;
+    const symbol = document.getElementById('newViopSymbol').value.trim();
+    const underlying = document.getElementById('newViopUnderlying').value.trim();
+    const isOption = document.getElementById('newViopIsOption').value === 'true';
+    const lot = parseFloat(document.getElementById('newViopLot').value);
+    const costRaw = document.getElementById('newViopCost').value.trim();
+    const cost = costRaw === '' ? null : parseFloat(costRaw);
+    if (!symbol || isNaN(lot) || (cost != null && isNaN(cost))) {
+      showMsg('Lütfen VİOP pozisyon bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
+      return;
+    }
+    const { error } = await supa.from('viop_holdings').upsert({
+      user_id: user.id,
+      symbol,
+      underlying: underlying || null,
+      code: null,
+      is_option: isOption,
+      category_index: 0,
+      lot,
+      cost,
+      deleted_at: null
+    }, { onConflict: 'user_id,symbol' });
+    if (error) {
+      showMsg('VİOP pozisyonu eklenemedi: ' + error.message, 'error');
+      return;
+    }
+    ['newViopSymbol','newViopUnderlying','newViopLot','newViopCost']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('newViopIsOption').value = 'false';
+    await loadViopHoldings();
+  });
+  /*
+   * ======================================
    * GAYRİMENKUL PORTFÖYÜ
    * ======================================
    */
@@ -4042,6 +4430,94 @@ crypto_id:
      'newVehiclePurchasePrice','newVehicleCurrentValue','newVehiclePurchaseDate']
       .forEach(id => document.getElementById(id).value = '');
     await loadVehicleHoldings();
+  });
+  /* DİĞER VARLIKLAR */
+  async function loadOtherAssetsHoldings() {
+    const { data, error } = await supa
+      .from('other_asset_holdings')
+      .select('*')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+    const tbody = document.getElementById('otherAssetsBody');
+    const emptyState = document.getElementById('otherAssetsEmptyState');
+    if (!tbody || !emptyState) return;
+    tbody.innerHTML = '';
+    if (error) {
+      showMsg('Diğer varlık verileri yüklenemedi: ' + error.message, 'error');
+      return;
+    }
+    if (!data || data.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
+    for (const row of data) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <div class="sym">${escapeHtml(row.title || row.type || 'Varlık')}</div>
+          <div class="name">${escapeHtml(
+            [row.type || '', row.description || ''].filter(Boolean).join(' • ')
+          )}</div>
+        </td>
+        <td class="num">${fmtTL(row.purchase_price)}</td>
+        <td class="num">${fmtTL(row.current_value)}</td>
+        <td class="num">
+          <button type="button" class="del other-asset-delete"
+            data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
+        </td>`;
+      tr.querySelector('.other-asset-delete').addEventListener(
+        'click', () => deleteOtherAssetHolding(row.id)
+      );
+      tbody.appendChild(tr);
+    }
+  }
+  async function deleteOtherAssetHolding(id) {
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user || !id) return;
+    const { error } = await supa
+      .from('other_asset_holdings')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .eq('id', id);
+    if (error) {
+      showMsg('Diğer varlık silinemedi: ' + error.message, 'error');
+      return;
+    }
+    await loadOtherAssetsHoldings();
+  }
+  document.getElementById('addOtherAssetBtn').addEventListener('click', async () => {
+    hideMsg();
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user) return;
+    const type = document.getElementById('newOtherAssetType').value.trim();
+    const title = document.getElementById('newOtherAssetTitle').value.trim();
+    const description = document.getElementById('newOtherAssetDescription').value.trim();
+    const purchasePrice = parseFloat(document.getElementById('newOtherAssetPurchasePrice').value);
+    const currentValue = parseFloat(document.getElementById('newOtherAssetCurrentValue').value);
+    const purchaseDateRaw = document.getElementById('newOtherAssetPurchaseDate').value;
+    if (!type || !title ||
+        isNaN(purchasePrice) || purchasePrice < 0 ||
+        isNaN(currentValue) || currentValue < 0 || !purchaseDateRaw) {
+      showMsg('Lütfen diğer varlık bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
+      return;
+    }
+    const id = `${Date.now()}${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
+    const purchaseDate = new Date(`${purchaseDateRaw}T12:00:00`).toISOString();
+    const { error } = await supa.from('other_asset_holdings').upsert({
+      id, user_id: user.id, type, title,
+      description: description || null,
+      purchase_price: purchasePrice, current_value: currentValue,
+      purchase_date: purchaseDate, deleted_at: null
+    }, { onConflict: 'user_id,id' });
+    if (error) {
+      showMsg('Diğer varlık eklenemedi: ' + error.message, 'error');
+      return;
+    }
+    ['newOtherAssetTitle','newOtherAssetDescription','newOtherAssetPurchasePrice',
+     'newOtherAssetCurrentValue','newOtherAssetPurchaseDate']
+      .forEach(id => document.getElementById(id).value = '');
+    await loadOtherAssetsHoldings();
   });
   /* BÜTÇE (GELİR/GİDER) */
   async function loadBudgetHoldings() {
