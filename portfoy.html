@@ -3,1213 +3,265 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Portföyüm — Varlığım</title>
+<title>Varlığım — Web Paneli</title>
 <meta
   name="description"
-  content="Varlığım hesabınızla giriş yapın, hisse, kripto ve döviz portföyünüzü web üzerinden görüntüleyin ve yönetin."
+  content="Varlığım hesabınızla giriş yapın; hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı web üzerinden yönetin."
 />
+<link rel="stylesheet" href="styles.css" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<style>
-  :root{
-    --bg:#0b0f14;
-    --bg-elev:#121821;
-    --card:#161d28;
-    --border:#232c3a;
-    --text:#eef2f7;
-    --text-dim:#9aa7b8;
-    --brand:#2dd4a7;
-    --brand-2:#3d8bff;
-    --danger:#ff6b6b;
-    --radius:14px;
-    --maxw:760px;
-  }
-  *{
-    box-sizing:border-box;
-  }
-  html{
-    scroll-behavior:smooth;
-  }
-  html,
-  body{
-    margin:0;
-    padding:0;
-  }
-  body{
-    background:
-      radial-gradient(
-        1200px 600px at 50% -10%,
-        #16324a 0%,
-        var(--bg) 55%
-      ) fixed;
-    color:var(--text);
-    font-family:
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      Roboto,
-      "Helvetica Neue",
-      Arial,
-      sans-serif;
-    line-height:1.5;
-    min-height:100vh;
-    -webkit-font-smoothing:antialiased;
-  }
-  a{
-    color:inherit;
-  }
-  .wrap{
-    max-width:var(--maxw);
-    margin:0 auto;
-    padding:0 20px;
-  }
-  header.top{
-    position:sticky;
-    top:0;
-    z-index:10;
-    backdrop-filter:blur(10px);
-    background:rgba(11,15,20,0.7);
-    border-bottom:1px solid var(--border);
-  }
-  .topbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:16px 20px;
-    max-width:var(--maxw);
-    margin:0 auto;
-  }
-  .brand{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-weight:700;
-    font-size:18px;
-    letter-spacing:-0.02em;
-    text-decoration:none;
-  }
-  .brand .logo{
-    width:32px;
-    height:32px;
-    border-radius:9px;
-    background:
-      linear-gradient(
-        135deg,
-        var(--brand),
-        var(--brand-2)
-      );
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:16px;
-    font-weight:800;
-    color:#06110d;
-  }
-  #userBadge{
-    font-size:13px;
-    color:var(--text-dim);
-    display:none;
-    align-items:center;
-    gap:10px;
-  }
-  #userBadge button{
-    background:transparent;
-    border:1px solid var(--border);
-    color:var(--text-dim);
-    border-radius:8px;
-    padding:6px 12px;
-    font-size:12.5px;
-    cursor:pointer;
-  }
-  #userBadge button:hover{
-    border-color:#33415a;
-    color:var(--text);
-  }
-  main{
-    padding:48px 0 80px;
-  }
-  h1{
-    font-size:26px;
-    margin:0 0 6px;
-    letter-spacing:-0.02em;
-  }
-  .lead{
-    color:var(--text-dim);
-    font-size:14.5px;
-    margin:0 0 32px;
-  }
-  .card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:28px;
-  }
-  label{
-    display:block;
-    font-size:13px;
-    color:var(--text-dim);
-    margin:0 0 6px;
-  }
-  input,
-  select{
-    width:100%;
-    background:var(--bg-elev);
-    border:1px solid var(--border);
-    color:var(--text);
-    border-radius:10px;
-    padding:11px 13px;
-    font-size:14.5px;
-  }
-  input{
-    margin-bottom:16px;
-  }
-  input:focus,
-  select:focus{
-    outline:none;
-    border-color:var(--brand-2);
-  }
-  select option{
-    background:var(--bg-elev);
-    color:var(--text);
-  }
-  .btn{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    padding:12px 20px;
-    border-radius:10px;
-    font-weight:600;
-    font-size:14.5px;
-    text-decoration:none;
-    border:1px solid var(--border);
-    cursor:pointer;
-    transition:transform .15s, border-color .15s;
-    width:100%;
-  }
-  .btn:hover{
-    transform:translateY(-1px);
-  }
-  .btn.primary{
-    background:
-      linear-gradient(
-        135deg,
-        var(--brand),
-        var(--brand-2)
-      );
-    color:#04110c;
-    border-color:transparent;
-  }
-  .tab-row{
-    display:flex;
-    gap:8px;
-    margin-bottom:22px;
-  }
-  .tab{
-    flex:1;
-    text-align:center;
-    padding:9px;
-    border-radius:9px;
-    font-size:13.5px;
-    color:var(--text-dim);
-    cursor:pointer;
-    border:1px solid transparent;
-  }
-  .tab.active{
-    background:var(--bg-elev);
-    color:var(--text);
-    border-color:var(--border);
-  }
-  #portfolioTabs{
-    margin-bottom:30px;
-  }
-  #msg{
-    font-size:13.5px;
-    padding:10px 14px;
-    border-radius:9px;
-    margin-bottom:16px;
-    display:none;
-  }
-  #msg.error{
-    background:rgba(255,107,107,0.1);
-    color:var(--danger);
-    border:1px solid rgba(255,107,107,0.25);
-    display:block;
-  }
-  #msg.ok{
-    background:rgba(45,212,167,0.1);
-    color:var(--brand);
-    border:1px solid rgba(45,212,167,0.25);
-    display:block;
-  }
-  table{
-    width:100%;
-    border-collapse:collapse;
-    font-size:14px;
-  }
-  th{
-    text-align:left;
-    color:var(--text-dim);
-    font-weight:600;
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-    padding:0 10px 10px;
-  }
-  td{
-    padding:14px 10px;
-    border-top:1px solid var(--border);
-  }
-  td.num{
-    text-align:right;
-    font-variant-numeric:tabular-nums;
-  }
-  tr:hover td{
-    background:rgba(255,255,255,0.02);
-  }
-  .sym{
-    font-weight:700;
-  }
-  .name{
-    color:var(--text-dim);
-    font-size:12px;
-  }
-  .del{
-    background:transparent;
-    border:none;
-    color:var(--text-dim);
-    cursor:pointer;
-    font-size:16px;
-    padding:4px 8px;
-    border-radius:6px;
-  }
-  .del:hover{
-    color:var(--danger);
-    background:rgba(255,107,107,0.1);
-  }
-  .empty{
-    text-align:center;
-    color:var(--text-dim);
-    padding:40px 0;
-    font-size:14px;
-  }
-  .add-form{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-    margin-top:20px;
-    padding-top:20px;
-    border-top:1px solid var(--border);
-  }
-  .add-form input{
-    margin-bottom:0;
-  }
-  .add-form .full{
-    grid-column:1 / -1;
-  }
-  .section-title{
-    font-size:13px;
-    color:var(--text-dim);
-    text-transform:uppercase;
-    letter-spacing:.06em;
-    margin:0 0 14px;
-  }
-  @media(max-width:600px){
-    .card{
-      padding:20px;
-    }
-    .add-form{
-      grid-template-columns:1fr;
-    }
-    .add-form .full{
-      grid-column:1;
-    }
-    table{
-      font-size:12px;
-    }
-    th,
-    td{
-      padding-left:6px;
-      padding-right:6px;
-    }
-  }
-  .pl-pos{ color:#0a7d2c; font-weight:600; }
-  .pl-neg{ color:#c0392b; font-weight:600; }
-  .pl-zero{ color:inherit; }
-</style>
 </head>
 <body>
-<header class="top">
-  <div class="topbar">
-    <a class="brand" href="./">
-      <span class="logo">V</span>
-      Varlığım
-    </a>
-    <div id="userBadge">
-      <span id="userEmail"></span>
-      <button id="signOutBtn">Çıkış yap</button>
+
+<!-- ============================================================
+     GİRİŞ EKRANI
+     ============================================================ -->
+<div id="authView">
+  <div class="auth-card">
+    <div class="brand-row">
+      <div class="brand-badge">V</div>
+      <div class="name" style="font-weight:700; font-size:18px;">Varlığım</div>
     </div>
+    <h1>Portföyüme giriş yap</h1>
+    <p class="page-lead" style="margin-top:6px;">
+      Varlığım uygulamasındaki hesabınla giriş yaparak tüm
+      varlıklarını web üzerinden de yönetebilirsin.
+    </p>
+    <div class="tab-row">
+      <div class="tab active" data-tab="login">Giriş Yap</div>
+      <div class="tab" data-tab="signup">Hesap Oluştur</div>
+    </div>
+    <div id="msg"></div>
+    <form id="authForm">
+      <label for="email">E-posta</label>
+      <input id="email" type="email" required autocomplete="email" />
+      <label for="password">Şifre</label>
+      <input id="password" type="password" required autocomplete="current-password" minlength="6" />
+      <button class="btn primary full" type="submit" id="authSubmitBtn">Giriş Yap</button>
+    </form>
   </div>
-</header>
-<main>
-  <div class="wrap">
-    <!-- GİRİŞ -->
-    <div id="authView">
-      <h1>Portföyüme giriş yap</h1>
-      <p class="lead">
-        Varlığım uygulamasındaki hesabınla giriş yaparak
-        hisse, kripto ve döviz portföyünü web üzerinden de yönetebilirsin.
-      </p>
-      <div class="card">
-        <div class="tab-row">
-          <div
-            class="tab active"
-            data-tab="login"
-          >
-            Giriş Yap
-          </div>
-          <div
-            class="tab"
-            data-tab="signup"
-          >
-            Hesap Oluştur
-          </div>
-        </div>
-        <div id="msg"></div>
-        <form id="authForm">
-          <label for="email">
-            E-posta
-          </label>
-          <input
-            id="email"
-            type="email"
-            required
-            autocomplete="email"
-          />
-          <label for="password">
-            Şifre
-          </label>
-          <input
-            id="password"
-            type="password"
-            required
-            autocomplete="current-password"
-            minlength="6"
-          />
-          <button
-            class="btn primary"
-            type="submit"
-            id="authSubmitBtn"
-          >
-            Giriş Yap
-          </button>
-        </form>
-      </div>
+</div>
+
+<!-- ============================================================
+     UYGULAMA KABUĞU
+     ============================================================ -->
+<div id="appShell" style="display:none;">
+  <div id="sidebarOverlay"></div>
+  <aside id="sidebar">
+    <div class="brand-row">
+      <div class="brand-badge">V</div>
+      <div class="name">Varlığım</div>
     </div>
-    <!-- PORTFÖY -->
-    <div
-      id="portfolioView"
-      style="display:none;"
-    >
-      <div
-        class="tab-row"
-        id="portfolioTabs"
-      >
-        <div
-          class="tab active"
-          id="summaryTab"
-        >
-          Özet
-        </div>
-        <div
-          class="tab"
-          id="stockTab"
-        >
-          Hisse
-        </div>
-        <div
-          class="tab"
-          id="cryptoTab"
-        >
-          Kripto
-        </div>
-        <div
-          class="tab"
-          id="currencyTab"
-        >
-          Döviz
-        </div>
-        <div
-          class="tab"
-          id="commodityTab"
-        >
-          Emtia
-        </div>
-        <div
-          class="tab"
-          id="fundTab"
-        >
-          Fon
-        </div>
-        <div
-          class="tab"
-          id="viopTab"
-        >
-          VİOP
-        </div>
-        <div
-          class="tab"
-          id="realEstateTab"
-        >
-          Gayrimenkul
-        </div>
-        <div
-          class="tab"
-          id="vehicleTab"
-        >
-          Araç
-        </div>
-        <div
-          class="tab"
-          id="otherAssetsTab"
-        >
-          Diğer Varlıklar
-        </div>
-        <div
-          class="tab"
-          id="depositTab"
-        >
-          Mevduat
-        </div>
-        <div
-          class="tab"
-          id="budgetTab"
-        >
-          Bütçe
+    <nav>
+      <div class="nav-group">
+        <div class="nav-item" data-page="home">
+          <span class="msr">home</span> Ana Sayfa
         </div>
       </div>
-      <!-- ÖZET -->
-      <div id="summaryView">
-        <h1>
-          Net Varlık Özeti
-        </h1>
-        <p class="lead">
-          Telefon uygulamanla senkronize tüm varlıkların canlı fiyatlarla
-          hesaplanmış toplamı. Fiyatlar yüklenirken birkaç saniye
-          sürebilir.
-        </p>
-        <div class="card">
-          <div class="section-title">Toplam Net Varlık</div>
-          <div id="summaryTotal" style="font-size:28px; font-weight:700; margin:8px 0 4px;">…</div>
-          <div id="summaryUpdatedAt" style="font-size:12px; opacity:0.65;"></div>
+      <div class="nav-group">
+        <div class="nav-item" id="navVarliklarToggle">
+          <span class="msr">account_balance_wallet</span> Varlıklar
+          <span class="msr chev">expand_more</span>
         </div>
-        <div class="card">
-          <div class="section-title">Varlık Dağılımı</div>
-          <div id="summaryBreakdown"></div>
-          <div id="summaryEmptyState" class="empty" style="display:none;">
-            Henüz hiçbir varlık eklenmemiş.
-          </div>
+        <div class="nav-submenu" id="submenuVarliklar">
+          <div class="nav-subitem" data-page="emtia"><span class="msr">diamond</span> Emtialar</div>
+          <div class="nav-subitem" data-page="hisse"><span class="msr">candlestick_chart</span> Hisse Senetleri</div>
+          <div class="nav-subitem" data-page="fon"><span class="msr">donut_small</span> Yatırım Fonları</div>
+          <div class="nav-subitem" data-page="kripto"><span class="msr">currency_bitcoin</span> Kripto Paralar</div>
+          <div class="nav-subitem" data-page="faiz"><span class="msr">percent</span> Faiz</div>
+          <div class="nav-subitem" data-page="kredi"><span class="msr">calculate</span> Kredi Hesaplama</div>
+          <div class="nav-subitem" data-page="viop"><span class="msr">show_chart</span> VİOP Aktif Vade</div>
         </div>
       </div>
-      <!-- HİSSE -->
-      <div id="stockView" style="display:none;">
-        <h1>
-          Hisse Portföyüm
-        </h1>
-        <p class="lead">
-          Bu liste, telefonundaki Varlığım uygulamasıyla
-          aynı hesaba bağlı ve otomatik senkronize.
-        </p>
+      <div class="nav-group">
+        <div class="nav-item" data-page="butce"><span class="msr">savings</span> Bütçe</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item" data-page="favoriler"><span class="msr">star</span> Favoriler</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item" data-page="varligim"><span class="msr">account_balance</span> Varlığım</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item" data-page="bulten"><span class="msr">newspaper</span> Bülten</div>
+      </div>
+    </nav>
+    <div id="sidebarFooter">
+      <div class="email" id="userEmail"></div>
+      <button class="btn outline small" id="signOutBtn" style="width:100%;">Çıkış yap</button>
+    </div>
+  </aside>
+
+  <div id="main">
+    <header id="topbar">
+      <button id="hamburgerBtn"><span class="msr">menu</span></button>
+      <div id="topbarTitle">Ana Sayfa</div>
+    </header>
+    <div id="content">
+
+      <!-- ANA SAYFA -->
+      <div class="page active" id="page-home">
+        <div class="hero-card">
+          <div class="hero-label">TOPLAM NET VARLIK</div>
+          <div class="hero-value" id="heroTotal">…</div>
+          <div class="hero-updated" id="heroUpdated"></div>
+        </div>
+        <div class="stat-grid" id="statGrid"></div>
         <div class="card">
-          <div class="section-title">
-            Hisseler
-          </div>
-          <table id="holdingsTable">
-            <thead>
-              <tr>
-                <th>Hisse</th>
-                <th class="num">Lot</th>
-                <th class="num">Maliyet</th>
-                <th class="num">Yatırılan</th>
-                <th class="num">Güncel Fiyat</th>
-                <th class="num">Güncel Değer</th>
-                <th class="num">Kâr/Zarar</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="holdingsBody"></tbody>
-          </table>
-          <div
-            id="emptyState"
-            class="empty"
-            style="display:none;"
-          >
-            Henüz hisse eklenmemiş.
-          </div>
-          <div class="add-form">
-            <div
-              class="full section-title"
-              style="margin:0;"
-            >
-              Yeni hisse ekle
-            </div>
-            <select
-              id="newStockSelect"
-              class="full"
-            >
-              <option value="">
-                Hisse seç...
-              </option>
-            </select>
-            <input
-              id="newLot"
-              type="number"
-              step="any"
-              placeholder="Lot"
-            />
-            <input
-              id="newCost"
-              type="number"
-              step="any"
-              placeholder="Maliyet (₺)"
-            />
-            <button
-              class="btn primary full"
-              id="addBtn"
-              type="button"
-            >
-              Ekle
-            </button>
-          </div>
+          <div class="section-title"><span class="msr">query_stats</span> Piyasalar</div>
+          <div class="ticker-grid" id="tickerGrid"></div>
         </div>
       </div>
-      <!-- KRİPTO -->
-      <div
-        id="cryptoView"
-        style="display:none;"
-      >
-        <h1>
-          Kripto Portföyüm
-        </h1>
-        <p class="lead">
-          Bu liste, telefonundaki Varlığım uygulamasıyla
-          aynı hesaba bağlı ve otomatik senkronize.
-        </p>
-        <div class="card">
-          <div class="section-title">
-            Kripto Varlıklar
-          </div>
-          <table id="cryptoTable">
-            <thead>
-              <tr>
-                <th>Kripto</th>
-                <th class="num">Miktar</th>
-                <th class="num">Maliyet</th>
-                <th class="num">Yatırılan</th>
-                <th class="num">Güncel Fiyat</th>
-                <th class="num">Güncel Değer</th>
-                <th class="num">Kâr/Zarar</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="cryptoBody"></tbody>
-          </table>
-          <div
-            id="cryptoEmptyState"
-            class="empty"
-            style="display:none;"
-          >
-            Henüz kripto eklenmemiş.
-          </div>
-          <div class="add-form">
-            <div
-              class="full section-title"
-              style="margin:0;"
-            >
-              Yeni kripto ekle
-            </div>
-            <select
-              id="newCryptoSelect"
-              class="full"
-            >
-              <option value="">
-                Kripto seç...
-              </option>
-            </select>
-            <input
-              id="newCryptoAmount"
-              type="number"
-              step="any"
-              placeholder="Miktar"
-            />
-            <input
-              id="newCryptoCost"
-              type="number"
-              step="any"
-              placeholder="Birim maliyet (₺)"
-            />
-            <button
-              class="btn primary full"
-              id="addCryptoBtn"
-              type="button"
-            >
-              Ekle
-            </button>
-          </div>
-        </div>
-      </div>
-      <!-- DÖVİZ -->
-      <div
-        id="currencyView"
-        style="display:none;"
-      >
-        <h1>
-          Döviz Portföyüm
-        </h1>
-        <p class="lead">
-          Bu liste, telefonundaki Varlığım uygulamasıyla
-          aynı hesaba bağlı ve otomatik senkronize.
-        </p>
-        <div class="card">
-          <div class="section-title">
-            Döviz Varlıkları
-          </div>
-          <table id="currencyTable">
-            <thead>
-              <tr>
-                <th>Döviz</th>
-                <th class="num">Miktar</th>
-                <th class="num">Maliyet</th>
-                <th class="num">Güncel Kur</th>
-                <th class="num">Güncel Değer</th>
-                <th class="num">Kâr/Zarar</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="currencyBody"></tbody>
-          </table>
-          <div
-            id="currencyEmptyState"
-            class="empty"
-            style="display:none;"
-          >
-            Henüz döviz eklenmemiş.
-          </div>
-          <div class="add-form">
-            <div
-              class="full section-title"
-              style="margin:0;"
-            >
-              Döviz ekle / güncelle
-            </div>
-            <input
-              id="newCurrencySearch"
-              class="full"
-              list="currencyOptions"
-              autocomplete="off"
-              placeholder="Döviz ara veya seç (örn. USD)"
-            />
-            <datalist id="currencyOptions"></datalist>
-            <input
-              id="newCurrencyAmount"
-              type="number"
-              step="any"
-              placeholder="Miktar"
-            />
-            <input
-              id="newCurrencyCost"
-              type="number"
-              step="any"
-              placeholder="Birim maliyet (₺) - isteğe bağlı"
-            />
-            <button
-              class="btn primary full"
-              id="addCurrencyBtn"
-              type="button"
-            >
-              Ekle / Güncelle
-            </button>
-          </div>
-        </div>
-      </div>
+
       <!-- EMTİA -->
-      <div id="commodityView" style="display:none;">
-        <h1>Emtia Portföyüm</h1>
-        <p class="lead">
-          Bu liste, telefonundaki Varlığım uygulamasıyla
-          aynı hesaba bağlı ve otomatik senkronize.
-        </p>
+      <div class="page" id="page-emtia">
+        <h1 class="page-title">Emtia Portföyüm</h1>
+        <p class="page-lead">Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
         <div class="card">
-          <div class="section-title">
-            Emtia Varlıkları
-          </div>
+          <div class="section-title">Emtia Varlıkları</div>
+          <div class="table-wrap">
           <table id="commodityTable">
-            <thead>
-              <tr>
-                <th>Emtia</th>
-                <th class="num">Miktar</th>
-                <th class="num">Maliyet</th>
-                <th class="num">Güncel Fiyat</th>
-                <th class="num">Güncel Değer</th>
-                <th class="num">Kâr/Zarar</th>
-                <th></th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Emtia</th><th class="num">Miktar</th><th class="num">Maliyet</th>
+              <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+            </tr></thead>
             <tbody id="commodityBody"></tbody>
           </table>
-          <div
-            id="commodityEmptyState"
-            class="empty"
-            style="display:none;"
-          >
-            Henüz emtia eklenmemiş.
           </div>
+          <div id="commodityEmptyState" class="empty" style="display:none;">Henüz emtia eklenmemiş.</div>
           <div class="add-form">
-            <div
-              class="full section-title"
-              style="margin:0;"
-            >
-              Emtia ekle / güncelle
-            </div>
-            <input
-              id="newCommoditySearch"
-              class="full"
-              list="commodityOptions"
-              autocomplete="off"
-              placeholder="Emtia ara veya seç (örn. Altın)"
-            />
+            <div class="full section-title" style="margin:0;">Emtia ekle / güncelle</div>
+            <input id="newCommoditySearch" class="full" list="commodityOptions" autocomplete="off" placeholder="Emtia ara veya seç (örn. Altın)" />
             <datalist id="commodityOptions"></datalist>
-            <input
-              id="newCommodityAmount"
-              type="number"
-              step="any"
-              placeholder="Miktar"
-            />
-            <input
-              id="newCommodityCost"
-              type="number"
-              step="any"
-              placeholder="Birim maliyet (₺) - isteğe bağlı"
-            />
-            <button
-              class="btn primary full"
-              id="addCommodityBtn"
-              type="button"
-            >
-              Ekle / Güncelle
-            </button>
+            <input id="newCommodityAmount" type="number" step="any" placeholder="Miktar" />
+            <input id="newCommodityCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
+            <button class="btn primary full" id="addCommodityBtn" type="button">Ekle / Güncelle</button>
           </div>
         </div>
       </div>
-      <!-- FON -->
-      <div id="fundView" style="display:none;">
-        <h1>Fon Portföyüm</h1>
-        <p class="lead">
-          Bu liste, telefonundaki Varlığım uygulamasıyla
-          aynı hesaba bağlı ve otomatik senkronize.
-        </p>
+
+      <!-- HİSSE -->
+      <div class="page" id="page-hisse">
+        <h1 class="page-title">Hisse Portföyüm</h1>
+        <p class="page-lead">Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
         <div class="card">
-          <div class="section-title">
-            Fon Varlıkları
+          <div class="section-title">Hisseler</div>
+          <div class="table-wrap">
+          <table id="holdingsTable">
+            <thead><tr>
+              <th>Hisse</th><th class="num">Lot</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
+              <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+            </tr></thead>
+            <tbody id="holdingsBody"></tbody>
+          </table>
           </div>
+          <div id="emptyState" class="empty" style="display:none;">Henüz hisse eklenmemiş.</div>
+          <div class="add-form">
+            <div class="full section-title" style="margin:0;">Yeni hisse ekle</div>
+            <select id="newStockSelect" class="full"><option value="">Hisse seç...</option></select>
+            <input id="newLot" type="number" step="any" placeholder="Lot" />
+            <input id="newCost" type="number" step="any" placeholder="Maliyet (₺)" />
+            <button class="btn primary full" id="addBtn" type="button">Ekle</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FON -->
+      <div class="page" id="page-fon">
+        <h1 class="page-title">Fon Portföyüm</h1>
+        <p class="page-lead">Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
+        <div class="card">
+          <div class="section-title">Fon Varlıkları</div>
+          <div class="table-wrap">
           <table id="fundTable">
-            <thead>
-              <tr>
-                <th>Fon</th>
-                <th class="num">Adet</th>
-                <th class="num">Maliyet</th>
-                <th class="num">Yatırılan</th>
-                <th class="num">Güncel Fiyat</th>
-                <th class="num">Güncel Değer</th>
-                <th class="num">Kâr/Zarar</th>
-                <th></th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Fon</th><th class="num">Adet</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
+              <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+            </tr></thead>
             <tbody id="fundBody"></tbody>
           </table>
-          <div
-            id="fundEmptyState"
-            class="empty"
-            style="display:none;"
-          >
-            Henüz fon eklenmemiş.
           </div>
+          <div id="fundEmptyState" class="empty" style="display:none;">Henüz fon eklenmemiş.</div>
           <div class="add-form">
-            <div
-              class="full section-title"
-              style="margin:0;"
-            >
-              Fon ekle / güncelle
-            </div>
-            <input
-              id="newFundCode"
-              class="full"
-              type="text"
-              autocomplete="off"
-              maxlength="8"
-              placeholder="Fon kodunu yaz (örn. GUM)"
-            />
-            <input
-              id="newFundName"
-              class="full"
-              type="text"
-              autocomplete="off"
-              placeholder="Fon adı otomatik bulunacak"
-              readonly
-            />
-            <input
-              id="newFundUnits"
-              type="number"
-              step="any"
-              placeholder="Adet"
-            />
-            <input
-              id="newFundCost"
-              type="number"
-              step="any"
-              placeholder="Birim maliyet (₺)"
-            />
-            <button
-              class="btn primary full"
-              id="addFundBtn"
-              type="button"
-            >
-              Ekle / Güncelle
-            </button>
+            <div class="full section-title" style="margin:0;">Fon ekle / güncelle</div>
+            <input id="newFundCode" class="full" type="text" autocomplete="off" maxlength="8" placeholder="Fon kodunu yaz (örn. GUM)" />
+            <input id="newFundName" class="full" type="text" autocomplete="off" placeholder="Fon adı otomatik bulunacak" readonly />
+            <input id="newFundUnits" type="number" step="any" placeholder="Adet" />
+            <input id="newFundCost" type="number" step="any" placeholder="Birim maliyet (₺)" />
+            <button class="btn primary full" id="addFundBtn" type="button">Ekle / Güncelle</button>
           </div>
         </div>
       </div>
-      <!-- VİOP -->
-      <div id="viopView" style="display:none;">
-        <h1>VİOP Portföyüm</h1>
-        <p class="lead">
-          Bu liste, telefonundaki Varlığım uygulamasıyla
-          aynı hesaba bağlı ve otomatik senkronize.
-        </p>
+
+      <!-- KRİPTO -->
+      <div class="page" id="page-kripto">
+        <h1 class="page-title">Kripto Portföyüm</h1>
+        <p class="page-lead">Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
         <div class="card">
-          <div class="section-title">
-            VİOP Pozisyonları
-          </div>
-          <table id="viopTable">
-            <thead>
-              <tr>
-                <th>Sözleşme</th>
-                <th class="num">Lot</th>
-                <th class="num">Maliyet</th>
-                <th class="num">Yatırılan</th>
-                <th class="num">Güncel Fiyat</th>
-                <th class="num">Güncel Değer</th>
-                <th class="num">Kâr/Zarar</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="viopBody"></tbody>
-          </table>
-          <div
-            id="viopEmptyState"
-            class="empty"
-            style="display:none;"
-          >
-            Henüz VİOP pozisyonu eklenmemiş.
-          </div>
-          <div class="add-form">
-            <div
-              class="full section-title"
-              style="margin:0;"
-            >
-              VİOP pozisyonu ekle
-            </div>
-            <input
-              id="newViopSymbol"
-              class="full"
-              type="text"
-              autocomplete="off"
-              placeholder="Sözleşme sembolü (örn. AKBNK Eylül 2026 Vadeli)"
-            />
-            <input
-              id="newViopUnderlying"
-              type="text"
-              autocomplete="off"
-              placeholder="Dayanak varlık (örn. AKBNK)"
-            />
-            <select id="newViopIsOption" class="full">
-              <option value="false">Vadeli İşlem</option>
-              <option value="true">Opsiyon</option>
-            </select>
-            <input
-              id="newViopLot"
-              type="number"
-              step="any"
-              placeholder="Lot"
-            />
-            <input
-              id="newViopCost"
-              type="number"
-              step="any"
-              placeholder="Maliyet (opsiyonel)"
-            />
-            <button
-              class="btn primary full"
-              id="addViopBtn"
-              type="button"
-            >
-              Ekle
-            </button>
-          </div>
-          <p style="font-size:12px; opacity:0.65; margin-top:10px;">
-            Sözleşme sembolünü, mobil uygulamadaki VİOP ekranında
-            gördüğün metinle birebir aynı şekilde yaz — canlı fiyat
-            bu metne göre eşleştirilir.
-          </p>
-        </div>
-      </div>
-      <!-- GAYRİMENKUL -->
-      <div id="realEstateView" style="display:none;">
-        <h1>Gayrimenkul Portföyüm</h1>
-        <p class="lead">
-          Bu liste, telefonundaki Varlığım uygulamasıyla
-          aynı hesaba bağlı ve otomatik senkronize.
-        </p>
-        <div class="card">
-          <div class="section-title">
-            Gayrimenkuller
-          </div>
-          <table id="realEstateTable">
-            <thead>
-              <tr>
-                <th>Gayrimenkul</th>
-                <th class="num">Alış</th>
-                <th class="num">Güncel</th>
-                <th class="num">Kira</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="realEstateBody"></tbody>
-          </table>
-          <div
-            id="realEstateEmptyState"
-            class="empty"
-            style="display:none;"
-          >
-            Henüz gayrimenkul eklenmemiş.
-          </div>
-          <div class="add-form">
-            <div
-              class="full section-title"
-              style="margin:0;"
-            >
-              Gayrimenkul ekle
-            </div>
-            <select id="newRealEstateType" class="full">
-              <option value="Konut">Konut</option>
-              <option value="Arsa">Arsa</option>
-              <option value="İşyeri">İşyeri</option>
-              <option value="Dükkan">Dükkan</option>
-              <option value="Ofis">Ofis</option>
-              <option value="Diğer">Diğer</option>
-            </select>
-            <input
-              id="newRealEstateTitle"
-              class="full"
-              type="text"
-              autocomplete="off"
-              placeholder="İsim / başlık (örn. Alanya Daire)"
-            />
-            <input
-              id="newRealEstateCity"
-              type="text"
-              autocomplete="off"
-              placeholder="Şehir"
-            />
-            <input
-              id="newRealEstateDistrict"
-              type="text"
-              autocomplete="off"
-              placeholder="İlçe"
-            />
-            <input
-              id="newRealEstatePurchasePrice"
-              type="number"
-              step="any"
-              min="0"
-              placeholder="Alış değeri (₺)"
-            />
-            <input
-              id="newRealEstateCurrentValue"
-              type="number"
-              step="any"
-              min="0"
-              placeholder="Güncel değer (₺)"
-            />
-            <input
-              id="newRealEstateMonthlyRent"
-              type="number"
-              step="any"
-              min="0"
-              placeholder="Aylık kira (₺)"
-            />
-            <input
-              id="newRealEstatePurchaseDate"
-              type="date"
-            />
-            <button
-              class="btn primary full"
-              id="addRealEstateBtn"
-              type="button"
-            >
-              Ekle
-            </button>
-          </div>
-        </div>
-      </div>
-      <!-- ARAÇ -->
-      <div id="vehicleView" style="display:none;">
-        <h1>Araç Portföyüm</h1>
-        <p class="lead">
-          Bu liste, telefonundaki Varlığım uygulamasıyla
-          aynı hesaba bağlı ve otomatik senkronize.
-        </p>
-        <div class="card">
-          <div class="section-title">Araçlar</div>
-          <table id="vehicleTable">
+          <div class="section-title">Kripto Varlıklar</div>
+          <div class="table-wrap">
+          <table id="cryptoTable">
             <thead><tr>
-              <th>Araç</th><th class="num">Yıl</th>
-              <th class="num">Alış</th><th class="num">Güncel</th><th></th>
+              <th>Kripto</th><th class="num">Miktar</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
+              <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
             </tr></thead>
-            <tbody id="vehicleBody"></tbody>
+            <tbody id="cryptoBody"></tbody>
           </table>
-          <div id="vehicleEmptyState" class="empty" style="display:none;">
-            Henüz araç eklenmemiş.
           </div>
+          <div id="cryptoEmptyState" class="empty" style="display:none;">Henüz kripto eklenmemiş.</div>
           <div class="add-form">
-            <div class="full section-title" style="margin:0;">Araç ekle</div>
-            <select id="newVehicleType" class="full">
-              <option value="Otomobil">Otomobil</option>
-              <option value="Motosiklet">Motosiklet</option>
-              <option value="Ticari Araç">Ticari Araç</option>
-              <option value="Karavan">Karavan</option>
-              <option value="Diğer">Diğer</option>
-            </select>
-            <input id="newVehicleBrand" type="text" placeholder="Marka" />
-            <input id="newVehicleModel" type="text" placeholder="Model" />
-            <input id="newVehicleModelYear" type="number" min="1900" max="2100" step="1" placeholder="Model yılı" />
-            <input id="newVehiclePlate" type="text" placeholder="Plaka" />
-            <input id="newVehiclePurchasePrice" type="number" step="any" min="0" placeholder="Alış değeri (₺)" />
-            <input id="newVehicleCurrentValue" type="number" step="any" min="0" placeholder="Güncel değer (₺)" />
-            <input id="newVehiclePurchaseDate" class="full" type="date" />
-            <button class="btn primary full" id="addVehicleBtn" type="button">Ekle</button>
+            <div class="full section-title" style="margin:0;">Yeni kripto ekle</div>
+            <select id="newCryptoSelect" class="full"><option value="">Kripto seç...</option></select>
+            <input id="newCryptoAmount" type="number" step="any" placeholder="Miktar" />
+            <input id="newCryptoCost" type="number" step="any" placeholder="Birim maliyet (₺)" />
+            <button class="btn primary full" id="addCryptoBtn" type="button">Ekle</button>
           </div>
         </div>
       </div>
-      <!-- DİĞER VARLIKLAR -->
-      <div id="otherAssetsView" style="display:none;">
-        <h1>Diğer Varlıklarım</h1>
-        <p class="lead">
-          Bu liste, telefonundaki Varlığım uygulamasıyla
-          aynı hesaba bağlı ve otomatik senkronize.
-        </p>
-        <div class="card">
-          <div class="section-title">
-            Diğer Varlıklar
+
+      <!-- FAİZ -->
+      <div class="page" id="page-faiz">
+        <h1 class="page-title">Faiz (Mevduat) Hesaplayıcı</h1>
+        <p class="page-lead">Anapara, oran ve vadeyi gir; vade sonu net getiriyi hesapla. Alttaki liste mevcut mevduat kayıtlarını gösterir.</p>
+        <div class="calc-grid">
+          <div class="card">
+            <div class="section-title"><span class="msr">calculate</span> Hesaplayıcı</div>
+            <label for="calcDepositPrincipal">Anapara (₺)</label>
+            <input id="calcDepositPrincipal" type="number" step="any" min="0" placeholder="örn. 100000" />
+            <label for="calcDepositRate">Yıllık faiz oranı (%)</label>
+            <input id="calcDepositRate" type="number" step="any" min="0" placeholder="örn. 48" />
+            <label for="calcDepositWithholding">Stopaj oranı (%)</label>
+            <input id="calcDepositWithholding" type="number" step="any" min="0" value="17.5" />
+            <label for="calcDepositStart">Başlangıç tarihi</label>
+            <input id="calcDepositStart" type="date" />
+            <label for="calcDepositMaturity">Vade tarihi</label>
+            <input id="calcDepositMaturity" type="date" />
+            <button class="btn primary full" id="calcDepositBtn" type="button">Hesapla</button>
           </div>
-          <table id="otherAssetsTable">
-            <thead>
-              <tr>
-                <th>Varlık</th>
-                <th class="num">Alış</th>
-                <th class="num">Güncel</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="otherAssetsBody"></tbody>
-          </table>
-          <div
-            id="otherAssetsEmptyState"
-            class="empty"
-            style="display:none;"
-          >
-            Henüz diğer varlık eklenmemiş.
-          </div>
-          <div class="add-form">
-            <div
-              class="full section-title"
-              style="margin:0;"
-            >
-              Diğer varlık ekle
+          <div class="card">
+            <div class="section-title"><span class="msr">insights</span> Sonuç</div>
+            <div id="calcDepositResults">
+              <div class="placeholder-box">
+                <span class="msr">calculate</span>
+                Sonucu görmek için hesapla'ya bas.
+              </div>
             </div>
-            <select id="newOtherAssetType" class="full">
-              <option value="Saat">Saat</option>
-              <option value="Mücevher">Mücevher</option>
-              <option value="Koleksiyon">Koleksiyon</option>
-              <option value="Elektronik">Elektronik</option>
-              <option value="Sanat Eseri">Sanat Eseri</option>
-              <option value="Şirket Ortaklığı">Şirket Ortaklığı</option>
-              <option value="Değerli Eşya">Değerli Eşya</option>
-              <option value="Diğer" selected>Diğer</option>
-            </select>
-            <input
-              id="newOtherAssetTitle"
-              class="full"
-              type="text"
-              autocomplete="off"
-              placeholder="İsim / başlık (örn. Rolex Submariner)"
-            />
-            <input
-              id="newOtherAssetDescription"
-              class="full"
-              type="text"
-              autocomplete="off"
-              placeholder="Açıklama (opsiyonel)"
-            />
-            <input
-              id="newOtherAssetPurchasePrice"
-              type="number"
-              step="any"
-              min="0"
-              placeholder="Alış değeri (₺)"
-            />
-            <input
-              id="newOtherAssetCurrentValue"
-              type="number"
-              step="any"
-              min="0"
-              placeholder="Güncel değer (₺)"
-            />
-            <input
-              id="newOtherAssetPurchaseDate"
-              class="full"
-              type="date"
-            />
-            <button
-              class="btn primary full"
-              id="addOtherAssetBtn"
-              type="button"
-            >
-              Ekle
-            </button>
           </div>
         </div>
-      </div>
-      <!-- MEVDUAT -->
-      <div id="depositView" style="display:none;">
-        <h1>Mevduat Portföyüm</h1>
-        <p class="lead">
-          Bu liste, telefonundaki Varlığım uygulamasıyla
-          aynı hesaba bağlı ve otomatik senkronize.
-        </p>
         <div class="card">
-          <div class="section-title">Mevduatlar</div>
+          <div class="section-title">Mevcut Mevduat Kayıtların</div>
+          <div class="table-wrap">
           <table id="depositTable">
             <thead><tr>
-              <th>Banka</th><th class="num">Anapara</th>
-              <th class="num">Faiz</th><th class="num">Vade</th><th></th>
+              <th>Banka</th><th class="num">Anapara</th><th class="num">Faiz</th>
+              <th class="num">Vade</th><th class="num">Güncel Değer</th><th></th>
             </tr></thead>
             <tbody id="depositBody"></tbody>
           </table>
-          <div id="depositEmptyState" class="empty" style="display:none;">
-            Henüz mevduat eklenmemiş.
           </div>
+          <div id="depositEmptyState" class="empty" style="display:none;">Henüz mevduat eklenmemiş.</div>
           <div class="add-form">
-            <div class="full section-title" style="margin:0;">Mevduat ekle</div>
+            <div class="full section-title" style="margin:0;">Mevduat kaydı ekle</div>
             <input id="newDepositBankName" class="full" type="text" autocomplete="off" placeholder="Banka adı" />
             <input id="newDepositPrincipal" type="number" step="any" min="0" placeholder="Anapara (₺)" />
             <input id="newDepositAnnualRate" type="number" step="any" min="0" placeholder="Yıllık faiz oranı (%)" />
@@ -1220,3503 +272,352 @@
           </div>
         </div>
       </div>
-      <!-- BÜTÇE -->
-      <div id="budgetView" style="display:none;">
-        <h1>Bütçe</h1>
-        <p class="lead">
-          Bu liste, telefonundaki Varlığım uygulamasıyla
-          aynı hesaba bağlı ve otomatik senkronize.
-        </p>
-        <div class="card">
-          <div class="section-title">Gelir / Gider İşlemleri</div>
-          <table id="budgetTable">
-            <thead><tr>
-              <th>İşlem</th><th class="num">Tür</th>
-              <th class="num">Tutar</th><th class="num">Tarih</th><th></th>
-            </tr></thead>
-            <tbody id="budgetBody"></tbody>
-          </table>
-          <div id="budgetEmptyState" class="empty" style="display:none;">
-            Henüz işlem eklenmemiş.
-          </div>
-          <div class="add-form">
-            <div class="full section-title" style="margin:0;">İşlem ekle</div>
-            <select id="newBudgetType" class="full">
-              <option value="Gider">Gider</option>
-              <option value="Gelir">Gelir</option>
+
+      <!-- KREDİ HESAPLAMA -->
+      <div class="page" id="page-kredi">
+        <h1 class="page-title">Kredi Hesaplama</h1>
+        <p class="page-lead">Bu araç yalnızca bir hesaplayıcıdır; hesabına herhangi bir kayıt eklemez.</p>
+        <div class="calc-grid">
+          <div class="card">
+            <div class="section-title"><span class="msr">calculate</span> Kredi Bilgileri</div>
+            <label for="loanAmount">Kredi tutarı (₺)</label>
+            <input id="loanAmount" type="number" step="any" min="0" placeholder="örn. 500000" />
+            <label for="loanRate">Yıllık faiz oranı (%)</label>
+            <input id="loanRate" type="number" step="any" min="0" placeholder="örn. 3.5" />
+            <label for="loanTerm">Vade (ay)</label>
+            <input id="loanTerm" type="number" step="1" min="1" placeholder="örn. 36" />
+            <label for="loanType">Kredi türü</label>
+            <select id="loanType">
+              <option value="ihtiyac">İhtiyaç Kredisi (KKDF %15, BSMV %5)</option>
+              <option value="tasit">Taşıt Kredisi (KKDF %15, BSMV %5)</option>
+              <option value="konut">Konut Kredisi (KKDF %0, BSMV %0)</option>
             </select>
-            <input id="newBudgetCategory" type="text" autocomplete="off" placeholder="Kategori (örn. Market)" />
-            <input id="newBudgetTitle" type="text" autocomplete="off" placeholder="Açıklama" />
-            <input id="newBudgetAmount" type="number" step="any" min="0" placeholder="Tutar (₺)" />
-            <input id="newBudgetDate" class="full" type="date" />
-            <input id="newBudgetNote" class="full" type="text" autocomplete="off" placeholder="Not (isteğe bağlı)" />
-            <button class="btn primary full" id="addBudgetBtn" type="button">Ekle</button>
+            <label for="loanFeeRate">Tahsis ücreti oranı (%)</label>
+            <input id="loanFeeRate" type="number" step="any" min="0" value="0.5" />
+            <button class="btn primary full" id="calcLoanBtn" type="button">Hesapla</button>
+          </div>
+          <div class="card">
+            <div class="section-title"><span class="msr">insights</span> Sonuç</div>
+            <div id="loanResults">
+              <div class="placeholder-box">
+                <span class="msr">calculate</span>
+                Sonucu görmek için hesapla'ya bas.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card" id="loanScheduleCard" style="display:none;">
+          <div class="section-title" style="justify-content:space-between;">
+            <span><span class="msr">table_chart</span> Ödeme Planı</span>
+            <button class="btn outline small" id="toggleLoanScheduleBtn" type="button">Tümünü göster</button>
+          </div>
+          <div class="table-wrap">
+          <table id="loanScheduleTable">
+            <thead><tr>
+              <th class="num">#</th><th class="num">Taksit</th><th class="num">Anapara</th>
+              <th class="num">Faiz+Vergi</th><th class="num">Kalan Anapara</th>
+            </tr></thead>
+            <tbody id="loanScheduleBody"></tbody>
+          </table>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</main>
-<script>
-  const SUPABASE_URL =
-    'https://dybyvluatryiflljogro.supabase.co';
-  const SUPABASE_ANON_KEY =
-    'sb_publishable_9lHBXG5EHmjwL05Mr9Ly6A_Tywh2-Wh';
-  const supa =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY
-    );
-  const authView =
-    document.getElementById(
-      'authView'
-    );
-  const portfolioView =
-    document.getElementById(
-      'portfolioView'
-    );
-  const summaryView =
-    document.getElementById(
-      'summaryView'
-    );
-  const stockView =
-    document.getElementById(
-      'stockView'
-    );
-  const cryptoView =
-    document.getElementById(
-      'cryptoView'
-    );
-  const currencyView =
-    document.getElementById(
-      'currencyView'
-    );
-  const commodityView =
-    document.getElementById(
-      'commodityView'
-    );
-  const fundView =
-    document.getElementById(
-      'fundView'
-    );
-  const viopView =
-    document.getElementById(
-      'viopView'
-    );
-  const realEstateView =
-    document.getElementById(
-      'realEstateView'
-    );
-  const vehicleView =
-    document.getElementById(
-      'vehicleView'
-    );
-  const otherAssetsView =
-    document.getElementById(
-      'otherAssetsView'
-    );
-  const depositView =
-    document.getElementById(
-      'depositView'
-    );
-  const budgetView =
-    document.getElementById(
-      'budgetView'
-    );
-  const summaryTab =
-    document.getElementById(
-      'summaryTab'
-    );
-  const stockTab =
-    document.getElementById(
-      'stockTab'
-    );
-  const cryptoTab =
-    document.getElementById(
-      'cryptoTab'
-    );
-  const currencyTab =
-    document.getElementById(
-      'currencyTab'
-    );
-  const commodityTab =
-    document.getElementById(
-      'commodityTab'
-    );
-  const fundTab =
-    document.getElementById(
-      'fundTab'
-    );
-  const viopTab =
-    document.getElementById(
-      'viopTab'
-    );
-  const realEstateTab =
-    document.getElementById(
-      'realEstateTab'
-    );
-  const vehicleTab =
-    document.getElementById(
-      'vehicleTab'
-    );
-  const otherAssetsTab =
-    document.getElementById(
-      'otherAssetsTab'
-    );
-  const depositTab =
-    document.getElementById(
-      'depositTab'
-    );
-  const budgetTab =
-    document.getElementById(
-      'budgetTab'
-    );
-  const userBadge =
-    document.getElementById(
-      'userBadge'
-    );
-  const userEmailEl =
-    document.getElementById(
-      'userEmail'
-    );
-  const msgEl =
-    document.getElementById(
-      'msg'
-    );
-  let mode =
-    'login';
-  /*
-   * ======================================
-   * BIST HİSSE LİSTESİ
-   * ======================================
-   *
-   * Kullanıcı sembol ve şirket adını
-   * elle yazmaz.
-   *
-   * Seçim buradan yapılır.
-   */
-  const stockMarketList = [
-    { symbol:'AEFES', name:'Anadolu Efes' },
-    { symbol:'AGHOL', name:'AG Anadolu Grubu Holding' },
-    { symbol:'AKBNK', name:'Akbank' },
-    { symbol:'AKCNS', name:'Akçansa' },
-    { symbol:'AKSA', name:'Aksa Akrilik' },
-    { symbol:'AKSEN', name:'Aksa Enerji' },
-    { symbol:'ALARK', name:'Alarko Holding' },
-    { symbol:'ALBRK', name:'Albaraka Türk' },
-    { symbol:'ALGYO', name:'Alarko GYO' },
-    { symbol:'ALKIM', name:'Alkim Kimya' },
-    { symbol:'ANHYT', name:'Anadolu Hayat Emeklilik' },
-    { symbol:'ANSGR', name:'Anadolu Sigorta' },
-    { symbol:'ARCLK', name:'Arçelik' },
-    { symbol:'ASELS', name:'Aselsan' },
-    { symbol:'ASTOR', name:'Astor Enerji' },
-    { symbol:'AYGAZ', name:'Aygaz' },
-    { symbol:'BIMAS', name:'BİM Birleşik Mağazalar' },
-    { symbol:'BRSAN', name:'Borusan Boru' },
-    { symbol:'BRYAT', name:'Borusan Yatırım' },
-    { symbol:'BSOKE', name:'Batısöke Çimento' },
-    { symbol:'CCOLA', name:'Coca-Cola İçecek' },
-    { symbol:'CIMSA', name:'Çimsa' },
-    { symbol:'CLEBI', name:'Çelebi Hava Servisi' },
-    { symbol:'CWENE', name:'CW Enerji' },
-    { symbol:'DOAS', name:'Doğuş Otomotiv' },
-    { symbol:'DOHOL', name:'Doğan Holding' },
-    { symbol:'ECILC', name:'Eczacıbaşı İlaç' },
-    { symbol:'EGEEN', name:'Ege Endüstri' },
-    { symbol:'EKGYO', name:'Emlak Konut GYO' },
-    { symbol:'ENJSA', name:'Enerjisa Enerji' },
-    { symbol:'ENKAI', name:'Enka İnşaat' },
-    { symbol:'EREGL', name:'Ereğli Demir Çelik' },
-    { symbol:'FROTO', name:'Ford Otosan' },
-    { symbol:'GARAN', name:'Garanti BBVA' },
-    { symbol:'GESAN', name:'Girişim Elektrik' },
-    { symbol:'GLYHO', name:'Global Yatırım Holding' },
-    { symbol:'GUBRF', name:'Gübre Fabrikaları' },
-    { symbol:'HALKB', name:'Halkbank' },
-    { symbol:'HEKTS', name:'Hektaş' },
-    { symbol:'ISCTR', name:'Türkiye İş Bankası C' },
-    { symbol:'ISGYO', name:'İş GYO' },
-    { symbol:'ISMEN', name:'İş Yatırım Menkul Değerler' },
-    { symbol:'KARSN', name:'Karsan Otomotiv' },
-    { symbol:'KCHOL', name:'Koç Holding' },
-    { symbol:'KONTR', name:'Kontrolmatik Teknoloji' },
-    { symbol:'KORDS', name:'Kordsa Teknik Tekstil' },
-    { symbol:'KOZAA', name:'Koza Anadolu Metal' },
-    { symbol:'KOZAL', name:'Koza Altın' },
-    { symbol:'KRDMD', name:'Kardemir D' },
-    { symbol:'MAVI', name:'Mavi Giyim' },
-    { symbol:'MGROS', name:'Migros' },
-    { symbol:'MIATK', name:'Mia Teknoloji' },
-    { symbol:'ODAS', name:'Odaş Elektrik' },
-    { symbol:'OTKAR', name:'Otokar' },
-    { symbol:'OYAKC', name:'Oyak Çimento' },
-    { symbol:'PETKM', name:'Petkim' },
-    { symbol:'PGSUS', name:'Pegasus' },
-    { symbol:'QUAGR', name:'Qua Granite' },
-    { symbol:'SAHOL', name:'Sabancı Holding' },
-    { symbol:'SASA', name:'Sasa Polyester' },
-    { symbol:'SISE', name:'Şişecam' },
-    { symbol:'SKBNK', name:'Şekerbank' },
-    { symbol:'SOKM', name:'Şok Marketler' },
-    { symbol:'TAVHL', name:'TAV Havalimanları' },
-    { symbol:'TCELL', name:'Turkcell' },
-    { symbol:'THYAO', name:'Türk Hava Yolları' },
-    { symbol:'TKFEN', name:'Tekfen Holding' },
-    { symbol:'TOASO', name:'Tofaş' },
-    { symbol:'TSKB', name:'TSKB' },
-    { symbol:'TTKOM', name:'Türk Telekom' },
-    { symbol:'TTRAK', name:'Türk Traktör' },
-    { symbol:'TUPRS', name:'Tüpraş' },
-    { symbol:'ULKER', name:'Ülker Bisküvi' },
-    { symbol:'VAKBN', name:'VakıfBank' },
-    { symbol:'VESBE', name:'Vestel Beyaz Eşya' },
-    { symbol:'VESTL', name:'Vestel Elektronik' },
-    { symbol:'YKBNK', name:'Yapı Kredi' },
-    { symbol:'ZOREN', name:'Zorlu Enerji' }
-  ];
-  /*
-   * GİRİŞ SEKMELERİ
-   */
-  document
-    .querySelectorAll(
-      '#authView .tab'
-    )
-    .forEach(
-      tab => {
-        tab.addEventListener(
-          'click',
-          () => {
-            document
-              .querySelectorAll(
-                '#authView .tab'
-              )
-              .forEach(
-                t =>
-                  t.classList.remove(
-                    'active'
-                  )
-              );
-            tab.classList.add(
-              'active'
-            );
-            mode =
-              tab.dataset.tab;
-            document
-              .getElementById(
-                'authSubmitBtn'
-              )
-              .textContent =
-                mode === 'login'
-                  ? 'Giriş Yap'
-                  : 'Hesap Oluştur';
-            hideMsg();
-          }
-        );
-      }
-    );
-  /*
-   * PORTFÖY SEKMELERİ
-   */
-  function showPortfolioSection(section) {
-    const isSummary =
-      section === 'summary';
-    const isStock =
-      section === 'stock';
-    const isCrypto =
-      section === 'crypto';
-    const isCurrency =
-      section === 'currency';
-    const isCommodity =
-      section === 'commodity';
-    const isFund =
-      section === 'fund';
-    const isViop =
-      section === 'viop';
-    const isRealEstate =
-      section === 'realEstate';
-    const isVehicle =
-      section === 'vehicle';
-    const isOtherAssets =
-      section === 'otherAssets';
-    const isDeposit =
-      section === 'deposit';
-    const isBudget =
-      section === 'budget';
-    summaryTab.classList.toggle(
-      'active',
-      isSummary
-    );
-    stockTab.classList.toggle(
-      'active',
-      isStock
-    );
-    cryptoTab.classList.toggle(
-      'active',
-      isCrypto
-    );
-    currencyTab.classList.toggle(
-      'active',
-      isCurrency
-    );
-    commodityTab.classList.toggle(
-      'active',
-      isCommodity
-    );
-    fundTab.classList.toggle(
-      'active',
-      isFund
-    );
-    viopTab.classList.toggle(
-      'active',
-      isViop
-    );
-    realEstateTab.classList.toggle(
-      'active',
-      isRealEstate
-    );
-    vehicleTab.classList.toggle(
-      'active',
-      isVehicle
-    );
-    otherAssetsTab.classList.toggle(
-      'active',
-      isOtherAssets
-    );
-    depositTab.classList.toggle(
-      'active',
-      isDeposit
-    );
-    budgetTab.classList.toggle(
-      'active',
-      isBudget
-    );
-    summaryView.style.display =
-      isSummary ? '' : 'none';
-    stockView.style.display =
-      isStock ? '' : 'none';
-    cryptoView.style.display =
-      isCrypto ? '' : 'none';
-    currencyView.style.display =
-      isCurrency ? '' : 'none';
-    commodityView.style.display =
-      isCommodity ? '' : 'none';
-    fundView.style.display =
-      isFund ? '' : 'none';
-    viopView.style.display =
-      isViop ? '' : 'none';
-    realEstateView.style.display =
-      isRealEstate ? '' : 'none';
-    vehicleView.style.display =
-      isVehicle ? '' : 'none';
-    otherAssetsView.style.display =
-      isOtherAssets ? '' : 'none';
-    depositView.style.display =
-      isDeposit ? '' : 'none';
-    budgetView.style.display =
-      isBudget ? '' : 'none';
-    if (isSummary) {
-      loadSummary();
-    }
-    if (isStock) {
-      loadHoldings();
-      loadStockOptions();
-    }
-    if (isCrypto) {
-      loadCryptoHoldings();
-      loadCryptoOptions();
-    }
-    if (isCurrency) {
-      loadCurrencyHoldings();
-      loadCurrencyOptions();
-    }
-    if (isCommodity) {
-      loadCommodityHoldings();
-      loadCommodityOptions();
-    }
-    if (isFund) {
-      loadFundHoldings();
-    }
-    if (isViop) {
-      loadViopHoldings();
-    }
-    if (isRealEstate) {
-      loadRealEstateHoldings();
-    }
-    if (isVehicle) {
-      loadVehicleHoldings();
-    }
-    if (isOtherAssets) {
-      loadOtherAssetsHoldings();
-    }
-    if (isDeposit) {
-      loadDepositHoldings();
-    }
-    if (isBudget) {
-      loadBudgetHoldings();
-    }
-  }
-  summaryTab.addEventListener(
-    'click',
-    () => showPortfolioSection('summary')
-  );
-  stockTab.addEventListener(
-    'click',
-    () => showPortfolioSection('stock')
-  );
-  cryptoTab.addEventListener(
-    'click',
-    () => showPortfolioSection('crypto')
-  );
-  currencyTab.addEventListener(
-    'click',
-    () => showPortfolioSection('currency')
-  );
-  commodityTab.addEventListener(
-    'click',
-    () => showPortfolioSection('commodity')
-  );
-  fundTab.addEventListener(
-    'click',
-    () => showPortfolioSection('fund')
-  );
-  viopTab.addEventListener(
-    'click',
-    () => showPortfolioSection('viop')
-  );
-  realEstateTab.addEventListener(
-    'click',
-    () => showPortfolioSection('realEstate')
-  );
-  vehicleTab.addEventListener(
-    'click',
-    () => showPortfolioSection('vehicle')
-  );
-  otherAssetsTab.addEventListener(
-    'click',
-    () => showPortfolioSection('otherAssets')
-  );
-  depositTab.addEventListener(
-    'click',
-    () => showPortfolioSection('deposit')
-  );
-  budgetTab.addEventListener(
-    'click',
-    () => showPortfolioSection('budget')
-  );
-  /*
-   * MESAJ
-   */
-  function showMsg(
-    text,
-    type
-  ) {
-    msgEl.textContent =
-      text;
-    msgEl.className =
-      type;
-  }
-  function hideMsg() {
-    msgEl.className =
-      '';
-    msgEl.textContent =
-      '';
-  }
-  /*
-   * GİRİŞ
-   */
-  document
-    .getElementById(
-      'authForm'
-    )
-    .addEventListener(
-      'submit',
-      async (e) => {
-        e.preventDefault();
-        hideMsg();
-        const email =
-          document
-            .getElementById(
-              'email'
-            )
-            .value
-            .trim();
-        const password =
-          document
-            .getElementById(
-              'password'
-            )
-            .value;
-        const btn =
-          document
-            .getElementById(
-              'authSubmitBtn'
-            );
-        btn.disabled =
-          true;
-        try {
-          if (
-            mode === 'login'
-          ) {
-            const {
-              error
-            } =
-              await supa.auth
-                .signInWithPassword(
-                  {
-                    email,
-                    password
-                  }
-                );
-            if (
-              error
-            ) {
-              throw error;
-            }
-          } else {
-            const {
-              error
-            } =
-              await supa.auth
-                .signUp(
-                  {
-                    email,
-                    password
-                  }
-                );
-            if (
-              error
-            ) {
-              throw error;
-            }
-            showMsg(
-              'Hesap oluşturuldu. E-postana gelen onay linkine tıkladıktan sonra giriş yapabilirsin.',
-              'ok'
-            );
-          }
-        } catch (
-          err
-        ) {
-          showMsg(
-            err.message ||
-              'Bir hata oluştu.',
-            'error'
-          );
-        } finally {
-          btn.disabled =
-            false;
-        }
-      }
-    );
-  /*
-   * ÇIKIŞ
-   */
-  document
-    .getElementById(
-      'signOutBtn'
-    )
-    .addEventListener(
-      'click',
-      async () => {
-        await supa.auth
-          .signOut();
-      }
-    );
-  /*
-   * OTURUM
-   */
-  supa.auth.onAuthStateChange(
-    (
-      _event,
-      session
-    ) => {
-      if (
-        session &&
-        session.user
-      ) {
-        authView.style.display =
-          'none';
-        portfolioView.style.display =
-          '';
-        userBadge.style.display =
-          'flex';
-        userEmailEl.textContent =
-          session.user.email ||
-          '';
-        showPortfolioSection(
-          'summary'
-        );
-        loadCryptoOptions();
-        loadCurrencyOptions();
-        loadCommodityOptions();
-      } else {
-        authView.style.display =
-          '';
-        portfolioView.style.display =
-          'none';
-        userBadge.style.display =
-          'none';
-      }
-    }
-  );
-  /*
-   * FORMAT
-   */
-  function fmtTL(
-    n
-  ) {
-    return new Intl.NumberFormat(
-      'tr-TR',
-      {
-        style:
-          'currency',
-        currency:
-          'TRY'
-      }
-    ).format(
-      Number(n) ||
-      0
-    );
-  }
-  function fmtUSD(
-    n
-  ) {
-    return new Intl.NumberFormat(
-      'tr-TR',
-      {
-        style: 'currency',
-        currency: 'USD'
-      }
-    ).format(Number(n) || 0);
-  }
-  function fmtTLPrecise(
-    n
-  ) {
-    return new Intl.NumberFormat(
-      'tr-TR',
-      {
-        style: 'currency',
-        currency: 'TRY',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 6
-      }
-    ).format(Number(n) || 0);
-  }
-  function fmtNumber(
-    n
-  ) {
-    return new Intl.NumberFormat(
-      'tr-TR',
-      {
-        maximumFractionDigits:
-          8
-      }
-    ).format(
-      Number(n) ||
-      0
-    );
-  }
-  function escapeHtml(
-    s
-  ) {
-    return String(
-      s ??
-      ''
-    ).replace(
-      /[&<>"']/g,
-      c => ({
-        '&':'&amp;',
-        '<':'&lt;',
-        '>':'&gt;',
-        '"':'&quot;',
-        "'":'&#39;'
-      }[c])
-    );
-  }
-  /*
-   * ======================================
-   * CANLI FİYAT YARDIMCILARI
-   * ======================================
-   * Hisse/Döviz/Emtia/Fon fiyatları tarayıcıdan doğrudan
-   * çekilemediği için (CORS / Origin doğrulaması), Supabase'e
-   * deploy edilen `price-proxy` Edge Function'ı üzerinden çekilir.
-   * Kripto için CoinGecko'nun genel API'si doğrudan çağrılabildiği
-   * için ayrı bir yardımcı (fetchCryptoPrices) kullanılıyor.
-   */
-  async function fetchPriceProxy(params) {
-    const url =
-      `${SUPABASE_URL}/functions/v1/price-proxy?${params}`;
-    const res = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'apikey': SUPABASE_ANON_KEY
-      }
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(
-        (data && data.error) ? data.error : `HTTP ${res.status}`
-      );
-    }
-    return data;
-  }
-  async function fetchCryptoPricesTry(ids) {
-    const uniqueIds = [...new Set(ids)].filter(Boolean);
-    if (uniqueIds.length === 0) return {};
-    const url =
-      'https://api.coingecko.com/api/v3/simple/price?ids=' +
-      encodeURIComponent(uniqueIds.join(',')) +
-      '&vs_currencies=try';
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`Kripto fiyat hatası: HTTP ${res.status}`);
-    }
-    const data = await res.json();
-    const result = {};
-    for (const id of uniqueIds) {
-      const price = data && data[id] && data[id].try;
-      if (typeof price === 'number' && price > 0) {
-        result[id] = price;
-      }
-    }
-    return result;
-  }
-  /**
-   * Bir tabloda "Güncel Fiyat / Güncel Değer / Kâr-Zarar" hücrelerini
-   * canlı fiyat gelene kadar "..." ile gösterir, fiyat gelince
-   * doldurur, hata olursa "—" ile sessizce bırakır (tek bir satırın
-   * fiyat hatası tüm tabloyu bozmasın diye).
-   */
-  function profitLossHtml(invested, currentValue, fmt) {
-    const formatter = fmt || fmtTL;
-    const diff = currentValue - invested;
-    const pct = invested > 0 ? (diff / invested) * 100 : 0;
-    const cls = diff > 0 ? 'pl-pos' : (diff < 0 ? 'pl-neg' : 'pl-zero');
-    const sign = diff > 0 ? '+' : '';
-    return `<span class="${cls}">${sign}${formatter(diff)} (${sign}${pct.toFixed(2)}%)</span>`;
-  }
-  /*
-   * ======================================
-   * ÖZET (NET VARLIK PANELİ)
-   * ======================================
-   * Tüm varlık türlerinin canlı fiyatlarla hesaplanmış toplamını
-   * gösterir. Hisse/Döviz/Emtia/Fon fiyatları price-proxy'den, Kripto
-   * CoinGecko'dan gelir; Gayrimenkul/Araç zaten kullanıcı tarafından
-   * girilen güncel değeri kullanır; Mevduat, mobil uygulamadaki
-   * basit faiz formülüyle (DepositCalculatorService) aynı şekilde
-   * anlık tahakkuk eden değer olarak hesaplanır.
-   */
-  function depositCurrentValue(row) {
-    const principal = Number(row.principal) || 0;
-    const annualRate = Number(row.annual_rate) || 0;
-    const withholdingRate = Number(row.withholding_rate) || 0;
-    const startMs = new Date(row.start_date).getTime();
-    const maturityMs = new Date(row.maturity_date).getTime();
-    let totalDays = Math.round((maturityMs - startMs) / 86400000);
-    if (!Number.isFinite(totalDays) || totalDays < 1) totalDays = 1;
-    let elapsedDays = Math.round((Date.now() - startMs) / 86400000);
-    if (!Number.isFinite(elapsedDays) || elapsedDays < 0) elapsedDays = 0;
-    if (elapsedDays > totalDays) elapsedDays = totalDays;
-    const accruedGross = principal * (annualRate / 100) * (elapsedDays / 365);
-    const accruedTax = accruedGross * (withholdingRate / 100);
-    const accruedNet = accruedGross - accruedTax;
-    return principal + accruedNet;
-  }
-  async function loadSummary() {
-    const totalEl = document.getElementById('summaryTotal');
-    const updatedEl = document.getElementById('summaryUpdatedAt');
-    const breakdownEl = document.getElementById('summaryBreakdown');
-    const emptyEl = document.getElementById('summaryEmptyState');
-    if (!totalEl || !breakdownEl || !emptyEl) return;
 
-    totalEl.textContent = '…';
-    updatedEl.textContent = '';
-    breakdownEl.innerHTML = '';
-    emptyEl.style.display = 'none';
-
-    const [
-      stockRes, cryptoRes, currencyRes, commodityRes,
-      fundRes, viopRes, realEstateRes, vehicleRes, otherAssetsRes, depositRes
-    ] = await Promise.all([
-      supa.from('stock_holdings').select('*').is('deleted_at', null),
-      supa.from('crypto_holdings').select('*').is('deleted_at', null),
-      supa.from('currency_holdings').select('*').is('deleted_at', null),
-      supa.from('commodity_holdings').select('*').is('deleted_at', null),
-      supa.from('fund_holdings').select('*').is('deleted_at', null),
-      supa.from('viop_holdings').select('*').is('deleted_at', null),
-      supa.from('real_estate_holdings').select('*').is('deleted_at', null),
-      supa.from('vehicle_holdings').select('*').is('deleted_at', null),
-      supa.from('other_asset_holdings').select('*').is('deleted_at', null),
-      supa.from('deposit_holdings').select('*').is('deleted_at', null)
-    ]);
-
-    const categories = [];
-
-    {
-      const rows = stockRes.data || [];
-      let total = 0;
-      await Promise.all(rows.map(async row => {
-        try {
-          const quote = await fetchPriceProxy(
-            `type=stock&symbol=${encodeURIComponent(row.symbol)}`
-          );
-          total += (Number(row.lot) || 0) * quote.price;
-        } catch (e) {}
-      }));
-      categories.push({ label: 'Hisse', value: total });
-    }
-
-    {
-      const rows = cryptoRes.data || [];
-      let total = 0;
-      try {
-        const prices = await fetchCryptoPricesTry(
-          rows.map(r => r.crypto_id)
-        );
-        for (const row of rows) {
-          const price = prices[row.crypto_id];
-          if (price) total += (Number(row.amount) || 0) * price;
-        }
-      } catch (e) {}
-      categories.push({ label: 'Kripto', value: total });
-    }
-
-    {
-      const rows = currencyRes.data || [];
-      let total = 0;
-      await Promise.all(rows.map(async row => {
-        try {
-          const quote = await fetchPriceProxy(
-            `type=currency&code=${encodeURIComponent(row.currency_code)}`
-          );
-          total += (Number(row.amount) || 0) * quote.price;
-        } catch (e) {}
-      }));
-      categories.push({ label: 'Döviz', value: total });
-    }
-
-    {
-      const rows = commodityRes.data || [];
-      let total = 0;
-      let usdTry = null;
-      await Promise.all(rows.map(async row => {
-        try {
-          const quote = await fetchPriceProxy(
-            `type=commodity&key=${encodeURIComponent(row.commodity_key)}`
-          );
-          let priceTry = quote.price;
-          if (row.commodity_key === 'BRENT_USD') {
-            if (usdTry == null) {
-              const usdQuote = await fetchPriceProxy('type=currency&code=USD');
-              usdTry = usdQuote.price;
-            }
-            priceTry = quote.price * usdTry;
-          }
-          total += (Number(row.amount) || 0) * priceTry;
-        } catch (e) {}
-      }));
-      categories.push({ label: 'Emtia', value: total });
-    }
-
-    {
-      const rows = fundRes.data || [];
-      let total = 0;
-      await Promise.all(rows.map(async row => {
-        try {
-          const quote = await fetchPriceProxy(
-            `type=fund&code=${encodeURIComponent(row.code)}`
-          );
-          total += (Number(row.units) || 0) * quote.price;
-        } catch (e) {}
-      }));
-      categories.push({ label: 'Fon', value: total });
-    }
-
-    {
-      const rows = viopRes.data || [];
-      let total = 0;
-      await Promise.all(rows.map(async row => {
-        try {
-          const quote = await fetchPriceProxy(
-            `type=viop&symbol=${encodeURIComponent(row.symbol)}`
-          );
-          total += (Number(row.lot) || 0) * quote.price;
-        } catch (e) {}
-      }));
-      categories.push({ label: 'VİOP', value: total });
-    }
-
-    {
-      const rows = realEstateRes.data || [];
-      const total = rows.reduce(
-        (sum, r) => sum + (Number(r.current_value) || 0), 0
-      );
-      categories.push({ label: 'Gayrimenkul', value: total });
-    }
-
-    {
-      const rows = vehicleRes.data || [];
-      const total = rows.reduce(
-        (sum, r) => sum + (Number(r.current_value) || 0), 0
-      );
-      categories.push({ label: 'Araç', value: total });
-    }
-
-    {
-      const rows = otherAssetsRes.data || [];
-      const total = rows.reduce(
-        (sum, r) => sum + (Number(r.current_value) || 0), 0
-      );
-      categories.push({ label: 'Diğer Varlıklar', value: total });
-    }
-
-    {
-      const rows = depositRes.data || [];
-      const total = rows.reduce(
-        (sum, r) => sum + depositCurrentValue(r), 0
-      );
-      categories.push({ label: 'Mevduat', value: total });
-    }
-
-    const grandTotal = categories.reduce((sum, c) => sum + c.value, 0);
-    totalEl.textContent = fmtTL(grandTotal);
-    updatedEl.textContent =
-      'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
-
-    if (grandTotal <= 0) {
-      emptyEl.style.display = 'block';
-      return;
-    }
-
-    const sorted = categories
-      .filter(c => c.value > 0)
-      .sort((a, b) => b.value - a.value);
-
-    breakdownEl.innerHTML = sorted.map(c => {
-      const pct = grandTotal > 0 ? (c.value / grandTotal) * 100 : 0;
-      return `
-        <div style="margin-bottom:14px;">
-          <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;">
-            <span>${escapeHtml(c.label)}</span>
-            <span>${fmtTL(c.value)} (${pct.toFixed(1)}%)</span>
+      <!-- VİOP AKTİF VADE -->
+      <div class="page" id="page-viop">
+        <h1 class="page-title">VİOP Aktif Vade</h1>
+        <p class="page-lead">Pozisyonların, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
+        <div class="card">
+          <div class="section-title">VİOP Pozisyonların</div>
+          <div class="table-wrap">
+          <table id="viopTable">
+            <thead><tr>
+              <th>Sözleşme</th><th class="num">Lot</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
+              <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+            </tr></thead>
+            <tbody id="viopBody"></tbody>
+          </table>
           </div>
-          <div style="background:#eee; border-radius:6px; height:10px; overflow:hidden;">
-            <div style="background:#4f7cff; width:${pct.toFixed(2)}%; height:100%;"></div>
+          <div id="viopEmptyState" class="empty" style="display:none;">Henüz VİOP pozisyonu eklenmemiş.</div>
+          <div class="add-form">
+            <div class="full section-title" style="margin:0;">VİOP pozisyonu ekle</div>
+            <input id="newViopSymbol" class="full" type="text" autocomplete="off" placeholder="Sözleşme sembolü (örn. XU030")" />
+            <input id="newViopUnderlying" type="text" autocomplete="off" placeholder="Dayanak varlık (isteğe bağlı)" />
+            <select id="newViopIsOption">
+              <option value="false">Vadeli İşlem</option>
+              <option value="true">Opsiyon</option>
+            </select>
+            <input id="newViopLot" type="number" step="any" placeholder="Lot" />
+            <input id="newViopCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
+            <button class="btn primary full" id="addViopBtn" type="button">Ekle</button>
           </div>
         </div>
-      `;
-    }).join('');
-  }
-  /*
-   * ======================================
-   * HİSSE SEÇİM LİSTESİ
-   * ======================================
-   */
-  function loadStockOptions() {
-    const select =
-      document
-        .getElementById(
-          'newStockSelect'
-        );
-    if (
-      !select
-    ) {
-      return;
-    }
-    select.innerHTML =
-      '<option value="">Hisse seç...</option>';
-    const sorted =
-      [...stockMarketList]
-        .sort(
-          (
-            a,
-            b
-          ) =>
-            a.symbol.localeCompare(
-              b.symbol,
-              'tr'
-            )
-        );
-    for (
-      const stock
-      of sorted
-    ) {
-      const option =
-        document
-          .createElement(
-            'option'
-          );
-      option.value =
-        stock.symbol;
-      option.textContent =
-        `${stock.symbol} — ${stock.name}`;
-      option.dataset.name =
-        stock.name;
-      select.appendChild(
-        option
-      );
-    }
-  }
-  /*
-   * ======================================
-   * HİSSE PORTFÖYÜ
-   * ======================================
-   */
-  async function loadHoldings() {
-    const { data, error } = await supa
-  .from('stock_holdings')
-  .select('*')
-  .is('deleted_at', null)
-  .order('symbol', { ascending: true });
-    const tbody =
-      document
-        .getElementById(
-          'holdingsBody'
-        );
-    const emptyState =
-      document
-        .getElementById(
-          'emptyState'
-        );
-    tbody.innerHTML =
-      '';
-    if (
-      error
-    ) {
-      showMsg(
-        'Hisse verileri yüklenemedi: ' +
-          error.message,
-        'error'
-      );
-      return;
-    }
-    if (
-      !data ||
-      data.length ===
-        0
-    ) {
-      emptyState.style.display =
-        'block';
-      return;
-    }
-    emptyState.style.display =
-      'none';
-    for (
-      const row
-      of data
-    ) {
-      const invested =
-        (
-          Number(
-            row.lot
-          ) ||
-          0
-        ) *
-        (
-          Number(
-            row.cost
-          ) ||
-          0
-        );
-      const tr =
-        document
-          .createElement(
-            'tr'
-          );
-      tr.innerHTML = `
-        <td>
-          <div class="sym">
-            ${escapeHtml(
-              row.symbol
-            )}
+        <div class="card">
+          <div class="section-title"><span class="msr">show_chart</span> Piyasadaki Aktif Vadeli İşlem Sözleşmeleri</div>
+          <div class="placeholder-box">
+            <span class="msr">hourglass_top</span>
+            Piyasa genelindeki aktif VİOP sözleşme listesi için güvenilir bir
+            canlı veri kaynağı henüz bu panele bağlanmadı. Bu bölüm, veri
+            servisi hazır olduğunda yakında eklenecek.
           </div>
-          ${
-            row.name
-              ? `
-                <div class="name">
-                  ${escapeHtml(
-                    row.name
-                  )}
-                </div>
-              `
-              : ''
-          }
-        </td>
-        <td class="num">
-          ${fmtNumber(
-            row.lot
-          )}
-        </td>
-        <td class="num">
-          ${fmtTL(
-            row.cost
-          )}
-        </td>
-        <td class="num">
-          ${fmtTL(
-            invested
-          )}
-        </td>
-        <td class="num" id="stock-price-${escapeHtml(row.symbol)}">…</td>
-        <td class="num" id="stock-value-${escapeHtml(row.symbol)}">…</td>
-        <td class="num" id="stock-pl-${escapeHtml(row.symbol)}">…</td>
-        <td class="num">
-          <button
-  type="button"
-  class="del stock-delete"
-  onclick="deleteHolding('${escapeHtml(row.symbol)}')"
-  title="Sil"
->
-  ✕
-</button>
-        </td>
-      `;
-      tbody.appendChild(
-        tr
-      );
-    }
-    loadStockLivePrices(data);
-  }
-  async function loadStockLivePrices(rows) {
-    await Promise.all(rows.map(async (row) => {
-      const priceEl = document.getElementById(`stock-price-${row.symbol}`);
-      const valueEl = document.getElementById(`stock-value-${row.symbol}`);
-      const plEl = document.getElementById(`stock-pl-${row.symbol}`);
-      if (!priceEl || !valueEl || !plEl) return;
-      try {
-        const quote = await fetchPriceProxy(
-          `type=stock&symbol=${encodeURIComponent(row.symbol)}`
-        );
-        const lot = Number(row.lot) || 0;
-        const invested = lot * (Number(row.cost) || 0);
-        const currentValue = lot * quote.price;
-        priceEl.textContent = fmtTL(quote.price);
-        valueEl.textContent = fmtTL(currentValue);
-        plEl.innerHTML = profitLossHtml(invested, currentValue);
-      } catch (e) {
-        priceEl.textContent = '—';
-        valueEl.textContent = '—';
-        plEl.textContent = '—';
-      }
-    }));
-  }
-  async function deleteHolding(symbol) {
-  const {
-    data: { user }
-  } = await supa.auth.getUser();
-  if (!user) {
-    return;
-  }
-  const { error } =
-    await supa
-      .from('stock_holdings')
-      .update({
-        deleted_at:
-          new Date().toISOString()
-      })
-      .eq('user_id', user.id)
-      .eq('symbol', symbol);
-  if (error) {
-    showMsg(
-      'Hisse silinemedi: ' +
-        error.message,
-      'error'
-    );
-    return;
-  }
-  loadHoldings();
-}
+        </div>
+      </div>
 
-  /*
-   * HİSSE EKLE
-   */
-  document
-    .getElementById(
-      'addBtn'
-    )
-    .addEventListener(
-      'click',
-      async () => {
-        hideMsg();
-        const {
-          data:{
-            user
-          }
-        } =
-          await supa.auth
-            .getUser();
-        if (
-          !user
-        ) {
-          return;
-        }
-        const select =
-          document
-            .getElementById(
-              'newStockSelect'
-            );
-        const selectedOption =
-          select.options[
-            select.selectedIndex
-          ];
-        const symbol =
-          select.value;
-        const name =
-          selectedOption
-            ?.dataset
-            ?.name ||
-          '';
-        const lot =
-          parseFloat(
-            document
-              .getElementById(
-                'newLot'
-              )
-              .value
-          );
-        const cost =
-          parseFloat(
-            document
-              .getElementById(
-                'newCost'
-              )
-              .value
-          );
-        if (
-          !symbol ||
-          !name ||
-          isNaN(
-            lot
-          ) ||
-          lot <=
-            0 ||
-          isNaN(
-            cost
-          ) ||
-          cost <=
-            0
-        ) {
-          showMsg(
-            'Lütfen hisseyi seçip lot ve maliyeti eksiksiz gir.',
-            'error'
-          );
-          return;
-        }
-        const {
-          error
-        } =
-          await supa
-            .from(
-              'stock_holdings'
-            )
-            .upsert(
-              {
-                user_id:
-                  user.id,
-                symbol:
-                  symbol,
-                name:
-                  name,
-                lot:
-                  lot,
-                cost:
-                  cost
-              },
-              {
-                onConflict:
-                  'user_id,symbol'
-              }
-            );
-        if (
-          error
-        ) {
-          showMsg(
-            'Hisse eklenemedi: ' +
-              error.message,
-            'error'
-          );
-          return;
-        }
-        select.value =
-          '';
-        document
-          .getElementById(
-            'newLot'
-          )
-          .value =
-            '';
-        document
-          .getElementById(
-            'newCost'
-          )
-          .value =
-            '';
-        loadHoldings();
-      }
-    );
-  /*
-   * ======================================
-   * DÖVİZ
-   * ======================================
-   */
-  const currencyMarketList = [
-    { code:'TRY', name:'Türk Lirası' },
-    { code:'USD', name:'Amerikan Doları' },
-    { code:'EUR', name:'Euro' },
-    { code:'GBP', name:'İngiliz Sterlini' },
-    { code:'JPY', name:'Japon Yeni' },
-    { code:'CHF', name:'İsviçre Frangı' },
-    { code:'AUD', name:'Avustralya Doları' },
-    { code:'CAD', name:'Kanada Doları' },
-    { code:'CNY', name:'Çin Yuanı' },
-    { code:'RUB', name:'Rus Rublesi' },
-    { code:'UAH', name:'Ukrayna Grivnası' }
-  ];
-  function loadCurrencyOptions() {
-    const list =
-      document.getElementById(
-        'currencyOptions'
-      );
-    if (!list) {
-      return;
-    }
-    list.innerHTML = '';
-    for (
-      const currency
-      of currencyMarketList
-    ) {
-      const option =
-        document.createElement(
-          'option'
-        );
-      option.value =
-        `${currency.code} — ${currency.name}`;
-      list.appendChild(
-        option
-      );
-    }
-  }
-  function resolveCurrency(
-    rawValue
-  ) {
-    const value =
-      String(rawValue || '')
-        .trim()
-        .toLocaleUpperCase('tr-TR');
-    if (!value) {
-      return null;
-    }
-    return currencyMarketList.find(
-      currency => {
-        const code =
-          currency.code
-            .toLocaleUpperCase('tr-TR');
-        const name =
-          currency.name
-            .toLocaleUpperCase('tr-TR');
-        return value === code ||
-          value.startsWith(`${code} —`) ||
-          value === name ||
-          value.includes(code) ||
-          value.includes(name);
-      }
-    ) || null;
-  }
-  async function loadCurrencyHoldings() {
-    const { data, error } =
-      await supa
-        .from('currency_holdings')
-        .select('*')
-        .is('deleted_at', null)
-        .order(
-          'currency_code',
-          {
-            ascending: true
-          }
-        );
-    const tbody =
-      document.getElementById(
-        'currencyBody'
-      );
-    const emptyState =
-      document.getElementById(
-        'currencyEmptyState'
-      );
-    if (!tbody || !emptyState) {
-      return;
-    }
-    tbody.innerHTML = '';
-    if (error) {
-      showMsg(
-        'Döviz verileri yüklenemedi: ' +
-          error.message,
-        'error'
-      );
-      return;
-    }
-    if (!data || data.length === 0) {
-      emptyState.style.display =
-        'block';
-      return;
-    }
-    emptyState.style.display =
-      'none';
-    for (const row of data) {
-      const tr =
-        document.createElement(
-          'tr'
-        );
-      const costText =
-        row.cost == null
-          ? '—'
-          : fmtTL(row.cost);
-      tr.innerHTML = `
-        <td>
-          <div class="sym">
-            ${escapeHtml(row.currency_code)}
+      <!-- BÜTÇE (yakında) -->
+      <div class="page" id="page-butce">
+        <h1 class="page-title">Bütçe</h1>
+        <p class="page-lead">Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
+
+        <div class="card" style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+          <div class="section-title" style="margin:0;"><span class="msr">calendar_month</span> Ay</div>
+          <input id="budgetMonthInput" type="month" style="max-width:200px;" />
+        </div>
+
+        <div class="stat-grid" id="budgetSummaryGrid"></div>
+
+        <div class="card">
+          <div class="section-title" id="budgetFormTitle">İşlem ekle</div>
+          <div class="add-form">
+            <select id="budgetType">
+              <option value="Gider">Gider</option>
+              <option value="Gelir">Gelir</option>
+            </select>
+            <select id="budgetCategory"></select>
+            <input id="budgetTitle" class="full" type="text" autocomplete="off" placeholder="Başlık (örn. Market alışverişi)" />
+            <input id="budgetNote" class="full" type="text" autocomplete="off" placeholder="Not (isteğe bağlı)" />
+            <input id="budgetAmount" type="number" step="any" min="0" placeholder="Tutar (₺)" />
+            <input id="budgetDate" type="date" />
+            <label style="display:flex; align-items:center; gap:8px; margin:0; grid-column:1 / -1; color:var(--text-muted); font-size:13px;">
+              <input id="budgetRecurring" type="checkbox" style="width:auto;" />
+              Bu işlem her ay düzenli olarak tekrarlanıyor (ör. maaş, kira)
+            </label>
+            <button class="btn primary full" id="addBudgetBtn" type="button">Ekle</button>
+            <button class="btn outline full" id="cancelBudgetEditBtn" type="button" style="display:none;">İptal</button>
           </div>
-          <div class="name">
-            ${escapeHtml(row.currency_name || '')}
+        </div>
+
+        <div class="card">
+          <div class="section-title">Bu Ayki İşlemler</div>
+          <div class="table-wrap">
+          <table id="budgetTable">
+            <thead><tr>
+              <th>Tarih</th><th>Tür</th><th>Kategori</th><th>Başlık</th>
+              <th class="num">Tutar</th><th></th>
+            </tr></thead>
+            <tbody id="budgetBody"></tbody>
+          </table>
           </div>
-        </td>
-        <td class="num">
-          ${fmtNumber(row.amount)}
-        </td>
-        <td class="num">
-          ${costText}
-        </td>
-        <td class="num" id="currency-price-${escapeHtml(row.currency_code)}">…</td>
-        <td class="num" id="currency-value-${escapeHtml(row.currency_code)}">…</td>
-        <td class="num" id="currency-pl-${escapeHtml(row.currency_code)}">…</td>
-        <td class="num">
-          <button
-            type="button"
-            class="del"
-            title="Sil"
-            onclick="deleteCurrencyHolding('${escapeHtml(row.currency_code)}')"
-          >
-            ✕
-          </button>
-        </td>
-      `;
-      tbody.appendChild(
-        tr
-      );
-    }
-    loadCurrencyLivePrices(data);
-  }
-  async function loadCurrencyLivePrices(rows) {
-    await Promise.all(rows.map(async (row) => {
-      const priceEl = document.getElementById(`currency-price-${row.currency_code}`);
-      const valueEl = document.getElementById(`currency-value-${row.currency_code}`);
-      const plEl = document.getElementById(`currency-pl-${row.currency_code}`);
-      if (!priceEl || !valueEl || !plEl) return;
-      try {
-        const quote = await fetchPriceProxy(
-          `type=currency&code=${encodeURIComponent(row.currency_code)}`
-        );
-        const amount = Number(row.amount) || 0;
-        const currentValue = amount * quote.price;
-        priceEl.textContent = fmtTL(quote.price);
-        valueEl.textContent = fmtTL(currentValue);
-        if (row.cost != null) {
-          const invested = amount * Number(row.cost);
-          plEl.innerHTML = profitLossHtml(invested, currentValue);
-        } else {
-          plEl.textContent = '—';
-        }
-      } catch (e) {
-        priceEl.textContent = '—';
-        valueEl.textContent = '—';
-        plEl.textContent = '—';
-      }
-    }));
-  }
-  async function deleteCurrencyHolding(
-    currencyCode
-  ) {
-    const {
-      data: { user }
-    } = await supa.auth.getUser();
-    if (!user) {
-      return;
-    }
-    const { error } =
-      await supa
-        .from('currency_holdings')
-        .update({
-          deleted_at:
-            new Date().toISOString()
-        })
-        .eq('user_id', user.id)
-        .eq(
-          'currency_code',
-          currencyCode
-        );
-    if (error) {
-      showMsg(
-        'Döviz silinemedi: ' +
-          error.message,
-        'error'
-      );
-      return;
-    }
-    await loadCurrencyHoldings();
-  }
-  document
-    .getElementById(
-      'addCurrencyBtn'
-    )
-    .addEventListener(
-      'click',
-      async () => {
-        hideMsg();
-        const {
-          data: { user }
-        } = await supa.auth.getUser();
-        if (!user) {
-          return;
-        }
-        const searchInput =
-          document.getElementById(
-            'newCurrencySearch'
-          );
-        const currency =
-          resolveCurrency(
-            searchInput.value
-          );
-        const amount =
-          parseFloat(
-            document.getElementById(
-              'newCurrencyAmount'
-            ).value
-          );
-        const costRaw =
-          document.getElementById(
-            'newCurrencyCost'
-          ).value.trim();
-        const cost =
-          costRaw === ''
-            ? null
-            : parseFloat(costRaw);
-        if (
-          !currency ||
-          isNaN(amount) ||
-          amount <= 0 ||
-          (cost !== null &&
-            (isNaN(cost) || cost < 0))
-        ) {
-          showMsg(
-            'Lütfen dövizi seçip geçerli bir miktar gir.',
-            'error'
-          );
-          return;
-        }
-        const { error } =
-          await supa
-            .from('currency_holdings')
-            .upsert(
-              {
-                user_id:
-                  user.id,
-                currency_code:
-                  currency.code,
-                currency_name:
-                  currency.name,
-                amount:
-                  amount,
-                cost:
-                  cost,
-                deleted_at:
-                  null
-              },
-              {
-                onConflict:
-                  'user_id,currency_code'
-              }
-            );
-        if (error) {
-          showMsg(
-            'Döviz eklenemedi: ' +
-              error.message,
-            'error'
-          );
-          return;
-        }
-        searchInput.value = '';
-        document.getElementById(
-          'newCurrencyAmount'
-        ).value = '';
-        document.getElementById(
-          'newCurrencyCost'
-        ).value = '';
-        await loadCurrencyHoldings();
-      }
-    );
-  /*
-   * ======================================
-   * EMTİA
-   * ======================================
-   */
-  const commodityMarketList = [
-    { key:'GOLD', symbol:'Au', name:'Altın', unit:'Gram' },
-    { key:'SILVER', symbol:'Ag', name:'Gümüş', unit:'Gram' },
-    { key:'COPPER', symbol:'Cu', name:'Bakır', unit:'Gram' },
-    { key:'PLATINUM', symbol:'Pt', name:'Platin', unit:'Gram' },
-    { key:'PALLADIUM', symbol:'Pd', name:'Paladyum', unit:'Gram' },
-    { key:'BRENT', symbol:'BRENT', name:'Brent Petrol', unit: 'Varil' },
-    { key:'BRENT_USD', symbol:'BRENT_USD', name:'Brent Petrol (USD)', unit: 'Varil' }
-  ];
-  function loadCommodityOptions() {
-    const list = document.getElementById('commodityOptions');
-    if (!list) return;
-    list.innerHTML = '';
-    for (const commodity of commodityMarketList) {
-      const option = document.createElement('option');
-      option.value = `${commodity.name} — ${commodity.key}`;
-      list.appendChild(option);
-    }
-  }
-  function resolveCommodity(rawValue) {
-    const value = String(rawValue || '')
-      .trim()
-      .toLocaleUpperCase('tr-TR');
-    if (!value) return null;
-    return commodityMarketList.find(
-      commodity => {
-        const key = commodity.key.toLocaleUpperCase('tr-TR');
-        const symbol = commodity.symbol.toLocaleUpperCase('tr-TR');
-        const name = commodity.name.toLocaleUpperCase('tr-TR');
-        return value === key ||
-          value === symbol ||
-          value === name ||
-          value.startsWith(`${name} —`) ||
-          value.includes(key) ||
-          value.includes(name);
-      }
-    ) || null;
-  }
-  async function loadCommodityHoldings() {
-    const { data, error } = await supa
-      .from('commodity_holdings')
-      .select('*')
-      .is('deleted_at', null)
-      .order('commodity_key', { ascending: true });
-    const tbody = document.getElementById('commodityBody');
-    const emptyState = document.getElementById('commodityEmptyState');
-    if (!tbody || !emptyState) return;
-    tbody.innerHTML = '';
-    if (error) {
-      showMsg(
-        'Emtia verileri yüklenemedi: ' + error.message,
-        'error'
-      );
-      return;
-    }
-    if (!data || data.length === 0) {
-      emptyState.style.display = 'block';
-      return;
-    }
-    emptyState.style.display = 'none';
-    for (const row of data) {
-      const tr = document.createElement('tr');
-      const costText =
-        row.cost == null ? '—' : fmtTL(row.cost);
-      tr.innerHTML = `
-        <td>
-          <div class="sym">${escapeHtml(row.name || row.commodity_key)}</div>
-          <div class="name">
-            ${escapeHtml(row.symbol || '')}
-            ${row.unit ? ' · ' + escapeHtml(row.unit) : ''}
+          <div id="budgetEmptyState" class="empty" style="display:none;">Bu ay için henüz işlem eklenmemiş.</div>
+        </div>
+      </div>
+
+      <!-- FAVORİLER (yakında) -->
+      <div class="page" id="page-favoriler">
+        <h1 class="page-title">Favoriler</h1>
+        <p class="page-lead">Favorilere eklediğin enstrümanlar.</p>
+        <div class="card">
+          <div class="placeholder-box">
+            <span class="msr">star</span>
+            Favoriler bölümü yakında bu panelde de kullanılabilir olacak.
           </div>
-        </td>
-        <td class="num">${fmtNumber(row.amount)}</td>
-        <td class="num">${costText}</td>
-        <td class="num" id="commodity-price-${escapeHtml(row.commodity_key)}">…</td>
-        <td class="num" id="commodity-value-${escapeHtml(row.commodity_key)}">…</td>
-        <td class="num" id="commodity-pl-${escapeHtml(row.commodity_key)}">…</td>
-        <td class="num">
-          <button
-            type="button"
-            class="del"
-            title="Sil"
-            data-commodity-key="${escapeHtml(row.commodity_key)}"
-          >✕</button>
-        </td>
-      `;
-      const deleteBtn = tr.querySelector('[data-commodity-key]');
-      deleteBtn.addEventListener(
-        'click',
-        () => deleteCommodityHolding(row.commodity_key)
-      );
-      tbody.appendChild(tr);
-    }
-    loadCommodityLivePrices(data);
-  }
-  async function loadCommodityLivePrices(rows) {
-    await Promise.all(rows.map(async (row) => {
-      const priceEl = document.getElementById(`commodity-price-${row.commodity_key}`);
-      const valueEl = document.getElementById(`commodity-value-${row.commodity_key}`);
-      const plEl = document.getElementById(`commodity-pl-${row.commodity_key}`);
-      if (!priceEl || !valueEl || !plEl) return;
-      try {
-        const quote = await fetchPriceProxy(
-          `type=commodity&key=${encodeURIComponent(row.commodity_key)}`
-        );
-        const isUsd = row.commodity_key === 'BRENT_USD';
-        const fmt = isUsd ? fmtUSD : fmtTL;
-        const amount = Number(row.amount) || 0;
-        const currentValue = amount * quote.price;
-        priceEl.textContent = fmt(quote.price);
-        valueEl.textContent = fmt(currentValue);
-        if (row.cost != null) {
-          const invested = amount * Number(row.cost);
-          plEl.innerHTML = profitLossHtml(invested, currentValue, fmt);
-        } else {
-          plEl.textContent = '—';
-        }
-      } catch (e) {
-        priceEl.textContent = '—';
-        valueEl.textContent = '—';
-        plEl.textContent = '—';
-      }
-    }));
-  }
-  async function deleteCommodityHolding(commodityKey) {
-    const {
-      data: { user }
-    } = await supa.auth.getUser();
-    if (!user) return;
-    const { error } = await supa
-      .from('commodity_holdings')
-      .update({
-        deleted_at: new Date().toISOString()
-      })
-      .eq('user_id', user.id)
-      .eq('commodity_key', commodityKey);
-    if (error) {
-      showMsg(
-        'Emtia silinemedi: ' + error.message,
-        'error'
-      );
-      return;
-    }
-    await loadCommodityHoldings();
-  }
-  document
-    .getElementById('addCommodityBtn')
-    .addEventListener(
-      'click',
-      async () => {
-        hideMsg();
-        const {
-          data: { user }
-        } = await supa.auth.getUser();
-        if (!user) return;
-        const searchInput =
-          document.getElementById('newCommoditySearch');
-        const commodity =
-          resolveCommodity(searchInput.value);
-        const amount =
-          parseFloat(
-            document.getElementById(
-              'newCommodityAmount'
-            ).value
-          );
-        const costRaw =
-          document.getElementById(
-            'newCommodityCost'
-          ).value.trim();
-        const cost =
-          costRaw === ''
-            ? null
-            : parseFloat(costRaw);
-        if (
-          !commodity ||
-          isNaN(amount) ||
-          amount <= 0 ||
-          (cost !== null &&
-            (isNaN(cost) || cost < 0))
-        ) {
-          showMsg(
-            'Lütfen emtiayı seçip geçerli bir miktar gir.',
-            'error'
-          );
-          return;
-        }
-        const { error } = await supa
-          .from('commodity_holdings')
-          .upsert(
-            {
-              user_id: user.id,
-              commodity_key: commodity.key,
-              symbol: commodity.symbol,
-              name: commodity.name,
-              unit: commodity.unit,
-              amount: amount,
-              cost: cost,
-              deleted_at: null
-            },
-            {
-              onConflict: 'user_id,commodity_key'
-            }
-          );
-        if (error) {
-          showMsg(
-            'Emtia eklenemedi: ' + error.message,
-            'error'
-          );
-          return;
-        }
-        searchInput.value = '';
-        document.getElementById(
-          'newCommodityAmount'
-        ).value = '';
-        document.getElementById(
-          'newCommodityCost'
-        ).value = '';
-        await loadCommodityHoldings();
-      }
-    );
-  /*
-   * ======================================
-   * KRİPTO SEÇİM LİSTESİ
-   * ======================================
-   */
-  let cryptoMarketList =
-    [];
- async function loadCryptoOptions() {
-  const select =
-    document.getElementById(
-      'newCryptoSelect'
-    );
-  if (!select) {
-    return;
-  }
-  const cryptos = [
-    {
-      id: 'bitcoin',
-      symbol: 'BTC',
-      name: 'Bitcoin'
-    },
-    {
-      id: 'ethereum',
-      symbol: 'ETH',
-      name: 'Ethereum'
-    },
-    {
-      id: 'tether',
-      symbol: 'USDT',
-      name: 'Tether'
-    },
-    {
-      id: 'binancecoin',
-      symbol: 'BNB',
-      name: 'BNB'
-    },
-    {
-      id: 'solana',
-      symbol: 'SOL',
-      name: 'Solana'
-    },
-    {
-      id: 'usd-coin',
-      symbol: 'USDC',
-      name: 'USDC'
-    },
-    {
-      id: 'ripple',
-      symbol: 'XRP',
-      name: 'XRP'
-    },
-    {
-      id: 'dogecoin',
-      symbol: 'DOGE',
-      name: 'Dogecoin'
-    },
-    {
-      id: 'cardano',
-      symbol: 'ADA',
-      name: 'Cardano'
-    },
-    {
-      id: 'avalanche-2',
-      symbol: 'AVAX',
-      name: 'Avalanche'
-    },
-    {
-      id: 'tron',
-      symbol: 'TRX',
-      name: 'TRON'
-    },
-    {
-      id: 'chainlink',
-      symbol: 'LINK',
-      name: 'Chainlink'
-    },
-    {
-      id: 'polkadot',
-      symbol: 'DOT',
-      name: 'Polkadot'
-    },
-    {
-      id: 'matic-network',
-      symbol: 'POL',
-      name: 'Polygon'
-    },
-    {
-      id: 'litecoin',
-      symbol: 'LTC',
-      name: 'Litecoin'
-    },
-    {
-      id: 'shiba-inu',
-      symbol: 'SHIB',
-      name: 'Shiba Inu'
-    },
-    {
-      id: 'bitcoin-cash',
-      symbol: 'BCH',
-      name: 'Bitcoin Cash'
-    },
-    {
-      id: 'uniswap',
-      symbol: 'UNI',
-      name: 'Uniswap'
-    },
-    {
-      id: 'stellar',
-      symbol: 'XLM',
-      name: 'Stellar'
-    },
-    {
-      id: 'near',
-      symbol: 'NEAR',
-      name: 'NEAR Protocol'
-    },
-    {
-      id: 'internet-computer',
-      symbol: 'ICP',
-      name: 'Internet Computer'
-    },
-    {
-      id: 'aptos',
-      symbol: 'APT',
-      name: 'Aptos'
-    },
-    {
-      id: 'arbitrum',
-      symbol: 'ARB',
-      name: 'Arbitrum'
-    },
-    {
-      id: 'optimism',
-      symbol: 'OP',
-      name: 'Optimism'
-    },
-    {
-      id: 'cosmos',
-      symbol: 'ATOM',
-      name: 'Cosmos'
-    },
-    {
-      id: 'filecoin',
-      symbol: 'FIL',
-      name: 'Filecoin'
-    },
-    {
-      id: 'hedera-hashgraph',
-      symbol: 'HBAR',
-      name: 'Hedera'
-    },
-    {
-      id: 'vechain',
-      symbol: 'VET',
-      name: 'VeChain'
-    },
-    {
-      id: 'the-open-network',
-      symbol: 'TON',
-      name: 'Toncoin'
-    },
-    {
-      id: 'sui',
-      symbol: 'SUI',
-      name: 'Sui'
-    },
-    {
-      id: 'pepe',
-      symbol: 'PEPE',
-      name: 'Pepe'
-    }
-  ];
-  select.innerHTML =
-    '<option value="">Kripto seç...</option>';
-  cryptos.forEach(
-    (crypto) => {
-      const option =
-        document.createElement(
-          'option'
-        );
-      option.value =
-        crypto.id;
-      option.textContent =
-        `${crypto.symbol} — ${crypto.name}`;
-      option.dataset.symbol =
-        crypto.symbol;
-      option.dataset.name =
-        crypto.name;
-      option.dataset.image =
-        '';
-      select.appendChild(
-        option
-      );
-    }
-  );
-}
-  /*
-   * ======================================
-   * KRİPTO PORTFÖYÜ
-   * ======================================
-   */
-  async function loadCryptoLivePrices(rows) {
-    let prices = {};
-    try {
-      prices = await fetchCryptoPricesTry(
-        rows.map(row => row.crypto_id)
-      );
-    } catch (e) {
-      // Toplu istek başarısız olduysa her satır aşağıda '—' gösterecek.
-    }
-    for (const row of rows) {
-      const priceEl = document.getElementById(`crypto-price-${row.crypto_id}`);
-      const valueEl = document.getElementById(`crypto-value-${row.crypto_id}`);
-      const plEl = document.getElementById(`crypto-pl-${row.crypto_id}`);
-      if (!priceEl || !valueEl || !plEl) continue;
-      const price = prices[row.crypto_id];
-      if (!price) {
-        priceEl.textContent = '—';
-        valueEl.textContent = '—';
-        plEl.textContent = '—';
-        continue;
-      }
-      const amount = Number(row.amount) || 0;
-      const invested = amount * (Number(row.cost) || 0);
-      const currentValue = amount * price;
-      priceEl.textContent = fmtTL(price);
-      valueEl.textContent = fmtTL(currentValue);
-      plEl.innerHTML = profitLossHtml(invested, currentValue);
-    }
-  }
-  async function loadCryptoHoldings() {
-    const {
-      data,
-      error
-    } =
-      await supa
-        .from('crypto_holdings')
-.select('*')
-.is('deleted_at', null)
-.order(
-  'symbol',
-  {
-    ascending: true
-  }
-);
-    const tbody =
-      document
-        .getElementById(
-          'cryptoBody'
-        );
-    const emptyState =
-      document
-        .getElementById(
-          'cryptoEmptyState'
-        );
-    tbody.innerHTML =
-      '';
-    if (
-      error
-    ) {
-      showMsg(
-        'Kripto verileri yüklenemedi: ' +
-          error.message,
-        'error'
-      );
-      return;
-    }
-    if (
-      !data ||
-      data.length ===
-        0
-    ) {
-      emptyState.style.display =
-        'block';
-      return;
-    }
-    emptyState.style.display =
-      'none';
-    for (
-      const row
-      of data
-    ) {
-      const invested =
-        (
-          Number(
-            row.amount
-          ) ||
-          0
-        ) *
-        (
-          Number(
-            row.cost
-          ) ||
-          0
-        );
-      const tr =
-        document
-          .createElement(
-            'tr'
-          );
-      tr.innerHTML = `
-        <td>
-          <div class="sym">
-            ${escapeHtml(
-              row.symbol
-            )}
+        </div>
+      </div>
+
+      <!-- VARLIĞIM (yakında) -->
+      <div class="page" id="page-varligim">
+        <h1 class="page-title">Varlığım</h1>
+        <p class="page-lead">Gayrimenkul, araç, mevduat, döviz ve diğer varlıklarının tek merkezde yönetimi. Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize. (Hisse, Fon, Kripto, Emtia, VİOP için soldaki <strong>Varlıklar</strong> menüsünü kullan — burada tekrarlanmadı.)</p>
+
+        <div class="subtab-row">
+          <div class="subtab-chip active" data-subtab="gayrimenkul">Gayrimenkul</div>
+          <div class="subtab-chip" data-subtab="arac">Araç</div>
+          <div class="subtab-chip" data-subtab="mevduat">Mevduat</div>
+          <div class="subtab-chip" data-subtab="diger">Diğer Varlıklar</div>
+          <div class="subtab-chip" data-subtab="doviz">Döviz</div>
+        </div>
+
+        <!-- GAYRİMENKUL -->
+        <div class="varligim-section" id="varligimSection-gayrimenkul">
+          <div class="card">
+            <div class="section-title">Gayrimenkul Varlıkları</div>
+            <div class="table-wrap">
+            <table id="realEstateTable">
+              <thead><tr>
+                <th>Varlık</th><th>Konum</th><th class="num">Alış</th>
+                <th class="num">Güncel</th><th class="num">Aylık Kira</th><th></th>
+              </tr></thead>
+              <tbody id="realEstateBody"></tbody>
+            </table>
+            </div>
+            <div id="realEstateEmptyState" class="empty" style="display:none;">Henüz gayrimenkul eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Gayrimenkul ekle</div>
+              <select id="newRealEstateType">
+                <option value="Konut">Konut</option>
+                <option value="Arsa">Arsa</option>
+                <option value="İş Yeri">İş Yeri</option>
+                <option value="Tarla">Tarla</option>
+                <option value="Dükkan">Dükkan</option>
+                <option value="Ofis">Ofis</option>
+                <option value="Diğer">Diğer</option>
+              </select>
+              <input id="newRealEstateTitle" type="text" autocomplete="off" placeholder="Başlık (örn. Yazlık ev)" />
+              <input id="newRealEstateCity" type="text" autocomplete="off" placeholder="Şehir" />
+              <input id="newRealEstateDistrict" type="text" autocomplete="off" placeholder="İlçe" />
+              <input id="newRealEstatePurchasePrice" type="number" step="any" min="0" placeholder="Alış fiyatı (₺)" />
+              <input id="newRealEstateCurrentValue" type="number" step="any" min="0" placeholder="Güncel değer (₺)" />
+              <input id="newRealEstateMonthlyRent" type="number" step="any" min="0" placeholder="Aylık kira (₺) - isteğe bağlı" />
+              <input id="newRealEstatePurchaseDate" type="date" />
+              <button class="btn primary full" id="addRealEstateBtn" type="button">Ekle</button>
+            </div>
           </div>
-          ${
-            row.name
-              ? `
-                <div class="name">
-                  ${escapeHtml(
-                    row.name
-                  )}
-                </div>
-              `
-              : ''
-          }
-        </td>
-        <td class="num">
-          ${fmtNumber(
-            row.amount
-          )}
-        </td>
-        <td class="num">
-          ${fmtTL(
-            row.cost
-          )}
-        </td>
-        <td class="num">
-          ${fmtTL(
-            invested
-          )}
-        </td>
-        <td class="num" id="crypto-price-${escapeHtml(row.crypto_id)}">…</td>
-        <td class="num" id="crypto-value-${escapeHtml(row.crypto_id)}">…</td>
-        <td class="num" id="crypto-pl-${escapeHtml(row.crypto_id)}">…</td>
-        <td class="num">
-          <button
-            class="del crypto-delete"
-            data-id="${escapeHtml(
-              row.crypto_id
-            )}"
-            title="Sil"
-          >
-            ✕
-          </button>
-        </td>
-      `;
-      tbody.appendChild(
-        tr
-      );
-    }
-    loadCryptoLivePrices(data);
-    tbody
-      .querySelectorAll(
-        '.crypto-delete'
-      )
-      .forEach(
-        btn => {
-          btn.addEventListener(
-            'click',
-            () =>
-              deleteCryptoHolding(
-                btn.dataset.id
-              )
-          );
-        }
-      );
-  }
-  async function deleteCryptoHolding(cryptoId) {
-  const {
-    data: { user }
-  } = await supa.auth.getUser();
-  if (!user) {
-    return;
-  }
-  const { error } = await supa
-    .from('crypto_holdings')
-    .update({
-      deleted_at: new Date().toISOString()
-    })
-    .eq('user_id', user.id)
-    .eq('crypto_id', cryptoId);
-  if (error) {
-    showMsg(
-      'Kripto silinemedi: ' + error.message,
-      'error'
-    );
-    return;
-  }
-  await loadCryptoHoldings();
-}
-  /*
-   * KRİPTO EKLE
-   */
-  document
-    .getElementById(
-      'addCryptoBtn'
-    )
-    .addEventListener(
-      'click',
-      async () => {
-        hideMsg();
-        const {
-          data:{
-            user
-          }
-        } =
-          await supa.auth
-            .getUser();
-        if (
-          !user
-        ) {
-          return;
-        }
-        const select =
-          document
-            .getElementById(
-              'newCryptoSelect'
-            );
-        const selectedOption =
-          select.options[
-            select.selectedIndex
-          ];
-        const cryptoId =
-          select.value;
-        const symbol =
-          selectedOption
-            ?.dataset
-            ?.symbol ||
-          '';
-        const name =
-          selectedOption
-            ?.dataset
-            ?.name ||
-          '';
-        const imageUrl =
-          selectedOption
-            ?.dataset
-            ?.image ||
-          null;
-        const amount =
-          parseFloat(
-            document
-              .getElementById(
-                'newCryptoAmount'
-              )
-              .value
-          );
-        const cost =
-          parseFloat(
-            document
-              .getElementById(
-                'newCryptoCost'
-              )
-              .value
-          );
-        if (
-          !cryptoId ||
-          !symbol ||
-          !name ||
-          isNaN(
-            amount
-          ) ||
-          amount <=
-            0 ||
-          isNaN(
-            cost
-          ) ||
-          cost <=
-            0
-        ) {
-          showMsg(
-            'Lütfen kriptoyu seçip miktar ve maliyeti eksiksiz gir.',
-            'error'
-          );
-          return;
-        }
-        const {
-          error
-        } =
-          await supa
-            .from(
-              'crypto_holdings'
-            )
-            .upsert(
-              {
-                user_id:
-  user.id,
-deleted_at:
-  null,
-crypto_id:
-  cryptoId,
-                symbol:
-                  symbol,
-                name:
-                  name,
-                amount:
-                  amount,
-                cost:
-                  cost,
-                image_url:
-                  imageUrl
-              },
-              {
-                onConflict:
-                  'user_id,crypto_id'
-              }
-            );
-        if (
-          error
-        ) {
-          showMsg(
-            'Kripto eklenemedi: ' +
-              error.message,
-            'error'
-          );
-          return;
-        }
-        select.value =
-          '';
-        document
-          .getElementById(
-            'newCryptoAmount'
-          )
-          .value =
-            '';
-        document
-          .getElementById(
-            'newCryptoCost'
-          )
-          .value =
-            '';
-        loadCryptoHoldings();
-      }
-    );
-  /*
-   * ======================================
-   * FON PORTFÖYÜ
-   * ======================================
-   */
-  async function loadFundHoldings() {
-    const { data, error } = await supa
-      .from('fund_holdings')
-      .select('*')
-      .is('deleted_at', null)
-      .order('code', { ascending: true });
-    const tbody =
-      document.getElementById('fundBody');
-    const emptyState =
-      document.getElementById('fundEmptyState');
-    if (!tbody || !emptyState) {
-      return;
-    }
-    tbody.innerHTML = '';
-    if (error) {
-      showMsg(
-        'Fon verileri yüklenemedi: ' + error.message,
-        'error'
-      );
-      return;
-    }
-    if (!data || data.length === 0) {
-      emptyState.style.display = 'block';
-      return;
-    }
-    emptyState.style.display = 'none';
-    for (const row of data) {
-      const units = Number(row.units) || 0;
-      const cost = Number(row.cost) || 0;
-      const invested = units * cost;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>
-          <div class="sym">${escapeHtml(row.code || '')}</div>
-          <div class="name">${escapeHtml(row.name || '')}</div>
-        </td>
-        <td class="num">${fmtNumber(row.units)}</td>
-        <td class="num">${row.cost == null ? '—' : fmtTL(row.cost)}</td>
-        <td class="num">${fmtTL(invested)}</td>
-        <td class="num" id="fund-price-${escapeHtml(row.code || '')}">…</td>
-        <td class="num" id="fund-value-${escapeHtml(row.code || '')}">…</td>
-        <td class="num" id="fund-pl-${escapeHtml(row.code || '')}">…</td>
-        <td class="num">
-          <button
-            type="button"
-            class="del fund-delete"
-            data-fund-code="${escapeHtml(row.code || '')}"
-            title="Sil"
-          >✕</button>
-        </td>
-      `;
-      const deleteBtn =
-        tr.querySelector('[data-fund-code]');
-      deleteBtn.addEventListener(
-        'click',
-        () => deleteFundHolding(row.code)
-      );
-      tbody.appendChild(tr);
-    }
-    loadFundLivePrices(data);
-  }
-  async function loadFundLivePrices(rows) {
-    await Promise.all(rows.map(async (row) => {
-      const code = row.code || '';
-      const priceEl = document.getElementById(`fund-price-${code}`);
-      const valueEl = document.getElementById(`fund-value-${code}`);
-      const plEl = document.getElementById(`fund-pl-${code}`);
-      if (!priceEl || !valueEl || !plEl) return;
-      try {
-        const quote = await fetchPriceProxy(
-          `type=fund&code=${encodeURIComponent(code)}`
-        );
-        const units = Number(row.units) || 0;
-        const currentValue = units * quote.price;
-        priceEl.textContent = fmtTLPrecise(quote.price);
-        valueEl.textContent = fmtTL(currentValue);
-        if (row.cost != null) {
-          const invested = units * Number(row.cost);
-          plEl.innerHTML = profitLossHtml(invested, currentValue);
-        } else {
-          plEl.textContent = '—';
-        }
-      } catch (e) {
-        priceEl.textContent = '—';
-        valueEl.textContent = '—';
-        plEl.textContent = '—';
-      }
-    }));
-  }
-  async function deleteFundHolding(code) {
-    const {
-      data: { user }
-    } = await supa.auth.getUser();
-    if (!user) {
-      return;
-    }
-    const { error } = await supa
-      .from('fund_holdings')
-      .update({
-        deleted_at: new Date().toISOString()
-      })
-      .eq('user_id', user.id)
-      .eq('code', code);
-    if (error) {
-      showMsg(
-        'Fon silinemedi: ' + error.message,
-        'error'
-      );
-      return;
-    }
-    await loadFundHoldings();
-  }
-  let selectedFundForWeb = null;
-  let fundLookupTimer = null;
-  let fundLookupRequestId = 0;
-  async function findFundByExactCode(rawCode) {
-    const code = String(rawCode || '')
-      .trim()
-      .toLocaleUpperCase('tr-TR');
-    if (!code) {
-      return null;
-    }
-    const { data, error } = await supa
-      .from('fund_catalog')
-      .select('code,name')
-      .eq('code', code)
-      .maybeSingle();
-    if (error) {
-      throw error;
-    }
-    if (!data) {
-      return null;
-    }
-    const foundCode =
-      String(data.code || '')
-        .trim()
-        .toLocaleUpperCase('tr-TR');
-    const foundName =
-      String(data.name || '')
-        .trim();
-    if (
-      foundCode !== code ||
-      !foundName
-    ) {
-      return null;
-    }
-    return {
-      code: foundCode,
-      name: foundName
-    };
-  }
-  async function resolveFundCodeInput() {
-    const codeInput =
-      document.getElementById('newFundCode');
-    const nameInput =
-      document.getElementById('newFundName');
-    const code =
-      String(codeInput.value || '')
-        .trim()
-        .toLocaleUpperCase('tr-TR');
-    codeInput.value = code;
-    nameInput.value = '';
-    selectedFundForWeb = null;
-    if (!code) {
-      return;
-    }
-    const requestId =
-      ++fundLookupRequestId;
-    nameInput.value =
-      'Fon aranıyor...';
-    try {
-      const fund =
-        await findFundByExactCode(code);
-      if (requestId !== fundLookupRequestId) {
-        return;
-      }
-      if (!fund) {
-        nameInput.value = '';
-        showMsg(
-          code +
-            ' koduyla eşleşen fon bulunamadı. ' +
-            'Fon kodunu kontrol et.',
-          'error'
-        );
-        return;
-      }
-      selectedFundForWeb = fund;
-      nameInput.value =
-        fund.name;
-      hideMsg();
-    } catch (err) {
-      if (requestId !== fundLookupRequestId) {
-        return;
-      }
-      nameInput.value = '';
-      showMsg(
-        'Fon kataloğu okunamadı: ' +
-          (err?.message || 'Bilinmeyen hata'),
-        'error'
-      );
-    }
-  }
-  document
-    .getElementById('newFundCode')
-    .addEventListener(
-      'input',
-      () => {
-        clearTimeout(fundLookupTimer);
-        const codeInput =
-          document.getElementById('newFundCode');
-        codeInput.value =
-          String(codeInput.value || '')
-            .toLocaleUpperCase('tr-TR');
-        selectedFundForWeb = null;
-        document
-          .getElementById('newFundName')
-          .value = '';
-        fundLookupTimer = setTimeout(
-          () => {
-            resolveFundCodeInput();
-          },
-          450
-        );
-      }
-    );
-  document
-    .getElementById('newFundCode')
-    .addEventListener(
-      'blur',
-      () => {
-        clearTimeout(fundLookupTimer);
-        resolveFundCodeInput();
-      }
-    );
-  document
-    .getElementById('addFundBtn')
-    .addEventListener(
-      'click',
-      async () => {
-        hideMsg();
-        const {
-          data: { user }
-        } = await supa.auth.getUser();
-        if (!user) {
-          return;
-        }
-        const codeInput =
-          document.getElementById('newFundCode');
-        const nameInput =
-          document.getElementById('newFundName');
-        const code =
-          String(codeInput.value || '')
-            .trim()
-            .toLocaleUpperCase('tr-TR');
-        /*
-         * Kullanıcı kodu değiştirdiyse veya henüz fon
-         * bulunmadıysa Ekle'ye basıldığında son kez TAM kod
-         * sorgusu yapılır.
-         */
-        if (
-          !selectedFundForWeb ||
-          selectedFundForWeb.code !== code
-        ) {
-          await resolveFundCodeInput();
-        }
-        if (
-          !selectedFundForWeb ||
-          selectedFundForWeb.code !== code
-        ) {
-          showMsg(
-            'Önce geçerli bir fon kodu yaz ve fonun bulunmasını bekle.',
-            'error'
-          );
-          return;
-        }
-        const name =
-          selectedFundForWeb.name;
-        const units =
-          parseFloat(
-            document
-              .getElementById('newFundUnits')
-              .value
-          );
-        const cost =
-          parseFloat(
-            document
-              .getElementById('newFundCost')
-              .value
-          );
-        if (
-          !code ||
-          !name ||
-          isNaN(units) ||
-          units <= 0 ||
-          isNaN(cost) ||
-          cost < 0
-        ) {
-          showMsg(
-            'Geçerli fon kodunu seçip adet ve maliyeti gir.',
-            'error'
-          );
-          return;
-        }
-        const { error } = await supa
-          .from('fund_holdings')
-          .upsert(
-            {
-              user_id: user.id,
-              code: code,
-              name: name,
-              units: units,
-              cost: cost,
-              deleted_at: null
-            },
-            {
-              onConflict: 'user_id,code'
-            }
-          );
-        if (error) {
-          showMsg(
-            'Fon eklenemedi: ' +
-              error.message,
-            'error'
-          );
-          return;
-        }
-        codeInput.value = '';
-        nameInput.value = '';
-        document
-          .getElementById('newFundUnits')
-          .value = '';
-        document
-          .getElementById('newFundCost')
-          .value = '';
-        selectedFundForWeb = null;
-        await loadFundHoldings();
-      }
-    );
-  /*
-   * ======================================
-   * VİOP PORTFÖYÜ
-   * ======================================
-   */
-  async function loadViopHoldings() {
-    const { data, error } = await supa
-      .from('viop_holdings')
-      .select('*')
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
-    const tbody = document.getElementById('viopBody');
-    const emptyState = document.getElementById('viopEmptyState');
-    if (!tbody || !emptyState) return;
-    tbody.innerHTML = '';
-    if (error) {
-      showMsg('VİOP verileri yüklenemedi: ' + error.message, 'error');
-      return;
-    }
-    if (!data || data.length === 0) {
-      emptyState.style.display = 'block';
-      return;
-    }
-    emptyState.style.display = 'none';
-    for (const row of data) {
-      const lot = Number(row.lot) || 0;
-      const cost = row.cost == null ? null : Number(row.cost);
-      const invested = cost != null ? lot * cost : null;
-      const symKey = encodeURIComponent(row.symbol || '');
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>
-          <div class="sym">${escapeHtml(row.symbol || '')}</div>
-          <div class="name">${escapeHtml(
-            [row.underlying, row.is_option ? 'Opsiyon' : 'Vadeli İşlem']
-              .filter(Boolean).join(' • ')
-          )}</div>
-        </td>
-        <td class="num">${fmtNumber(row.lot)}</td>
-        <td class="num">${cost == null ? '—' : fmtTL(cost)}</td>
-        <td class="num">${invested == null ? '—' : fmtTL(invested)}</td>
-        <td class="num" id="viop-price-${symKey}">…</td>
-        <td class="num" id="viop-value-${symKey}">…</td>
-        <td class="num" id="viop-pl-${symKey}">…</td>
-        <td class="num">
-          <button type="button" class="del viop-delete"
-            data-symbol="${escapeHtml(row.symbol || '')}" title="Sil">✕</button>
-        </td>
-      `;
-      tr.querySelector('.viop-delete').addEventListener(
-        'click', () => deleteViopHolding(row.symbol)
-      );
-      tbody.appendChild(tr);
-    }
-    loadViopLivePrices(data);
-  }
-  async function loadViopLivePrices(rows) {
-    await Promise.all(rows.map(async (row) => {
-      const symbol = row.symbol || '';
-      const symKey = encodeURIComponent(symbol);
-      const priceEl = document.getElementById(`viop-price-${symKey}`);
-      const valueEl = document.getElementById(`viop-value-${symKey}`);
-      const plEl = document.getElementById(`viop-pl-${symKey}`);
-      if (!priceEl || !valueEl || !plEl) return;
-      try {
-        const quote = await fetchPriceProxy(
-          `type=viop&symbol=${encodeURIComponent(symbol)}`
-        );
-        const lot = Number(row.lot) || 0;
-        const currentValue = lot * quote.price;
-        priceEl.textContent = fmtTLPrecise(quote.price);
-        valueEl.textContent = fmtTL(currentValue);
-        if (row.cost != null) {
-          const invested = lot * Number(row.cost);
-          plEl.innerHTML = profitLossHtml(invested, currentValue);
-        } else {
-          plEl.textContent = '—';
-        }
-      } catch (e) {
-        priceEl.textContent = '—';
-        valueEl.textContent = '—';
-        plEl.textContent = '—';
-      }
-    }));
-  }
-  async function deleteViopHolding(symbol) {
-    const { data: { user } } = await supa.auth.getUser();
-    if (!user || !symbol) return;
-    const { error } = await supa
-      .from('viop_holdings')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('user_id', user.id)
-      .eq('symbol', symbol);
-    if (error) {
-      showMsg('VİOP pozisyonu silinemedi: ' + error.message, 'error');
-      return;
-    }
-    await loadViopHoldings();
-  }
-  document.getElementById('addViopBtn').addEventListener('click', async () => {
-    hideMsg();
-    const { data: { user } } = await supa.auth.getUser();
-    if (!user) return;
-    const symbol = document.getElementById('newViopSymbol').value.trim();
-    const underlying = document.getElementById('newViopUnderlying').value.trim();
-    const isOption = document.getElementById('newViopIsOption').value === 'true';
-    const lot = parseFloat(document.getElementById('newViopLot').value);
-    const costRaw = document.getElementById('newViopCost').value.trim();
-    const cost = costRaw === '' ? null : parseFloat(costRaw);
-    if (!symbol || isNaN(lot) || (cost != null && isNaN(cost))) {
-      showMsg('Lütfen VİOP pozisyon bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
-      return;
-    }
-    const { error } = await supa.from('viop_holdings').upsert({
-      user_id: user.id,
-      symbol,
-      underlying: underlying || null,
-      code: null,
-      is_option: isOption,
-      category_index: 0,
-      lot,
-      cost,
-      deleted_at: null
-    }, { onConflict: 'user_id,symbol' });
-    if (error) {
-      showMsg('VİOP pozisyonu eklenemedi: ' + error.message, 'error');
-      return;
-    }
-    ['newViopSymbol','newViopUnderlying','newViopLot','newViopCost']
-      .forEach(id => document.getElementById(id).value = '');
-    document.getElementById('newViopIsOption').value = 'false';
-    await loadViopHoldings();
-  });
-  /*
-   * ======================================
-   * GAYRİMENKUL PORTFÖYÜ
-   * ======================================
-   */
-  async function loadRealEstateHoldings() {
-    const { data, error } = await supa
-      .from('real_estate_holdings')
-      .select('*')
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
-    const tbody =
-      document.getElementById('realEstateBody');
-    const emptyState =
-      document.getElementById('realEstateEmptyState');
-    if (!tbody || !emptyState) {
-      return;
-    }
-    tbody.innerHTML = '';
-    if (error) {
-      showMsg(
-        'Gayrimenkul verileri yüklenemedi: ' +
-          error.message,
-        'error'
-      );
-      return;
-    }
-    if (!data || data.length === 0) {
-      emptyState.style.display = 'block';
-      return;
-    }
-    emptyState.style.display = 'none';
-    for (const row of data) {
-      const tr =
-        document.createElement('tr');
-      const locationText =
-        [row.city, row.district]
-          .filter(Boolean)
-          .join(' / ');
-      tr.innerHTML = `
-        <td>
-          <div class="sym">
-            ${escapeHtml(row.title || row.type || 'Gayrimenkul')}
+        </div>
+
+        <!-- ARAÇ -->
+        <div class="varligim-section" id="varligimSection-arac" style="display:none;">
+          <div class="card">
+            <div class="section-title">Araç Varlıkları</div>
+            <div class="table-wrap">
+            <table id="vehicleTable">
+              <thead><tr>
+                <th>Araç</th><th>Plaka</th><th class="num">Yıl</th>
+                <th class="num">Alış</th><th class="num">Güncel</th><th></th>
+              </tr></thead>
+              <tbody id="vehicleBody"></tbody>
+            </table>
+            </div>
+            <div id="vehicleEmptyState" class="empty" style="display:none;">Henüz araç eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Araç ekle</div>
+              <select id="newVehicleType">
+                <option value="Otomobil">Otomobil</option>
+                <option value="Motosiklet">Motosiklet</option>
+                <option value="Ticari Araç">Ticari Araç</option>
+                <option value="Karavan">Karavan</option>
+                <option value="Tekne">Tekne</option>
+                <option value="Diğer">Diğer</option>
+              </select>
+              <input id="newVehicleBrand" type="text" autocomplete="off" placeholder="Marka" />
+              <input id="newVehicleModel" type="text" autocomplete="off" placeholder="Model" />
+              <input id="newVehicleModelYear" type="number" step="1" placeholder="Model yılı" />
+              <input id="newVehiclePlate" type="text" autocomplete="off" placeholder="Plaka" />
+              <input id="newVehiclePurchasePrice" type="number" step="any" min="0" placeholder="Alış fiyatı (₺)" />
+              <input id="newVehicleCurrentValue" type="number" step="any" min="0" placeholder="Güncel değer (₺)" />
+              <input id="newVehiclePurchaseDate" type="date" />
+              <button class="btn primary full" id="addVehicleBtn" type="button">Ekle</button>
+            </div>
           </div>
-          <div class="name">
-            ${escapeHtml(
-              [
-                row.type || '',
-                locationText
-              ]
-                .filter(Boolean)
-                .join(' • ')
-            )}
+        </div>
+
+        <!-- MEVDUAT -->
+        <div class="varligim-section" id="varligimSection-mevduat" style="display:none;">
+          <div class="card">
+            <div class="section-title">Mevduatlar</div>
+            <div class="table-wrap">
+            <table id="varligimDepositTable">
+              <thead><tr>
+                <th>Banka</th><th class="num">Anapara</th><th class="num">Faiz</th>
+                <th class="num">Vade</th><th class="num">Güncel Değer</th><th></th>
+              </tr></thead>
+              <tbody id="varligimDepositBody"></tbody>
+            </table>
+            </div>
+            <div id="varligimDepositEmptyState" class="empty" style="display:none;">Henüz mevduat eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Mevduat ekle</div>
+              <input id="newVarligimDepositBankName" class="full" type="text" autocomplete="off" placeholder="Banka adı" />
+              <input id="newVarligimDepositPrincipal" type="number" step="any" min="0" placeholder="Anapara (₺)" />
+              <input id="newVarligimDepositAnnualRate" type="number" step="any" min="0" placeholder="Yıllık faiz oranı (%)" />
+              <input id="newVarligimDepositWithholdingRate" type="number" step="any" min="0" placeholder="Stopaj oranı (%)" />
+              <input id="newVarligimDepositStartDate" type="date" />
+              <input id="newVarligimDepositMaturityDate" type="date" />
+              <button class="btn primary full" id="addVarligimDepositBtn" type="button">Ekle</button>
+            </div>
           </div>
-        </td>
-        <td class="num">
-          ${fmtTL(row.purchase_price)}
-        </td>
-        <td class="num">
-          ${fmtTL(row.current_value)}
-        </td>
-        <td class="num">
-          ${fmtTL(row.monthly_rent)}
-        </td>
-        <td class="num">
-          <button
-            type="button"
-            class="del real-estate-delete"
-            data-id="${escapeHtml(row.id || '')}"
-            title="Sil"
-          >
-            ✕
-          </button>
-        </td>
-      `;
-      const deleteBtn =
-        tr.querySelector('.real-estate-delete');
-      deleteBtn.addEventListener(
-        'click',
-        () => deleteRealEstateHolding(row.id)
-      );
-      tbody.appendChild(tr);
-    }
-  }
-  async function deleteRealEstateHolding(id) {
-    const {
-      data: { user }
-    } = await supa.auth.getUser();
-    if (!user || !id) {
-      return;
-    }
-    const { error } = await supa
-      .from('real_estate_holdings')
-      .update({
-        deleted_at:
-          new Date().toISOString()
-      })
-      .eq('user_id', user.id)
-      .eq('id', id);
-    if (error) {
-      showMsg(
-        'Gayrimenkul silinemedi: ' +
-          error.message,
-        'error'
-      );
-      return;
-    }
-    await loadRealEstateHoldings();
-  }
-  document
-    .getElementById('addRealEstateBtn')
-    .addEventListener(
-      'click',
-      async () => {
-        hideMsg();
-        const {
-          data: { user }
-        } = await supa.auth.getUser();
-        if (!user) {
-          return;
-        }
-        const type =
-          document
-            .getElementById('newRealEstateType')
-            .value
-            .trim();
-        const title =
-          document
-            .getElementById('newRealEstateTitle')
-            .value
-            .trim();
-        const city =
-          document
-            .getElementById('newRealEstateCity')
-            .value
-            .trim();
-        const district =
-          document
-            .getElementById('newRealEstateDistrict')
-            .value
-            .trim();
-        const purchasePrice =
-          parseFloat(
-            document
-              .getElementById('newRealEstatePurchasePrice')
-              .value
-          );
-        const currentValue =
-          parseFloat(
-            document
-              .getElementById('newRealEstateCurrentValue')
-              .value
-          );
-        const monthlyRentRaw =
-          document
-            .getElementById('newRealEstateMonthlyRent')
-            .value
-            .trim();
-        const monthlyRent =
-          monthlyRentRaw === ''
-            ? 0
-            : parseFloat(monthlyRentRaw);
-        const purchaseDateRaw =
-          document
-            .getElementById('newRealEstatePurchaseDate')
-            .value;
-        if (
-          !type ||
-          !title ||
-          !city ||
-          !district ||
-          isNaN(purchasePrice) ||
-          purchasePrice < 0 ||
-          isNaN(currentValue) ||
-          currentValue < 0 ||
-          isNaN(monthlyRent) ||
-          monthlyRent < 0 ||
-          !purchaseDateRaw
-        ) {
-          showMsg(
-            'Lütfen gayrimenkul bilgilerini eksiksiz ve geçerli şekilde gir.',
-            'error'
-          );
-          return;
-        }
-        /*
-         * Mobil uygulamadaki String id yapısıyla uyumlu,
-         * benzersiz bir metin kimliği oluşturuyoruz.
-         */
-        const id =
-          `${Date.now()}${Math.floor(Math.random() * 1000)
-            .toString()
-            .padStart(3, '0')}`;
-        const purchaseDate =
-          new Date(
-            `${purchaseDateRaw}T12:00:00`
-          ).toISOString();
-        const { error } = await supa
-          .from('real_estate_holdings')
-          .upsert(
-            {
-              id: id,
-              user_id: user.id,
-              type: type,
-              title: title,
-              city: city,
-              district: district,
-              purchase_price: purchasePrice,
-              current_value: currentValue,
-              monthly_rent: monthlyRent,
-              purchase_date: purchaseDate,
-              deleted_at: null
-            },
-            {
-              onConflict: 'user_id,id'
-            }
-          );
-        if (error) {
-          showMsg(
-            'Gayrimenkul eklenemedi: ' +
-              error.message,
-            'error'
-          );
-          return;
-        }
-        document
-          .getElementById('newRealEstateTitle')
-          .value = '';
-        document
-          .getElementById('newRealEstateCity')
-          .value = '';
-        document
-          .getElementById('newRealEstateDistrict')
-          .value = '';
-        document
-          .getElementById('newRealEstatePurchasePrice')
-          .value = '';
-        document
-          .getElementById('newRealEstateCurrentValue')
-          .value = '';
-        document
-          .getElementById('newRealEstateMonthlyRent')
-          .value = '';
-        document
-          .getElementById('newRealEstatePurchaseDate')
-          .value = '';
-        await loadRealEstateHoldings();
-      }
-    );
-  /* ARAÇ PORTFÖYÜ */
-  async function loadVehicleHoldings() {
-    const { data, error } = await supa
-      .from('vehicle_holdings')
-      .select('*')
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
-    const tbody = document.getElementById('vehicleBody');
-    const emptyState = document.getElementById('vehicleEmptyState');
-    if (!tbody || !emptyState) return;
-    tbody.innerHTML = '';
-    if (error) {
-      showMsg('Araç verileri yüklenemedi: ' + error.message, 'error');
-      return;
-    }
-    if (!data || data.length === 0) {
-      emptyState.style.display = 'block';
-      return;
-    }
-    emptyState.style.display = 'none';
-    for (const row of data) {
-      const tr = document.createElement('tr');
-      const title = [row.brand, row.model].filter(Boolean).join(' ');
-      const detail = [row.type, row.plate].filter(Boolean).join(' • ');
-      tr.innerHTML = `
-        <td>
-          <div class="sym">${escapeHtml(title || row.type || 'Araç')}</div>
-          <div class="name">${escapeHtml(detail)}</div>
-        </td>
-        <td class="num">${escapeHtml(row.model_year ?? '')}</td>
-        <td class="num">${fmtTL(row.purchase_price)}</td>
-        <td class="num">${fmtTL(row.current_value)}</td>
-        <td class="num">
-          <button type="button" class="del vehicle-delete"
-            data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
-        </td>`;
-      tr.querySelector('.vehicle-delete').addEventListener(
-        'click', () => deleteVehicleHolding(row.id)
-      );
-      tbody.appendChild(tr);
-    }
-  }
-  async function deleteVehicleHolding(id) {
-    const { data: { user } } = await supa.auth.getUser();
-    if (!user || !id) return;
-    const { error } = await supa
-      .from('vehicle_holdings')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('user_id', user.id)
-      .eq('id', id);
-    if (error) {
-      showMsg('Araç silinemedi: ' + error.message, 'error');
-      return;
-    }
-    await loadVehicleHoldings();
-  }
-  document.getElementById('addVehicleBtn').addEventListener('click', async () => {
-    hideMsg();
-    const { data: { user } } = await supa.auth.getUser();
-    if (!user) return;
-    const type = document.getElementById('newVehicleType').value.trim();
-    const brand = document.getElementById('newVehicleBrand').value.trim();
-    const model = document.getElementById('newVehicleModel').value.trim();
-    const modelYear = parseInt(document.getElementById('newVehicleModelYear').value, 10);
-    const plate = document.getElementById('newVehiclePlate').value.trim();
-    const purchasePrice = parseFloat(document.getElementById('newVehiclePurchasePrice').value);
-    const currentValue = parseFloat(document.getElementById('newVehicleCurrentValue').value);
-    const purchaseDateRaw = document.getElementById('newVehiclePurchaseDate').value;
-    if (!type || !brand || !model || isNaN(modelYear) ||
-        modelYear < 1900 || modelYear > 2100 ||
-        isNaN(purchasePrice) || purchasePrice < 0 ||
-        isNaN(currentValue) || currentValue < 0 || !purchaseDateRaw) {
-      showMsg('Lütfen araç bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
-      return;
-    }
-    const id = `${Date.now()}${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
-    const purchaseDate = new Date(`${purchaseDateRaw}T12:00:00`).toISOString();
-    const { error } = await supa.from('vehicle_holdings').upsert({
-      id, user_id:user.id, type, brand, model, model_year:modelYear, plate,
-      purchase_price:purchasePrice, current_value:currentValue,
-      purchase_date:purchaseDate, deleted_at:null
-    }, { onConflict:'user_id,id' });
-    if (error) {
-      showMsg('Araç eklenemedi: ' + error.message, 'error');
-      return;
-    }
-    ['newVehicleBrand','newVehicleModel','newVehicleModelYear','newVehiclePlate',
-     'newVehiclePurchasePrice','newVehicleCurrentValue','newVehiclePurchaseDate']
-      .forEach(id => document.getElementById(id).value = '');
-    await loadVehicleHoldings();
-  });
-  /* DİĞER VARLIKLAR */
-  async function loadOtherAssetsHoldings() {
-    const { data, error } = await supa
-      .from('other_asset_holdings')
-      .select('*')
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
-    const tbody = document.getElementById('otherAssetsBody');
-    const emptyState = document.getElementById('otherAssetsEmptyState');
-    if (!tbody || !emptyState) return;
-    tbody.innerHTML = '';
-    if (error) {
-      showMsg('Diğer varlık verileri yüklenemedi: ' + error.message, 'error');
-      return;
-    }
-    if (!data || data.length === 0) {
-      emptyState.style.display = 'block';
-      return;
-    }
-    emptyState.style.display = 'none';
-    for (const row of data) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>
-          <div class="sym">${escapeHtml(row.title || row.type || 'Varlık')}</div>
-          <div class="name">${escapeHtml(
-            [row.type || '', row.description || ''].filter(Boolean).join(' • ')
-          )}</div>
-        </td>
-        <td class="num">${fmtTL(row.purchase_price)}</td>
-        <td class="num">${fmtTL(row.current_value)}</td>
-        <td class="num">
-          <button type="button" class="del other-asset-delete"
-            data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
-        </td>`;
-      tr.querySelector('.other-asset-delete').addEventListener(
-        'click', () => deleteOtherAssetHolding(row.id)
-      );
-      tbody.appendChild(tr);
-    }
-  }
-  async function deleteOtherAssetHolding(id) {
-    const { data: { user } } = await supa.auth.getUser();
-    if (!user || !id) return;
-    const { error } = await supa
-      .from('other_asset_holdings')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('user_id', user.id)
-      .eq('id', id);
-    if (error) {
-      showMsg('Diğer varlık silinemedi: ' + error.message, 'error');
-      return;
-    }
-    await loadOtherAssetsHoldings();
-  }
-  document.getElementById('addOtherAssetBtn').addEventListener('click', async () => {
-    hideMsg();
-    const { data: { user } } = await supa.auth.getUser();
-    if (!user) return;
-    const type = document.getElementById('newOtherAssetType').value.trim();
-    const title = document.getElementById('newOtherAssetTitle').value.trim();
-    const description = document.getElementById('newOtherAssetDescription').value.trim();
-    const purchasePrice = parseFloat(document.getElementById('newOtherAssetPurchasePrice').value);
-    const currentValue = parseFloat(document.getElementById('newOtherAssetCurrentValue').value);
-    const purchaseDateRaw = document.getElementById('newOtherAssetPurchaseDate').value;
-    if (!type || !title ||
-        isNaN(purchasePrice) || purchasePrice < 0 ||
-        isNaN(currentValue) || currentValue < 0 || !purchaseDateRaw) {
-      showMsg('Lütfen diğer varlık bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
-      return;
-    }
-    const id = `${Date.now()}${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
-    const purchaseDate = new Date(`${purchaseDateRaw}T12:00:00`).toISOString();
-    const { error } = await supa.from('other_asset_holdings').upsert({
-      id, user_id: user.id, type, title,
-      description: description || null,
-      purchase_price: purchasePrice, current_value: currentValue,
-      purchase_date: purchaseDate, deleted_at: null
-    }, { onConflict: 'user_id,id' });
-    if (error) {
-      showMsg('Diğer varlık eklenemedi: ' + error.message, 'error');
-      return;
-    }
-    ['newOtherAssetTitle','newOtherAssetDescription','newOtherAssetPurchasePrice',
-     'newOtherAssetCurrentValue','newOtherAssetPurchaseDate']
-      .forEach(id => document.getElementById(id).value = '');
-    await loadOtherAssetsHoldings();
-  });
-  /* BÜTÇE (GELİR/GİDER) */
-  async function loadBudgetHoldings() {
-    const { data, error } = await supa
-      .from('budget_transactions')
-      .select('*')
-      .is('deleted_at', null)
-      .order('transaction_date', { ascending: false });
-    const tbody = document.getElementById('budgetBody');
-    const emptyState = document.getElementById('budgetEmptyState');
-    if (!tbody || !emptyState) return;
-    tbody.innerHTML = '';
-    if (error) {
-      showMsg('Bütçe verileri yüklenemedi: ' + error.message, 'error');
-      return;
-    }
-    if (!data || data.length === 0) {
-      emptyState.style.display = 'block';
-      return;
-    }
-    emptyState.style.display = 'none';
-    for (const row of data) {
-      const tr = document.createElement('tr');
-      const dateText =
-        row.transaction_date
-          ? new Date(row.transaction_date).toLocaleDateString('tr-TR')
-          : '—';
-      tr.innerHTML = `
-        <td>
-          <div class="sym">${escapeHtml(row.title || '')}</div>
-          <div class="name">${escapeHtml(row.category || '')}</div>
-        </td>
-        <td class="num">${escapeHtml(row.type || '')}</td>
-        <td class="num">${fmtTL(row.amount)}</td>
-        <td class="num">${escapeHtml(dateText)}</td>
-        <td class="num">
-          <button type="button" class="del budget-delete"
-            data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
-        </td>`;
-      tr.querySelector('.budget-delete').addEventListener(
-        'click', () => deleteBudgetHolding(row.id)
-      );
-      tbody.appendChild(tr);
-    }
-  }
-  async function deleteBudgetHolding(id) {
-    const { data: { user } } = await supa.auth.getUser();
-    if (!user || !id) return;
-    const { error } = await supa
-      .from('budget_transactions')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('user_id', user.id)
-      .eq('id', id);
-    if (error) {
-      showMsg('İşlem silinemedi: ' + error.message, 'error');
-      return;
-    }
-    await loadBudgetHoldings();
-  }
-  document.getElementById('addBudgetBtn').addEventListener('click', async () => {
-    hideMsg();
-    const { data: { user } } = await supa.auth.getUser();
-    if (!user) return;
-    const type = document.getElementById('newBudgetType').value.trim();
-    const category = document.getElementById('newBudgetCategory').value.trim();
-    const title = document.getElementById('newBudgetTitle').value.trim();
-    const amount = parseFloat(document.getElementById('newBudgetAmount').value);
-    const dateRaw = document.getElementById('newBudgetDate').value;
-    const note = document.getElementById('newBudgetNote').value.trim();
-    if (!type || !category || !title || isNaN(amount) || amount <= 0 || !dateRaw) {
-      showMsg('Lütfen işlem bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
-      return;
-    }
-    const id = `${Date.now()}${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
-    const transactionDate = new Date(`${dateRaw}T12:00:00`).toISOString();
-    const { error } = await supa.from('budget_transactions').upsert({
-      id,
-      user_id: user.id,
-      type,
-      category,
-      title,
-      note,
-      amount,
-      transaction_date: transactionDate,
-      deleted_at: null
-    }, { onConflict: 'user_id,id' });
-    if (error) {
-      showMsg('İşlem eklenemedi: ' + error.message, 'error');
-      return;
-    }
-    ['newBudgetCategory','newBudgetTitle','newBudgetAmount','newBudgetDate','newBudgetNote']
-      .forEach(id => document.getElementById(id).value = '');
-    await loadBudgetHoldings();
-  });
-  /* MEVDUAT PORTFÖYÜ */
-  async function loadDepositHoldings() {
-    const { data, error } = await supa
-      .from('deposit_holdings')
-      .select('*')
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
-    const tbody = document.getElementById('depositBody');
-    const emptyState = document.getElementById('depositEmptyState');
-    if (!tbody || !emptyState) return;
-    tbody.innerHTML = '';
-    if (error) {
-      showMsg('Mevduat verileri yüklenemedi: ' + error.message, 'error');
-      return;
-    }
-    if (!data || data.length === 0) {
-      emptyState.style.display = 'block';
-      return;
-    }
-    emptyState.style.display = 'none';
-    for (const row of data) {
-      const tr = document.createElement('tr');
-      const maturityText =
-        row.maturity_date
-          ? new Date(row.maturity_date).toLocaleDateString('tr-TR')
-          : '—';
-      const rateText =
-        row.annual_rate == null
-          ? '—'
-          : `%${fmtNumber(row.annual_rate)}`;
-      tr.innerHTML = `
-        <td>
-          <div class="sym">${escapeHtml(row.bank_name || 'Mevduat')}</div>
-        </td>
-        <td class="num">${fmtTL(row.principal)}</td>
-        <td class="num">${rateText}</td>
-        <td class="num">${escapeHtml(maturityText)}</td>
-        <td class="num">
-          <button type="button" class="del deposit-delete"
-            data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
-        </td>`;
-      tr.querySelector('.deposit-delete').addEventListener(
-        'click', () => deleteDepositHolding(row.id)
-      );
-      tbody.appendChild(tr);
-    }
-  }
-  async function deleteDepositHolding(id) {
-    const { data: { user } } = await supa.auth.getUser();
-    if (!user || !id) return;
-    const { error } = await supa
-      .from('deposit_holdings')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('user_id', user.id)
-      .eq('id', id);
-    if (error) {
-      showMsg('Mevduat silinemedi: ' + error.message, 'error');
-      return;
-    }
-    await loadDepositHoldings();
-  }
-  document.getElementById('addDepositBtn').addEventListener('click', async () => {
-    hideMsg();
-    const { data: { user } } = await supa.auth.getUser();
-    if (!user) return;
-    const bankName = document.getElementById('newDepositBankName').value.trim();
-    const principal = parseFloat(document.getElementById('newDepositPrincipal').value);
-    const annualRate = parseFloat(document.getElementById('newDepositAnnualRate').value);
-    const withholdingRateRaw =
-      document.getElementById('newDepositWithholdingRate').value.trim();
-    const withholdingRate =
-      withholdingRateRaw === '' ? 0 : parseFloat(withholdingRateRaw);
-    const startDateRaw = document.getElementById('newDepositStartDate').value;
-    const maturityDateRaw = document.getElementById('newDepositMaturityDate').value;
-    if (!bankName ||
-        isNaN(principal) || principal <= 0 ||
-        isNaN(annualRate) || annualRate < 0 ||
-        isNaN(withholdingRate) || withholdingRate < 0 ||
-        !startDateRaw || !maturityDateRaw) {
-      showMsg('Lütfen mevduat bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
-      return;
-    }
-    const id = `${Date.now()}${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
-    const startDate = new Date(`${startDateRaw}T12:00:00`).toISOString();
-    const maturityDate = new Date(`${maturityDateRaw}T12:00:00`).toISOString();
-    const { error } = await supa.from('deposit_holdings').upsert({
-      id,
-      user_id: user.id,
-      bank_name: bankName,
-      principal: principal,
-      annual_rate: annualRate,
-      withholding_rate: withholdingRate,
-      start_date: startDate,
-      maturity_date: maturityDate,
-      deleted_at: null
-    }, { onConflict: 'user_id,id' });
-    if (error) {
-      showMsg('Mevduat eklenemedi: ' + error.message, 'error');
-      return;
-    }
-    ['newDepositBankName','newDepositPrincipal','newDepositAnnualRate',
-     'newDepositWithholdingRate','newDepositStartDate','newDepositMaturityDate']
-      .forEach(id => document.getElementById(id).value = '');
-    await loadDepositHoldings();
-  });
-</script>
+        </div>
+
+        <!-- DİĞER VARLIKLAR -->
+        <div class="varligim-section" id="varligimSection-diger" style="display:none;">
+          <div class="card">
+            <div class="section-title">Diğer Varlıklar</div>
+            <div class="table-wrap">
+            <table id="otherAssetsTable">
+              <thead><tr>
+                <th>Varlık</th><th>Açıklama</th><th class="num">Alış</th>
+                <th class="num">Güncel</th><th></th>
+              </tr></thead>
+              <tbody id="otherAssetsBody"></tbody>
+            </table>
+            </div>
+            <div id="otherAssetsEmptyState" class="empty" style="display:none;">Henüz diğer varlık eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Diğer varlık ekle</div>
+              <select id="newOtherAssetType">
+                <option value="Saat">Saat</option>
+                <option value="Mücevher">Mücevher</option>
+                <option value="Koleksiyon">Koleksiyon</option>
+                <option value="Elektronik">Elektronik</option>
+                <option value="Sanat Eseri">Sanat Eseri</option>
+                <option value="Şirket Ortaklığı">Şirket Ortaklığı</option>
+                <option value="Değerli Eşya">Değerli Eşya</option>
+                <option value="Diğer" selected>Diğer</option>
+              </select>
+              <input id="newOtherAssetTitle" type="text" autocomplete="off" placeholder="Başlık (örn. Rolex Submariner)" />
+              <input id="newOtherAssetDescription" class="full" type="text" autocomplete="off" placeholder="Açıklama (isteğe bağlı)" />
+              <input id="newOtherAssetPurchasePrice" type="number" step="any" min="0" placeholder="Alış değeri (₺)" />
+              <input id="newOtherAssetCurrentValue" type="number" step="any" min="0" placeholder="Güncel değer (₺)" />
+              <input id="newOtherAssetPurchaseDate" type="date" />
+              <button class="btn primary full" id="addOtherAssetBtn" type="button">Ekle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DÖVİZ -->
+        <div class="varligim-section" id="varligimSection-doviz" style="display:none;">
+          <div class="card">
+            <div class="section-title">Döviz Varlıkları</div>
+            <div class="table-wrap">
+            <table id="varligimCurrencyTable">
+              <thead><tr>
+                <th>Döviz</th><th class="num">Miktar</th><th class="num">Maliyet</th>
+                <th class="num">Güncel Kur</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="varligimCurrencyBody"></tbody>
+            </table>
+            </div>
+            <div id="varligimCurrencyEmptyState" class="empty" style="display:none;">Henüz döviz eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Döviz ekle / güncelle</div>
+              <input id="newVarligimCurrencySearch" class="full" list="varligimCurrencyOptions" autocomplete="off" placeholder="Döviz ara veya seç (örn. USD)" />
+              <datalist id="varligimCurrencyOptions"></datalist>
+              <input id="newVarligimCurrencyAmount" type="number" step="any" placeholder="Miktar" />
+              <input id="newVarligimCurrencyCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
+              <button class="btn primary full" id="addVarligimCurrencyBtn" type="button">Ekle / Güncelle</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BÜLTEN (yakında) -->
+      <div class="page" id="page-bulten">
+        <h1 class="page-title">Bülten</h1>
+        <p class="page-lead">Piyasa özeti ve finans haberleri.</p>
+        <div class="card">
+          <div class="placeholder-box">
+            <span class="msr">newspaper</span>
+            Bülten bölümü yakında bu panelde de kullanılabilir olacak.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="app-core.js"></script>
+<script src="app-home.js"></script>
+<script src="app-varliklar.js"></script>
+<script src="app-butce.js"></script>
+<script src="app-varligim.js"></script>
 </body>
 </html>
