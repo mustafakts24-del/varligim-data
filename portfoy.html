@@ -10,6 +10,7 @@
 />
 <link rel="stylesheet" href="styles.css" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -106,116 +107,116 @@
           <div class="hero-value" id="heroTotal">…</div>
           <div class="hero-updated" id="heroUpdated"></div>
         </div>
+
+        <div class="home-quick-grid" id="homeQuickGrid"></div>
+
         <div class="stat-grid" id="statGrid"></div>
+
         <div class="card">
-          <div class="section-title"><span class="msr">query_stats</span> Piyasalar</div>
-          <div class="ticker-grid" id="tickerGrid"></div>
+          <div class="section-title"><span class="msr">donut_large</span> Varlık Dağılımı</div>
+          <div style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
+            <div class="chart-wrap" style="width:220px; height:220px; flex:0 0 auto;"><canvas id="assetDistributionChart"></canvas></div>
+            <div id="assetDistributionLegend" style="flex:1; min-width:180px; font-size:13px;"></div>
+          </div>
+        </div>
+
+        <div class="home-section-title"><span class="msr">query_stats</span> Piyasalar</div>
+        <div class="ticker-grid" id="tickerGrid"></div>
+
+        <div class="home-section-title"><span class="msr">diamond</span> Emtialar</div>
+        <div class="ticker-grid" id="tickerGridEmtia"></div>
+
+        <div class="home-section-title"><span class="msr">trending_up</span> Piyasa Hareketleri (BIST 100, işlem hacmine göre)</div>
+        <div class="movers-list" id="moversList">
+          <div class="empty" style="padding:14px 0;">Yükleniyor…</div>
         </div>
       </div>
 
-      <!-- EMTİA -->
+      <!-- EMTİA (PİYASA) -->
       <div class="page" id="page-emtia">
-        <h1 class="page-title">Emtia Portföyüm</h1>
-        <p class="page-lead">Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
+        <h1 class="page-title">Emtialar</h1>
+        <p class="page-lead">Güncel emtia fiyatları. Kendi emtia varlıkların için <strong>Varlığım</strong> menüsünü kullan.</p>
         <div class="card">
-          <div class="section-title">Emtia Varlıkları</div>
           <div class="table-wrap">
-          <table id="commodityTable">
+          <table id="emtiaMarketTable">
             <thead><tr>
-              <th>Emtia</th><th class="num">Miktar</th><th class="num">Maliyet</th>
-              <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              <th></th><th>Emtia</th><th class="num">Fiyat</th><th class="num">Değişim</th><th></th>
             </tr></thead>
-            <tbody id="commodityBody"></tbody>
+            <tbody id="emtiaMarketBody"></tbody>
           </table>
           </div>
-          <div id="commodityEmptyState" class="empty" style="display:none;">Henüz emtia eklenmemiş.</div>
-          <div class="add-form">
-            <div class="full section-title" style="margin:0;">Emtia ekle / güncelle</div>
-            <input id="newCommoditySearch" class="full" list="commodityOptions" autocomplete="off" placeholder="Emtia ara veya seç (örn. Altın)" />
-            <datalist id="commodityOptions"></datalist>
-            <input id="newCommodityAmount" type="number" step="any" placeholder="Miktar" />
-            <input id="newCommodityCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
-            <button class="btn primary full" id="addCommodityBtn" type="button">Ekle / Güncelle</button>
-          </div>
+          <div id="emtiaMarketEmptyState" class="empty" style="display:none;">Veri alınamadı.</div>
         </div>
       </div>
 
-      <!-- HİSSE -->
+      <!-- HİSSE (PİYASA) -->
       <div class="page" id="page-hisse">
-        <h1 class="page-title">Hisse Portföyüm</h1>
-        <p class="page-lead">Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
+        <h1 class="page-title">Hisse Senetleri</h1>
+        <p class="page-lead">BIST endeksleri, sektör endeksleri ve tüm hisse senetleri. Kendi hisse varlıkların için <strong>Varlığım</strong> menüsünü kullan.</p>
+
+        <div class="section-title">Ana Endeksler</div>
+        <div class="index-grid" id="bistIndexGrid"></div>
+
+        <div class="section-title">Sektör Endeksleri</div>
+        <div class="index-grid" id="bistSectorGrid"></div>
+
+        <div class="section-title" style="margin-top:22px;">Tüm Hisseler</div>
         <div class="card">
-          <div class="section-title">Hisseler</div>
+          <div class="market-toolbar">
+            <input type="search" id="hisseSearchInput" placeholder="Hisse kodu veya şirket adı ara..." />
+            <span id="hisseCatalogSource" style="font-size:11.5px; color:var(--text-faint);"></span>
+          </div>
           <div class="table-wrap">
-          <table id="holdingsTable">
+          <table id="hisseMarketTable">
             <thead><tr>
-              <th>Hisse</th><th class="num">Lot</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
-              <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              <th></th><th>Hisse</th><th class="num">Fiyat</th><th class="num">Değişim</th><th></th>
             </tr></thead>
-            <tbody id="holdingsBody"></tbody>
+            <tbody id="hisseMarketBody"></tbody>
           </table>
           </div>
-          <div id="emptyState" class="empty" style="display:none;">Henüz hisse eklenmemiş.</div>
-          <div class="add-form">
-            <div class="full section-title" style="margin:0;">Yeni hisse ekle</div>
-            <select id="newStockSelect" class="full"><option value="">Hisse seç...</option></select>
-            <input id="newLot" type="number" step="any" placeholder="Lot" />
-            <input id="newCost" type="number" step="any" placeholder="Maliyet (₺)" />
-            <button class="btn primary full" id="addBtn" type="button">Ekle</button>
-          </div>
+          <div id="hisseMarketEmptyState" class="empty" style="display:none;">Sonuç bulunamadı.</div>
+          <div class="load-more-row"><button class="btn outline small" id="hisseLoadMoreBtn" type="button" style="display:none;">Daha fazla göster</button></div>
         </div>
       </div>
 
-      <!-- FON -->
+      <!-- FON (PİYASA) -->
       <div class="page" id="page-fon">
-        <h1 class="page-title">Fon Portföyüm</h1>
-        <p class="page-lead">Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
+        <h1 class="page-title">Yatırım Fonları</h1>
+        <p class="page-lead">TEFAS'taki tüm fonlar. Kendi fon varlıkların için <strong>Varlığım</strong> menüsünü kullan.</p>
         <div class="card">
-          <div class="section-title">Fon Varlıkları</div>
+          <div class="market-toolbar">
+            <input type="search" id="fonSearchInput" placeholder="Fon kodu, adı veya kurucu ara..." />
+          </div>
           <div class="table-wrap">
-          <table id="fundTable">
+          <table id="fonMarketTable">
             <thead><tr>
-              <th>Fon</th><th class="num">Adet</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
-              <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              <th></th><th>Fon</th><th class="num">Fiyat</th><th></th>
             </tr></thead>
-            <tbody id="fundBody"></tbody>
+            <tbody id="fonMarketBody"></tbody>
           </table>
           </div>
-          <div id="fundEmptyState" class="empty" style="display:none;">Henüz fon eklenmemiş.</div>
-          <div class="add-form">
-            <div class="full section-title" style="margin:0;">Fon ekle / güncelle</div>
-            <input id="newFundCode" class="full" type="text" autocomplete="off" maxlength="8" placeholder="Fon kodunu yaz (örn. GUM)" />
-            <input id="newFundName" class="full" type="text" autocomplete="off" placeholder="Fon adı otomatik bulunacak" readonly />
-            <input id="newFundUnits" type="number" step="any" placeholder="Adet" />
-            <input id="newFundCost" type="number" step="any" placeholder="Birim maliyet (₺)" />
-            <button class="btn primary full" id="addFundBtn" type="button">Ekle / Güncelle</button>
-          </div>
+          <div id="fonMarketEmptyState" class="empty" style="display:none;">Sonuç bulunamadı.</div>
+          <div class="load-more-row"><button class="btn outline small" id="fonLoadMoreBtn" type="button" style="display:none;">Daha fazla göster</button></div>
         </div>
       </div>
 
-      <!-- KRİPTO -->
+      <!-- KRİPTO (PİYASA) -->
       <div class="page" id="page-kripto">
-        <h1 class="page-title">Kripto Portföyüm</h1>
-        <p class="page-lead">Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
+        <h1 class="page-title">Kripto Paralar</h1>
+        <p class="page-lead">Piyasa değerine göre ilk 100 kripto para. Kendi kripto varlıkların için <strong>Varlığım</strong> menüsünü kullan.</p>
         <div class="card">
-          <div class="section-title">Kripto Varlıklar</div>
+          <div class="market-toolbar">
+            <input type="search" id="kriptoSearchInput" placeholder="Kripto adı veya sembol ara..." />
+          </div>
           <div class="table-wrap">
-          <table id="cryptoTable">
+          <table id="kriptoMarketTable">
             <thead><tr>
-              <th>Kripto</th><th class="num">Miktar</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
-              <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              <th></th><th>Kripto</th><th class="num">Fiyat</th><th class="num">Değişim (24s)</th><th></th>
             </tr></thead>
-            <tbody id="cryptoBody"></tbody>
+            <tbody id="kriptoMarketBody"></tbody>
           </table>
           </div>
-          <div id="cryptoEmptyState" class="empty" style="display:none;">Henüz kripto eklenmemiş.</div>
-          <div class="add-form">
-            <div class="full section-title" style="margin:0;">Yeni kripto ekle</div>
-            <select id="newCryptoSelect" class="full"><option value="">Kripto seç...</option></select>
-            <input id="newCryptoAmount" type="number" step="any" placeholder="Miktar" />
-            <input id="newCryptoCost" type="number" step="any" placeholder="Birim maliyet (₺)" />
-            <button class="btn primary full" id="addCryptoBtn" type="button">Ekle</button>
-          </div>
+          <div id="kriptoMarketEmptyState" class="empty" style="display:none;">Sonuç bulunamadı.</div>
         </div>
       </div>
 
@@ -323,43 +324,28 @@
         </div>
       </div>
 
-      <!-- VİOP AKTİF VADE -->
+      <!-- VİOP AKTİF VADE (PİYASA) -->
       <div class="page" id="page-viop">
         <h1 class="page-title">VİOP Aktif Vade</h1>
-        <p class="page-lead">Pozisyonların, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
+        <p class="page-lead">Piyasadaki aktif vadeli işlem/opsiyon sözleşmeleri. Kendi VİOP pozisyonların için <strong>Varlığım</strong> menüsünü kullan.</p>
         <div class="card">
-          <div class="section-title">VİOP Pozisyonların</div>
+          <div class="chip-row" id="viopCategoryChips">
+            <div class="filter-chip active" data-cat="all">Tümü</div>
+            <div class="filter-chip" data-cat="equity">Hisse</div>
+            <div class="filter-chip" data-cat="index">Endeks</div>
+            <div class="filter-chip" data-cat="currency">Döviz</div>
+            <div class="filter-chip" data-cat="metal">Kıymetli Maden</div>
+            <div class="filter-chip" data-cat="other">Diğer</div>
+          </div>
           <div class="table-wrap">
-          <table id="viopTable">
+          <table id="viopMarketTable">
             <thead><tr>
-              <th>Sözleşme</th><th class="num">Lot</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
-              <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              <th></th><th>Sözleşme</th><th class="num">Fiyat</th><th class="num">Değişim</th><th class="num">Hacim (TL)</th><th></th>
             </tr></thead>
-            <tbody id="viopBody"></tbody>
+            <tbody id="viopMarketBody"></tbody>
           </table>
           </div>
-          <div id="viopEmptyState" class="empty" style="display:none;">Henüz VİOP pozisyonu eklenmemiş.</div>
-          <div class="add-form">
-            <div class="full section-title" style="margin:0;">VİOP pozisyonu ekle</div>
-            <input id="newViopSymbol" class="full" type="text" autocomplete="off" placeholder="Sözleşme sembolü (örn. XU030")" />
-            <input id="newViopUnderlying" type="text" autocomplete="off" placeholder="Dayanak varlık (isteğe bağlı)" />
-            <select id="newViopIsOption">
-              <option value="false">Vadeli İşlem</option>
-              <option value="true">Opsiyon</option>
-            </select>
-            <input id="newViopLot" type="number" step="any" placeholder="Lot" />
-            <input id="newViopCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
-            <button class="btn primary full" id="addViopBtn" type="button">Ekle</button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="section-title"><span class="msr">show_chart</span> Piyasadaki Aktif Vadeli İşlem Sözleşmeleri</div>
-          <div class="placeholder-box">
-            <span class="msr">hourglass_top</span>
-            Piyasa genelindeki aktif VİOP sözleşme listesi için güvenilir bir
-            canlı veri kaynağı henüz bu panele bağlanmadı. Bu bölüm, veri
-            servisi hazır olduğunda yakında eklenecek.
-          </div>
+          <div id="viopMarketEmptyState" class="empty" style="display:none;">Veri alınamadı.</div>
         </div>
       </div>
 
@@ -411,33 +397,240 @@
         </div>
       </div>
 
-      <!-- FAVORİLER (yakında) -->
+      <!-- FAVORİLER -->
       <div class="page" id="page-favoriler">
         <h1 class="page-title">Favoriler</h1>
-        <p class="page-lead">Favorilere eklediğin enstrümanlar.</p>
+        <p class="page-lead">Favorilere eklediğin enstrümanlar. Mobil uygulamayla otomatik senkronize.</p>
+        <div class="chip-row" id="favoriCategoryChips">
+          <div class="filter-chip active" data-cat="all">Tümü</div>
+          <div class="filter-chip" data-cat="hisse">Hisse Senetleri</div>
+          <div class="filter-chip" data-cat="endeks">Endeksler</div>
+          <div class="filter-chip" data-cat="emtia">Emtia</div>
+          <div class="filter-chip" data-cat="fon">Fonlar</div>
+          <div class="filter-chip" data-cat="kripto">Kripto</div>
+          <div class="filter-chip" data-cat="viop">VİOP</div>
+          <div class="filter-chip" data-cat="doviz">Döviz</div>
+        </div>
         <div class="card">
-          <div class="placeholder-box">
-            <span class="msr">star</span>
-            Favoriler bölümü yakında bu panelde de kullanılabilir olacak.
+          <div class="table-wrap">
+          <table id="favoriTable">
+            <thead><tr>
+              <th>Kategori</th><th>Enstrüman</th><th class="num">Fiyat</th><th class="num">Değişim</th><th></th>
+            </tr></thead>
+            <tbody id="favoriBody"></tbody>
+          </table>
           </div>
+          <div id="favoriEmptyState" class="empty" style="display:none;">Henüz favori eklenmemiş. Piyasa sayfalarındaki ★ simgesine tıklayarak ekleyebilirsin.</div>
         </div>
       </div>
 
-      <!-- VARLIĞIM (yakında) -->
+      <!-- VARLIĞIM: kullanıcının kendi portföyü (10 kategori, mobildeki
+           net_worth_breakdown_screen.dart ile aynı sırada) -->
       <div class="page" id="page-varligim">
         <h1 class="page-title">Varlığım</h1>
-        <p class="page-lead">Gayrimenkul, araç, mevduat, döviz ve diğer varlıklarının tek merkezde yönetimi. Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize. (Hisse, Fon, Kripto, Emtia, VİOP için soldaki <strong>Varlıklar</strong> menüsünü kullan — burada tekrarlanmadı.)</p>
+        <p class="page-lead">Tüm varlık kategorilerinin tek merkezde yönetimi. Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
 
         <div class="subtab-row">
-          <div class="subtab-chip active" data-subtab="gayrimenkul">Gayrimenkul</div>
-          <div class="subtab-chip" data-subtab="arac">Araç</div>
+          <div class="subtab-chip active" data-subtab="nakit-doviz">Nakit ve Döviz</div>
+          <div class="subtab-chip" data-subtab="emtia">Emtia Portföyü</div>
+          <div class="subtab-chip" data-subtab="hisse">Hisse Portföyü</div>
+          <div class="subtab-chip" data-subtab="fon">Yatırım Fonlarım</div>
+          <div class="subtab-chip" data-subtab="kripto">Kripto Paralarım</div>
+          <div class="subtab-chip" data-subtab="viop">VİOP'larım</div>
           <div class="subtab-chip" data-subtab="mevduat">Mevduat</div>
-          <div class="subtab-chip" data-subtab="diger">Diğer Varlıklar</div>
-          <div class="subtab-chip" data-subtab="doviz">Döviz</div>
+          <div class="subtab-chip" data-subtab="gayrimenkul">Gayrimenkullerim</div>
+          <div class="subtab-chip" data-subtab="arac">Araçlarım</div>
+          <div class="subtab-chip" data-subtab="diger">Diğer Varlıklarım</div>
+        </div>
+
+        <!-- NAKİT VE DÖVİZ -->
+        <div class="varligim-section" id="varligimSection-nakit-doviz">
+          <div class="card">
+            <div class="section-title">Döviz Varlıkları</div>
+            <div class="table-wrap">
+            <table id="varligimCurrencyTable">
+              <thead><tr>
+                <th>Döviz</th><th class="num">Miktar</th><th class="num">Maliyet</th>
+                <th class="num">Güncel Kur</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="varligimCurrencyBody"></tbody>
+            </table>
+            </div>
+            <div id="varligimCurrencyEmptyState" class="empty" style="display:none;">Henüz döviz eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Döviz ekle / güncelle</div>
+              <input id="newVarligimCurrencySearch" class="full" list="varligimCurrencyOptions" autocomplete="off" placeholder="Döviz ara veya seç (örn. USD)" />
+              <datalist id="varligimCurrencyOptions"></datalist>
+              <input id="newVarligimCurrencyAmount" type="number" step="any" placeholder="Miktar" />
+              <input id="newVarligimCurrencyCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
+              <button class="btn primary full" id="addVarligimCurrencyBtn" type="button">Ekle / Güncelle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMTİA PORTFÖYÜ -->
+        <div class="varligim-section" id="varligimSection-emtia" style="display:none;">
+          <div class="card">
+            <div class="section-title">Emtia Varlıkları</div>
+            <div class="table-wrap">
+            <table id="commodityTable">
+              <thead><tr>
+                <th>Emtia</th><th class="num">Miktar</th><th class="num">Maliyet</th>
+                <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="commodityBody"></tbody>
+            </table>
+            </div>
+            <div id="commodityEmptyState" class="empty" style="display:none;">Henüz emtia eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Emtia ekle / güncelle</div>
+              <input id="newCommoditySearch" class="full" list="commodityOptions" autocomplete="off" placeholder="Emtia ara veya seç (örn. Altın)" />
+              <datalist id="commodityOptions"></datalist>
+              <input id="newCommodityAmount" type="number" step="any" placeholder="Miktar" />
+              <input id="newCommodityCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
+              <button class="btn primary full" id="addCommodityBtn" type="button">Ekle / Güncelle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- HİSSE PORTFÖYÜ -->
+        <div class="varligim-section" id="varligimSection-hisse" style="display:none;">
+          <div class="card">
+            <div class="section-title">Hisseler</div>
+            <div class="table-wrap">
+            <table id="holdingsTable">
+              <thead><tr>
+                <th>Hisse</th><th class="num">Lot</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
+                <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="holdingsBody"></tbody>
+            </table>
+            </div>
+            <div id="emptyState" class="empty" style="display:none;">Henüz hisse eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Yeni hisse ekle</div>
+              <select id="newStockSelect" class="full"><option value="">Hisse seç...</option></select>
+              <input id="newLot" type="number" step="any" placeholder="Lot" />
+              <input id="newCost" type="number" step="any" placeholder="Maliyet (₺)" />
+              <button class="btn primary full" id="addBtn" type="button">Ekle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- YATIRIM FONLARIM -->
+        <div class="varligim-section" id="varligimSection-fon" style="display:none;">
+          <div class="card">
+            <div class="section-title">Fon Varlıkları</div>
+            <div class="table-wrap">
+            <table id="fundTable">
+              <thead><tr>
+                <th>Fon</th><th class="num">Adet</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
+                <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="fundBody"></tbody>
+            </table>
+            </div>
+            <div id="fundEmptyState" class="empty" style="display:none;">Henüz fon eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Fon ekle / güncelle</div>
+              <input id="newFundCode" class="full" type="text" autocomplete="off" maxlength="8" placeholder="Fon kodunu yaz (örn. GUM)" />
+              <input id="newFundName" class="full" type="text" autocomplete="off" placeholder="Fon adı otomatik bulunacak" readonly />
+              <input id="newFundUnits" type="number" step="any" placeholder="Adet" />
+              <input id="newFundCost" type="number" step="any" placeholder="Birim maliyet (₺)" />
+              <button class="btn primary full" id="addFundBtn" type="button">Ekle / Güncelle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- KRİPTO PARALARIM -->
+        <div class="varligim-section" id="varligimSection-kripto" style="display:none;">
+          <div class="card">
+            <div class="section-title">Kripto Varlıklar</div>
+            <div class="table-wrap">
+            <table id="cryptoTable">
+              <thead><tr>
+                <th>Kripto</th><th class="num">Miktar</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
+                <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="cryptoBody"></tbody>
+            </table>
+            </div>
+            <div id="cryptoEmptyState" class="empty" style="display:none;">Henüz kripto eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Yeni kripto ekle</div>
+              <select id="newCryptoSelect" class="full"><option value="">Kripto seç...</option></select>
+              <input id="newCryptoAmount" type="number" step="any" placeholder="Miktar" />
+              <input id="newCryptoCost" type="number" step="any" placeholder="Birim maliyet (₺)" />
+              <button class="btn primary full" id="addCryptoBtn" type="button">Ekle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- VİOP'LARIM -->
+        <div class="varligim-section" id="varligimSection-viop" style="display:none;">
+          <div class="card">
+            <div class="section-title">VİOP Pozisyonların</div>
+            <div class="table-wrap">
+            <table id="viopTable">
+              <thead><tr>
+                <th>Sözleşme</th><th class="num">Lot</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
+                <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="viopBody"></tbody>
+            </table>
+            </div>
+            <div id="viopEmptyState" class="empty" style="display:none;">Henüz VİOP pozisyonu eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">VİOP pozisyonu ekle</div>
+              <input id="newViopSymbol" class="full" type="text" autocomplete="off" placeholder="Sözleşme sembolü (örn. XU030)" />
+              <input id="newViopUnderlying" type="text" autocomplete="off" placeholder="Dayanak varlık (isteğe bağlı)" />
+              <select id="newViopCategory">
+                <option value="0">Hisse</option>
+                <option value="1">Endeks</option>
+                <option value="2">Döviz</option>
+                <option value="3">Kıymetli Maden</option>
+                <option value="4" selected>Diğer</option>
+              </select>
+              <select id="newViopIsOption">
+                <option value="false">Vadeli İşlem</option>
+                <option value="true">Opsiyon</option>
+              </select>
+              <input id="newViopLot" type="number" step="any" placeholder="Lot" />
+              <input id="newViopCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
+              <button class="btn primary full" id="addViopBtn" type="button">Ekle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MEVDUAT -->
+        <div class="varligim-section" id="varligimSection-mevduat" style="display:none;">
+          <div class="card">
+            <div class="section-title">Mevduatlar</div>
+            <div class="table-wrap">
+            <table id="varligimDepositTable">
+              <thead><tr>
+                <th>Banka</th><th class="num">Anapara</th><th class="num">Faiz</th>
+                <th class="num">Vade</th><th class="num">Güncel Değer</th><th></th>
+              </tr></thead>
+              <tbody id="varligimDepositBody"></tbody>
+            </table>
+            </div>
+            <div id="varligimDepositEmptyState" class="empty" style="display:none;">Henüz mevduat eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Mevduat ekle</div>
+              <input id="newVarligimDepositBankName" class="full" type="text" autocomplete="off" placeholder="Banka adı" />
+              <input id="newVarligimDepositPrincipal" type="number" step="any" min="0" placeholder="Anapara (₺)" />
+              <input id="newVarligimDepositAnnualRate" type="number" step="any" min="0" placeholder="Yıllık faiz oranı (%)" />
+              <input id="newVarligimDepositWithholdingRate" type="number" step="any" min="0" placeholder="Stopaj oranı (%)" />
+              <input id="newVarligimDepositStartDate" type="date" />
+              <input id="newVarligimDepositMaturityDate" type="date" />
+              <button class="btn primary full" id="addVarligimDepositBtn" type="button">Ekle</button>
+            </div>
+          </div>
         </div>
 
         <!-- GAYRİMENKUL -->
-        <div class="varligim-section" id="varligimSection-gayrimenkul">
+        <div class="varligim-section" id="varligimSection-gayrimenkul" style="display:none;">
           <div class="card">
             <div class="section-title">Gayrimenkul Varlıkları</div>
             <div class="table-wrap">
@@ -509,33 +702,6 @@
           </div>
         </div>
 
-        <!-- MEVDUAT -->
-        <div class="varligim-section" id="varligimSection-mevduat" style="display:none;">
-          <div class="card">
-            <div class="section-title">Mevduatlar</div>
-            <div class="table-wrap">
-            <table id="varligimDepositTable">
-              <thead><tr>
-                <th>Banka</th><th class="num">Anapara</th><th class="num">Faiz</th>
-                <th class="num">Vade</th><th class="num">Güncel Değer</th><th></th>
-              </tr></thead>
-              <tbody id="varligimDepositBody"></tbody>
-            </table>
-            </div>
-            <div id="varligimDepositEmptyState" class="empty" style="display:none;">Henüz mevduat eklenmemiş.</div>
-            <div class="add-form">
-              <div class="full section-title" style="margin:0;">Mevduat ekle</div>
-              <input id="newVarligimDepositBankName" class="full" type="text" autocomplete="off" placeholder="Banka adı" />
-              <input id="newVarligimDepositPrincipal" type="number" step="any" min="0" placeholder="Anapara (₺)" />
-              <input id="newVarligimDepositAnnualRate" type="number" step="any" min="0" placeholder="Yıllık faiz oranı (%)" />
-              <input id="newVarligimDepositWithholdingRate" type="number" step="any" min="0" placeholder="Stopaj oranı (%)" />
-              <input id="newVarligimDepositStartDate" type="date" />
-              <input id="newVarligimDepositMaturityDate" type="date" />
-              <button class="btn primary full" id="addVarligimDepositBtn" type="button">Ekle</button>
-            </div>
-          </div>
-        </div>
-
         <!-- DİĞER VARLIKLAR -->
         <div class="varligim-section" id="varligimSection-diger" style="display:none;">
           <div class="card">
@@ -572,42 +738,22 @@
           </div>
         </div>
 
-        <!-- DÖVİZ -->
-        <div class="varligim-section" id="varligimSection-doviz" style="display:none;">
-          <div class="card">
-            <div class="section-title">Döviz Varlıkları</div>
-            <div class="table-wrap">
-            <table id="varligimCurrencyTable">
-              <thead><tr>
-                <th>Döviz</th><th class="num">Miktar</th><th class="num">Maliyet</th>
-                <th class="num">Güncel Kur</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
-              </tr></thead>
-              <tbody id="varligimCurrencyBody"></tbody>
-            </table>
-            </div>
-            <div id="varligimCurrencyEmptyState" class="empty" style="display:none;">Henüz döviz eklenmemiş.</div>
-            <div class="add-form">
-              <div class="full section-title" style="margin:0;">Döviz ekle / güncelle</div>
-              <input id="newVarligimCurrencySearch" class="full" list="varligimCurrencyOptions" autocomplete="off" placeholder="Döviz ara veya seç (örn. USD)" />
-              <datalist id="varligimCurrencyOptions"></datalist>
-              <input id="newVarligimCurrencyAmount" type="number" step="any" placeholder="Miktar" />
-              <input id="newVarligimCurrencyCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
-              <button class="btn primary full" id="addVarligimCurrencyBtn" type="button">Ekle / Güncelle</button>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <!-- BÜLTEN (yakında) -->
+      <!-- BÜLTEN -->
       <div class="page" id="page-bulten">
         <h1 class="page-title">Bülten</h1>
-        <p class="page-lead">Piyasa özeti ve finans haberleri.</p>
-        <div class="card">
-          <div class="placeholder-box">
-            <span class="msr">newspaper</span>
-            Bülten bölümü yakında bu panelde de kullanılabilir olacak.
-          </div>
+        <p class="page-lead">Piyasa özeti ve finans haberleri (mobil ile aynı kaynaklar).</p>
+        <div class="chip-row" id="bultenCategoryChips">
+          <div class="filter-chip active" data-cat="all">Tümü</div>
+          <div class="filter-chip" data-cat="ekonomi">Ekonomi</div>
+          <div class="filter-chip" data-cat="borsa">Borsa</div>
+          <div class="filter-chip" data-cat="emtia">Emtia</div>
+          <div class="filter-chip" data-cat="doviz">Döviz</div>
+          <div class="filter-chip" data-cat="kap">KAP</div>
         </div>
+        <div id="bultenEmptyState" class="empty" style="display:none;">Haberler şu anda alınamıyor.</div>
+        <div class="news-grid" id="bultenGrid"></div>
       </div>
 
     </div>
@@ -615,6 +761,14 @@
 </div>
 
 <script src="app-core.js"></script>
+<script src="bist-stocks-data.js"></script>
+<script src="app-piyasa-emtia.js"></script>
+<script src="app-piyasa-hisse.js"></script>
+<script src="app-piyasa-fon.js"></script>
+<script src="app-piyasa-kripto.js"></script>
+<script src="app-piyasa-viop.js"></script>
+<script src="app-favoriler.js"></script>
+<script src="app-bulten.js"></script>
 <script src="app-home.js"></script>
 <script src="app-varliklar.js"></script>
 <script src="app-butce.js"></script>
