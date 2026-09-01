@@ -61,6 +61,185 @@ async function computeYahooBackedCategory(rows, priceParamFn, amountField, costF
   return { value, invested: investedKnown, valueKnown };
 }
 
+/* ------------------------------------------------------------------
+ * FAZ 11 EKLEMELERİ: hızlı gezinme kutuları, genişletilmiş piyasa/
+ * emtia mini bölümleri, "Piyasa Hareketleri" ve varlık dağılım grafiği.
+ * Mobildeki home_screen.dart'ta OLMAYAN ama kullanıcının bu çalışma
+ * için AÇIKÇA istediği ek bölümler: gelir/gider/tasarruf özeti (zaten
+ * yukarıdaki statGrid'de vardı) ve varlık dağılım grafiği (aşağıda).
+ * "AI Analiz" banner'ı ve "Toplam Net Borç" kartı bilinçli olarak
+ * eklenmedi (mobilde de fonksiyonel değil / borç verisi senkron değil).
+ * ------------------------------------------------------------------ */
+const HOME_QUICK_LINKS = [
+  { page: 'varligim', icon: 'account_balance_wallet', label: 'Varlığım' },
+  { page: 'emtia', icon: 'storefront', label: 'Varlıklar' },
+  { page: 'butce', icon: 'savings', label: 'Bütçe' },
+  { page: 'bulten', icon: 'newspaper', label: 'Bülten' }
+];
+
+// "Piyasa Hareketleri" için örneklem: BIST'in en büyük/likit hisseleri
+// (tam BIST100 üyelik listesi bu sürümde doğrulanamadığı için "BIST100"
+// olarak iddia edilmiyor — dürüstlük kuralı). Tek istekte (stock-batch)
+// toplu çekilip işlem hacmine (fiyat × hacim) göre sıralanır.
+const HOME_LIQUID_STOCK_SAMPLE = [
+  'THYAO','TUPRS','BIMAS','GARAN','YKBNK','ISCTR','KCHOL','SAHOL','SISE','EREGL',
+  'FROTO','TOASO','TCELL','TAVHL','PETKM','ENKAI','SASA','MGROS','ASELS','AKBNK',
+  'PGSUS','KOZAL','TTKOM','VAKBN','HALKB','ARCLK','EKGYO','TTRAK','ULKER','DOAS',
+  'KONTR','SOKM','VESTL','AEFES','CCOLA','ALARK','AGHOL','KOZAA','ISMEN','GUBRF',
+  'HEKTS','OYAKC','TSKB','SKBNK','KRDMD','ODAS','ASTOR','CIMSA','AKSEN','MAVI',
+  'ENJSA','ANHYT','TKFEN','BRSAN','CWENE','QUAGR','GESAN'
+];
+
+function renderHomeQuickGrid() {
+  const grid = document.getElementById('homeQuickGrid');
+  if (!grid) return;
+  grid.innerHTML = HOME_QUICK_LINKS.map(l => `
+    <div class="home-quick-box" data-goto="${l.page}">
+      <span class="msr">${l.icon}</span>
+      <div class="lbl">${escapeHtml(l.label)}</div>
+    </div>
+  `).join('');
+  grid.querySelectorAll('[data-goto]').forEach(box => {
+    box.addEventListener('click', () => showPage(box.dataset.goto));
+  });
+}
+
+async function loadExtraTickerGrid(containerId, tickers) {
+  const grid = document.getElementById(containerId);
+  if (!grid) return;
+  grid.innerHTML = tickers.map(t => `
+    <div class="ticker-box">
+      <div class="ticker-name">${escapeHtml(t.name)}</div>
+      <div class="ticker-value" id="ticker2-value-${t.id}">…</div>
+      <div id="ticker2-chip-${t.id}"><span class="chip neu">…</span></div>
+    </div>
+  `).join('');
+  await Promise.all(tickers.map(async t => {
+    const valueEl = document.getElementById(`ticker2-value-${t.id}`);
+    const chipEl = document.getElementById(`ticker2-chip-${t.id}`);
+    try {
+      const quote = await t.fetcher();
+      valueEl.textContent = t.fmt(quote.price);
+      chipEl.innerHTML = changeChipHtml(quote.changePercent);
+    } catch (e) {
+      valueEl.textContent = '—';
+      chipEl.innerHTML = `<span class="chip neu">—</span>`;
+    }
+  }));
+}
+
+async function fetchCryptoUsdQuote(id) {
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd&include_24hr_change=true`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  const price = data?.[id]?.usd;
+  const changePercent = data?.[id]?.usd_24h_change;
+  if (typeof price !== 'number') throw new Error('fiyat yok');
+  return { price, changePercent: typeof changePercent === 'number' ? changePercent : null };
+}
+
+async function fetchViop30Quote() {
+  const result = await cachedFetch('viop-list', 30000, () => fetchPriceProxy('type=viop-list'));
+  const contracts = result.contracts || [];
+  const match = contracts.find(c => c.category === 'index' && /XU ?030|BIST ?30/i.test(c.underlying || c.symbol || ''));
+  if (!match) throw new Error('VİOP30 sözleşmesi bulunamadı');
+  return { price: match.price, changePercent: match.changePercent };
+}
+
+async function loadHomeMarketSections() {
+  await loadExtraTickerGrid('tickerGrid', [
+    { id: 'usdtry', name: 'USD/TRY', fmt: fmtTLPrecise, fetcher: () => fetchPriceProxy('type=currency&code=USD') },
+    { id: 'eurtry', name: 'EUR/TRY', fmt: fmtTLPrecise, fetcher: () => fetchPriceProxy('type=currency&code=EUR') },
+    { id: 'btcusd', name: 'BTC/USD', fmt: fmtUSD, fetcher: () => fetchCryptoUsdQuote('bitcoin') },
+    { id: 'ethusd', name: 'ETH/USD', fmt: fmtUSD, fetcher: () => fetchCryptoUsdQuote('ethereum') },
+    { id: 'bist100', name: 'BIST 100', fmt: fmtNumber, fetcher: () => fetchPriceProxy('type=stock&symbol=XU100') },
+    { id: 'viop30', name: 'VİOP30 (yakın vade)', fmt: fmtNumber, fetcher: fetchViop30Quote }
+  ]);
+
+  await loadExtraTickerGrid('tickerGridEmtia', [
+    { id: 'goldgr', name: 'Gram Altın', fmt: fmtTLPrecise, fetcher: () => fetchPriceProxy('type=commodity&key=GOLD') },
+    { id: 'goldons', name: 'Ons Altın', fmt: fmtUSD, fetcher: () => fetchPriceProxy('type=commodity&key=GOLD_ONS_USD') },
+    { id: 'silvergr', name: 'Gümüş (gram)', fmt: fmtTLPrecise, fetcher: () => fetchPriceProxy('type=commodity&key=SILVER') },
+    { id: 'brent', name: 'Brent Petrol (varil)', fmt: fmtTL, fetcher: () => fetchPriceProxy('type=commodity&key=BRENT') }
+  ]);
+}
+
+async function loadHomeMovers() {
+  const listEl = document.getElementById('moversList');
+  if (!listEl) return;
+  try {
+    const result = await cachedFetch('stock-batch-home', 60000, () =>
+      fetchPriceProxy(`type=stock-batch&symbols=${HOME_LIQUID_STOCK_SAMPLE.join(',')}`));
+    const quotes = (result.quotes || []).filter(q => q.price != null && q.volume != null);
+    quotes.sort((a, b) => (b.price * b.volume) - (a.price * a.volume));
+    const top5 = quotes.slice(0, 5);
+    if (top5.length === 0) {
+      listEl.innerHTML = `<div class="empty" style="padding:14px 0;">Veri alınamadı.</div>`;
+      return;
+    }
+    listEl.innerHTML = top5.map(q => `
+      <div class="movers-row">
+        <div class="sym">${escapeHtml(q.symbol)}</div>
+        <div>${fmtTL(q.price)}</div>
+        ${changeChipHtml(q.changePercent)}
+      </div>
+    `).join('');
+  } catch (e) {
+    listEl.innerHTML = `<div class="empty" style="padding:14px 0;">Veri alınamadı.</div>`;
+  }
+}
+
+const ASSET_DISTRIBUTION_COLORS = {
+  hisse: '#5B6EF5', kripto: '#2AA9E0', doviz: '#3984F6', emtia: '#7047EB',
+  fon: '#9B3FF0', gayrimenkul: '#6D5BD0', arac: '#3EA0D9', mevduat: '#4C6FE7',
+  diger: '#64748B', viop: '#22D3EE'
+};
+
+function renderAssetDistributionChart(cards) {
+  const canvas = document.getElementById('assetDistributionChart');
+  const legendEl = document.getElementById('assetDistributionLegend');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const dist = cards.filter(c => ASSET_DISTRIBUTION_COLORS[c.key] && c.value > 0);
+  if (_chartInstances['assetDistributionChart']) {
+    _chartInstances['assetDistributionChart'].destroy();
+    delete _chartInstances['assetDistributionChart'];
+  }
+  if (dist.length === 0) {
+    legendEl.innerHTML = `<div class="empty" style="padding:10px 0;">Henüz varlık eklenmemiş.</div>`;
+    return;
+  }
+  const total = dist.reduce((s, c) => s + c.value, 0);
+  _chartInstances['assetDistributionChart'] = new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: dist.map(c => CATEGORY_META[c.key].label),
+      datasets: [{
+        data: dist.map(c => c.value),
+        backgroundColor: dist.map(c => ASSET_DISTRIBUTION_COLORS[c.key]),
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: true } },
+      cutout: '65%'
+    }
+  });
+  legendEl.innerHTML = dist
+    .sort((a, b) => b.value - a.value)
+    .map(c => {
+      const pct = total > 0 ? (c.value / total) * 100 : 0;
+      return `
+      <div style="display:flex; align-items:center; gap:8px; padding:6px 0;">
+        <span style="width:10px; height:10px; border-radius:50%; background:${ASSET_DISTRIBUTION_COLORS[c.key]}; flex-shrink:0;"></span>
+        <span style="flex:1;">${escapeHtml(CATEGORY_META[c.key].label)}</span>
+        <span style="color:var(--text-muted);">%${pct.toFixed(1)}</span>
+      </div>`;
+    }).join('');
+}
+
 async function loadHomePage() {
   const totalEl = document.getElementById('heroTotal');
   const updatedEl = document.getElementById('heroUpdated');
@@ -72,6 +251,7 @@ async function loadHomePage() {
   updatedEl.textContent = '';
   statGrid.innerHTML = '';
   tickerGrid.innerHTML = '';
+  renderHomeQuickGrid();
 
   const [
     stockRes, cryptoRes, currencyRes, commodityRes, fundRes,
@@ -246,34 +426,14 @@ async function loadHomePage() {
     return statCardHtml(c.key, c.value, pl);
   }).join('');
 
-  // ---- PİYASALAR ----
-  const tickers = [
-    { name: 'BIST 100', params: 'type=stock&symbol=XU100', fmt: fmtTL },
-    { name: 'USD/TRY', params: 'type=currency&code=USD', fmt: fmtTLPrecise },
-    { name: 'EUR/TRY', params: 'type=currency&code=EUR', fmt: fmtTLPrecise },
-    { name: 'Gram Altın', params: 'type=commodity&key=GOLD', fmt: fmtTLPrecise }
-  ];
-  tickerGrid.innerHTML = tickers.map(t => `
-    <div class="ticker-box">
-      <div class="ticker-name">${escapeHtml(t.name)}</div>
-      <div class="ticker-value" id="ticker-value-${t.name.replace(/[^a-zA-Z0-9]/g, '')}">…</div>
-      <div id="ticker-chip-${t.name.replace(/[^a-zA-Z0-9]/g, '')}"><span class="chip neu">…</span></div>
-    </div>
-  `).join('');
+  // ---- VARLIK DAĞILIM GRAFİĞİ (FAZ 11, kullanıcının açıkça istediği ek) ----
+  renderAssetDistributionChart(cards.filter(c => ASSET_DISTRIBUTION_COLORS[c.key]));
 
-  await Promise.all(tickers.map(async t => {
-    const key = t.name.replace(/[^a-zA-Z0-9]/g, '');
-    const valueEl = document.getElementById(`ticker-value-${key}`);
-    const chipEl = document.getElementById(`ticker-chip-${key}`);
-    try {
-      const quote = await fetchPriceProxy(t.params);
-      valueEl.textContent = t.fmt(quote.price);
-      chipEl.innerHTML = changeChipHtml(quote.changePercent);
-    } catch (e) {
-      valueEl.textContent = '—';
-      chipEl.innerHTML = `<span class="chip neu">—</span>`;
-    }
-  }));
+  // ---- PİYASALAR / EMTİALAR mini bölümleri + Piyasa Hareketleri ----
+  await Promise.all([
+    loadHomeMarketSections(),
+    loadHomeMovers()
+  ]);
 }
 
 registerPageLoader('home', loadHomePage);
