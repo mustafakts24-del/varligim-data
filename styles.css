@@ -1,0 +1,623 @@
+/* ============================================================
+   Varlığım — Web Paneli Tema Dosyası
+   Mobil uygulamanın renk paleti, kart stili ve tipografisiyle
+   birebir eşleşecek şekilde tasarlandı.
+   Kaynak (mobil): lib/main.dart, lib/widgets/*, lib/screens/home_screen.dart
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..600,0..1,0&display=swap');
+
+:root {
+  /* Marka renkleri (main.dart ColorScheme.fromSeed) */
+  --primary: #7047EB;
+  --secondary: #3984F6;
+  --tertiary: #35C7F0;
+
+  /* Net Varlık kartı gradyanı (widgets/net_worth_card.dart) */
+  --hero-grad-start: #7A4DF5;
+  --hero-grad-end: #3E82F7;
+
+  /* Koyu tema yüzeyleri (main.dart dark ThemeData) */
+  --bg: #08152F;
+  --bg-elevated: #0C1D3D;
+  --card: #102544;
+  --card-hover: #142B52;
+  --border: #1D3A63;
+
+  /* Metin */
+  --text: #EAF0FF;
+  --text-muted: #93A6CC;
+  --text-faint: #6C81A8;
+
+  /* Durum renkleri (widgets/percent_change_chip.dart) */
+  --positive: #1DBE82;
+  --negative: #FF525D;
+  --positive-bg: rgba(29, 190, 130, 0.14);
+  --negative-bg: rgba(255, 82, 93, 0.14);
+  /* Koyu gradyan kart üzerinde kullanılan açık tonlar (net_worth_card.dart) */
+  --positive-on-grad: #9CFFBC;
+  --negative-on-grad: #FFB4B4;
+
+  /* Kategori ikon renkleri (net_worth_breakdown_screen.dart) */
+  --cat-cash: #3984F6;
+  --cat-commodity: #7047EB;
+  --cat-stock: #5B6EF5;
+  --cat-fund: #9B3FF0;
+  --cat-crypto: #2AA9E0;
+  --cat-viop: #22D3EE;
+  --cat-deposit: #4C6FE7;
+  --cat-realestate: #6D5BD0;
+  --cat-vehicle: #3EA0D9;
+  --cat-other: #64748B;
+  --cat-budget: #1DBE82;
+
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+  --radius-pill: 999px;
+
+  --sidebar-w: 248px;
+  --topbar-h: 64px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body { min-height: 100vh; }
+
+a { color: inherit; text-decoration: none; }
+
+.msr {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  vertical-align: middle;
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ============================================================
+   GİRİŞ EKRANI (mevcut yapı korunuyor, sadece renklendirme)
+   ============================================================ */
+
+#authView {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 15% -10%, rgba(112,71,235,0.35), transparent 55%),
+    radial-gradient(circle at 90% 10%, rgba(53,199,240,0.20), transparent 45%),
+    var(--bg);
+}
+
+#authView .auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+}
+
+#authView .brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+#authView .brand-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--hero-grad-start), var(--hero-grad-end));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #fff;
+}
+
+#authView h1 { font-size: 20px; margin: 0; }
+
+.tab-row {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.tab-row .tab {
+  flex: 1;
+  text-align: center;
+  padding: 9px 14px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: background .15s, color .15s;
+}
+
+.tab-row .tab.active {
+  background: linear-gradient(135deg, var(--hero-grad-start), var(--hero-grad-end));
+  color: #fff;
+}
+
+label { display: block; font-size: 12.5px; color: var(--text-muted); margin: 14px 0 6px; }
+
+input, select, textarea {
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .15s;
+}
+
+input:focus, select:focus, textarea:focus { border-color: var(--secondary); }
+input::placeholder { color: var(--text-faint); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: filter .15s, transform .1s;
+}
+.btn:active { transform: scale(0.98); }
+.btn.primary {
+  background: linear-gradient(135deg, var(--hero-grad-start), var(--hero-grad-end));
+  color: #fff;
+}
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn.full { width: 100%; margin-top: 18px; }
+.btn.small { padding: 7px 12px; font-size: 12.5px; }
+.btn.danger { background: var(--negative-bg); color: var(--negative); }
+
+#msg { margin-top: 14px; font-size: 13px; border-radius: var(--radius-sm); padding: 10px 12px; display: none; }
+#msg.error { display: block; background: var(--negative-bg); color: var(--negative); }
+#msg.success { display: block; background: var(--positive-bg); color: var(--positive); }
+
+/* ============================================================
+   UYGULAMA KABUĞU (sidebar + topbar + içerik)
+   ============================================================ */
+
+#appShell {
+  display: flex;
+  min-height: 100vh;
+}
+
+#sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 14px;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  z-index: 40;
+  transition: transform .2s ease;
+}
+
+#sidebar .brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px 22px;
+}
+
+#sidebar .brand-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--hero-grad-start), var(--hero-grad-end));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+#sidebar .brand-row .name { font-weight: 700; font-size: 16px; }
+
+.nav-group { margin-bottom: 2px; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  transition: background .15s, color .15s;
+  user-select: none;
+}
+
+.nav-item .msr { font-size: 20px; }
+
+.nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(112,71,235,0.22), rgba(57,132,246,0.16));
+  color: #fff;
+}
+
+.nav-item .chev {
+  margin-left: auto;
+  transition: transform .15s;
+  font-size: 18px;
+  color: var(--text-faint);
+}
+
+.nav-item.expanded .chev { transform: rotate(180deg); }
+
+.nav-submenu {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height .2s ease;
+  padding-left: 14px;
+}
+
+.nav-submenu.open { max-height: 520px; }
+
+.nav-subitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  margin-bottom: 1px;
+}
+
+.nav-subitem .msr { font-size: 17px; }
+
+.nav-subitem:hover { background: var(--bg-elevated); color: var(--text); }
+
+.nav-subitem.active {
+  background: var(--bg-elevated);
+  color: var(--tertiary);
+  font-weight: 600;
+}
+
+#sidebarFooter {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+#sidebarFooter .email { color: var(--text-muted); font-size: 12.5px; margin-bottom: 8px; word-break: break-all; }
+
+#main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#topbar {
+  height: var(--topbar-h);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 26px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: rgba(8, 21, 47, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 30;
+}
+
+#hamburgerBtn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 6px;
+}
+
+#topbarTitle { font-size: 17px; font-weight: 700; }
+
+#content {
+  padding: 26px;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.page { display: none; }
+.page.active { display: block; }
+
+h1.page-title { font-size: 22px; margin: 0 0 4px; }
+.page-lead { color: var(--text-muted); font-size: 13.5px; margin: 0 0 22px; }
+
+/* ============================================================
+   KARTLAR
+   ============================================================ */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Ana Sayfa — hero (Toplam Net Varlık) kartı */
+.hero-card {
+  background: linear-gradient(135deg, var(--hero-grad-start), var(--hero-grad-end));
+  border-radius: var(--radius-lg);
+  padding: 26px 28px;
+  margin-bottom: 22px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-card::after {
+  content: '';
+  position: absolute;
+  right: -60px; top: -60px;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+
+.hero-label { font-size: 13px; opacity: .85; font-weight: 500; }
+.hero-value { font-size: 36px; font-weight: 700; margin: 8px 0 6px; letter-spacing: -0.5px; }
+.hero-updated { font-size: 12px; opacity: .7; }
+.hero-change { font-size: 13px; margin-top: 10px; display: inline-flex; align-items: center; gap: 5px; }
+
+/* Kategori özet kartları grid'i */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  transition: border-color .15s;
+}
+
+.stat-card:hover { border-color: var(--secondary); }
+
+.stat-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.stat-icon {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.stat-icon .msr { font-size: 19px; color: #fff; }
+
+.stat-name { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+.stat-value { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+.stat-change { font-size: 12px; }
+
+/* Piyasalar mini kutular */
+.ticker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.ticker-box {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.ticker-name { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .3px; margin-bottom: 6px; }
+.ticker-value { font-size: 15.5px; font-weight: 700; margin-bottom: 4px; }
+
+/* Değişim/kâr-zarar pill (percent_change_chip.dart) */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.chip.pos { color: var(--positive); background: var(--positive-bg); }
+.chip.neg { color: var(--negative); background: var(--negative-bg); }
+.chip.neu { color: var(--text-muted); background: var(--bg-elevated); }
+
+.pl-pos { color: var(--positive); font-weight: 600; }
+.pl-neg { color: var(--negative); font-weight: 600; }
+.pl-zero { color: var(--text-muted); }
+
+/* ============================================================
+   TABLOLAR
+   ============================================================ */
+
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+thead th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--text-faint);
+  padding: 0 10px 10px;
+  font-weight: 600;
+}
+th.num, td.num { text-align: right; }
+tbody td { padding: 12px 10px; border-top: 1px solid var(--border); }
+tbody tr:hover { background: var(--bg-elevated); }
+
+.sym { font-weight: 600; }
+.name { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+.del {
+  background: var(--negative-bg);
+  color: var(--negative);
+  border: none;
+  border-radius: 8px;
+  width: 28px; height: 28px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.empty { text-align: center; padding: 30px 10px; color: var(--text-faint); font-size: 13.5px; }
+
+.table-wrap { overflow-x: auto; }
+
+/* ============================================================
+   FORM GRID (varlık ekleme formları)
+   ============================================================ */
+
+.add-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.add-form .full { grid-column: 1 / -1; }
+
+/* Alt sekme (Varlıklar içi) çipleri */
+.subtab-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.subtab-chip {
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.subtab-chip.active {
+  background: linear-gradient(135deg, var(--hero-grad-start), var(--hero-grad-end));
+  color: #fff;
+  border-color: transparent;
+}
+
+/* Hesaplayıcı sonuç kutuları (Faiz / Kredi) */
+.calc-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; }
+@media (max-width: 900px) { .calc-grid { grid-template-columns: 1fr; } }
+
+.calc-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  font-size: 13.5px;
+}
+.calc-result-row:first-child { border-top: none; }
+.calc-result-row .lbl { color: var(--text-muted); }
+.calc-result-row .val { font-weight: 700; font-size: 14.5px; }
+
+.placeholder-box {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-faint);
+}
+.placeholder-box .msr { font-size: 42px; margin-bottom: 12px; display: block; color: var(--text-faint); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 960px) {
+  #sidebar {
+    transform: translateX(-100%);
+    box-shadow: 0 0 0 100vmax rgba(0,0,0,0);
+  }
+  #sidebar.open {
+    transform: translateX(0);
+    box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  }
+  #main { margin-left: 0; }
+  #hamburgerBtn { display: inline-flex; align-items: center; justify-content: center; }
+  #sidebarOverlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 35;
+  }
+  #sidebarOverlay.open { display: block; }
+  .add-form { grid-template-columns: 1fr; }
+  .hero-value { font-size: 28px; }
+  #content { padding: 18px; }
+}
