@@ -1,313 +1,1881 @@
-<!doctype html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Varlığım — Kişisel Finans Uygulaması</title>
-<meta name="description" content="Hisse, kripto, döviz, altın, fon, gayrimenkul ve daha fazlasını tek ekranda takip edin. Varlığım, tüm varlıklarınızı bir araya getiren kişisel finans uygulamasıdır." />
-<style>
-  :root{
-    --bg:#0b0f14;
-    --bg-elev:#121821;
-    --card:#161d28;
-    --border:#232c3a;
-    --text:#eef2f7;
-    --text-dim:#9aa7b8;
-    --brand:#2dd4a7;
-    --brand-2:#3d8bff;
-    --danger:#ff6b6b;
-    --radius:16px;
-    --maxw:1120px;
-  }
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  html,body{margin:0;padding:0;}
-  section[id]{scroll-margin-top:76px;}
-  body{
-    background:radial-gradient(1200px 600px at 50% -10%, #16324a 0%, var(--bg) 55%) fixed;
-    color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-    line-height:1.5;
-    -webkit-font-smoothing:antialiased;
-  }
-  a{color:inherit;}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+// Supabase Edge Function: price-proxy
+//
+// Web sitesi (portfoy.html) tarayıcıdan doğrudan çağıramadığı fiyat
+// kaynaklarını (Yahoo Finance, turkpidya.com, TEFAS, isyatirim.com.tr,
+// KAP) bu fonksiyon üzerinden çeker. Bu kaynaklar CORS izni vermediği
+// veya (TEFAS gibi) isteğin kendi sitesinden geldiğini doğrulayan bir
+// Origin/Referer kontrolü yaptığı için, tarayıcıdan doğrudan
+// çağrılamıyorlar. Bu fonksiyon sunucu tarafında (Deno) çalıştığı için
+// CORS kısıtlaması yoktur; sonucu CORS başlıklarıyla birlikte web
+// sayfasına döner.
+//
+// FAZ 1 genişletmesi (2026-09): mevcut 5 type AYNEN korunuyor, mobil
+// uygulamanın piyasa (Varlıklar) ekranlarını web'e taşımak için 4 yeni
+// type eklendi: stock-ohlc, fund-catalog, fund-history, viop-list,
+// stock-catalog. Ayrıntılar aşağıda ilgili bölümlerde.
+//
+// FAZ 13 genişletmesi (2026-09, kapsamlı geliştirme turu): TEFAS
+// fund-catalog hatası düzeltildi (form-encoded gövde), stock-fundamentals
+// crumb sorunu nedeniyle v7/finance/quote'a taşındı (+ yeni alanlar:
+// netDebt/debtToEquity/currentRatio/sector/industry/OHLC-günlük),
+// commodity'ye 5 yeni fiziki altın sikkesi eklendi (GOLD_22K/CEYREK/
+// YARIM/TAM/ATA — mobille AYNI turkpidya kaynağı), GOLD'un changePercent
+// alanı artık gerçek (kaynağın kendi change_percent alanı), yeni
+// birleşik `history` (grafik) ve `bank-rates` (gerçek banka mevduat/
+// kredi oranları) type'ları eklendi. Hiçbir mevcut type/alan davranışı
+// GERİYE DÖNÜK KIRICI şekilde değiştirilmedi.
+//
+// Kullanım (hepsi GET):
+//   ?type=stock&symbol=THYAO
+//   ?type=currency&code=USD           (TRY, USD, EUR, GBP, CHF, AUD, CAD,
+//                                       JPY, CNY, RUB, UAH, KRW, INR, HKD, SGD)
+//   ?type=commodity&key=GOLD|SILVER|COPPER|PLATINUM|PALLADIUM|BRENT|BRENT_USD
+//                      |GOLD_ONS_USD|SILVER_ONS_USD|PLATINUM_ONS_USD|PALLADIUM_ONS_USD
+//                      |GOLD_22K|GOLD_CEYREK|GOLD_YARIM|GOLD_TAM|GOLD_ATA   (5 YENİ)
+//   ?type=fund&code=AFA
+//   ?type=viop&symbol=AKBNK%20Eylul%202026%20Vadeli
+//   ?type=stock-ohlc&symbol=THYAO.IS&range=1y&interval=1d
+//   ?type=fund-catalog
+//   ?type=fund-history&code=AFA&months=12
+//   ?type=viop-list
+//   ?type=stock-catalog                                       (best-effort)
+//   ?type=stock-fundamentals&symbol=THYAO                     (best-effort, genişletildi)
+//   ?type=news&categories=ekonomi,borsa,emtia,doviz,kap        (categories boşsa hepsi)
+//   ?type=stock-batch&symbols=THYAO,GARAN,AKBNK                (tek istekte çoklu fiyat)
+//   ?type=history&assetType=stock|commodity|index|fund&symbol=...&range=1y   (YENİ, birleşik grafik ucu)
+//   ?type=bank-rates&product=deposit|ihtiyac|tasit|konut                      (YENİ, gerçek banka oranları)
+//
+// Yanıt (stock/currency/viop): { "price": number, "previousClose": number|null, "changePercent": number|null }
+// Yanıt (commodity): { "price": number, "previousClose": null, "changePercent": number|null, "unit": string }
+// Yanıt (stock-ohlc / history): { "points": [{ "t": number, "o": number|null, "h": number|null, "l": number|null, "c": number, "v": number|null }] }
+// Yanıt (fund-catalog): { "date": string|null, "funds": [{...}] }
+// Yanıt (fund-history): { "points": [{ "t": number, "c": number }] }
+// Yanıt (viop-list): { "contracts": [{...}] }
+// Yanıt (stock-catalog): { "companies": [{ "symbol": string, "name": string }], "source": "kap"|"error" }
+// Yanıt (stock-fundamentals): { trailingPE, priceToBook, marketCap, dividendYield,
+//   fiftyTwoWeekHigh, fiftyTwoWeekLow, returnOnEquity, profitMargins,
+//   epsTrailingTwelveMonths, beta, netDebt, debtToEquity, currentRatio,
+//   mostRecentQuarter, sector, industry, open, previousClose, dayHigh,
+//   dayLow, volume, longName } — hepsi number|string|null (best-effort,
+//   alan bulunamazsa null; KAP/İş Yatırım tam finansal tablo taraması bu
+//   kapsama dahil değildir, bkz. bilinen sınırlamalar)
+// Yanıt (bank-rates): { "offers": [{ bankName, minRate, maxRate, minTermDays,
+//   maxTermDays, isMonthlyRate, minAmount, maxAmount, logoDomain }] }
+// Hata:  { "error": "..." }  (uygun HTTP status koduyla)
 
-  header.top{
-    position:sticky;top:0;z-index:10;
-    backdrop-filter:blur(10px);
-    background:rgba(11,15,20,0.7);
-    border-bottom:1px solid var(--border);
-  }
-  .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 0;}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:-0.02em;}
-  .brand .logo{
-    width:32px;height:32px;border-radius:9px;
-    background:linear-gradient(135deg,var(--brand),var(--brand-2));
-    display:flex;align-items:center;justify-content:center;
-    font-size:16px;font-weight:800;color:#06110d;
-  }
-  nav.links{display:flex;gap:28px;font-size:14px;color:var(--text-dim);}
-  nav.links a{text-decoration:none;transition:color .15s;}
-  nav.links a:hover{color:var(--text);}
+const CORS_HEADERS: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+};
 
-  .hero{padding:88px 0 64px;text-align:center;}
-  .eyebrow{
-    display:inline-flex;align-items:center;gap:8px;
-    font-size:13px;color:var(--brand);
-    background:rgba(45,212,167,0.1);
-    border:1px solid rgba(45,212,167,0.25);
-    padding:6px 14px;border-radius:999px;margin-bottom:24px;
-  }
-  h1{
-    font-size:clamp(32px,6vw,56px);
-    line-height:1.08;
-    margin:0 0 20px;
-    letter-spacing:-0.03em;
-    font-weight:800;
-  }
-  h1 .accent{
-    background:linear-gradient(90deg,var(--brand),var(--brand-2));
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-  }
-  .sub{
-    max-width:620px;margin:0 auto 36px;
-    color:var(--text-dim);
-    font-size:clamp(16px,2.4vw,19px);
-  }
-  .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;}
-  .btn{
-    display:inline-flex;align-items:center;gap:10px;
-    padding:13px 24px;border-radius:12px;
-    font-weight:600;font-size:15px;text-decoration:none;
-    border:1px solid var(--border);
-    transition:transform .15s, border-color .15s, background .15s;
-  }
-  .btn:hover{transform:translateY(-1px);}
-  .btn.primary{
-    background:linear-gradient(135deg,var(--brand),var(--brand-2));
-    color:#04110c;border-color:transparent;
-  }
-  .btn.ghost{background:var(--card);color:var(--text);}
-  .btn.ghost:hover{border-color:#33415a;}
-  .btn.disabled{
-    background:transparent;color:var(--text-dim);
-    border-style:dashed;cursor:not-allowed;opacity:.6;
-  }
-  .btn.disabled:hover{transform:none;border-color:var(--border);}
-  .note{font-size:13px;color:var(--text-dim);}
+const GRAMS_PER_TROY_OUNCE = 31.1034768;
+const POUNDS_PER_KG = 2.2046226218;
 
-  .stats{
-    display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
-    max-width:760px;margin:56px auto 0;
-  }
-  .stat{
-    background:var(--card);border:1px solid var(--border);
-    border-radius:14px;padding:20px 12px;text-align:center;
-  }
-  .stat .num{font-size:26px;font-weight:800;color:var(--brand);}
-  .stat .lbl{font-size:12.5px;color:var(--text-dim);margin-top:4px;}
+const YAHOO_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+  "Accept": "application/json",
+};
 
-  section{padding:64px 0;}
-  .section-head{text-align:center;max-width:640px;margin:0 auto 44px;}
-  .section-head .tag{color:var(--brand-2);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
-  .section-head h2{font-size:clamp(24px,4vw,34px);margin:10px 0 12px;letter-spacing:-0.02em;}
-  .section-head p{color:var(--text-dim);font-size:15.5px;}
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+  });
+}
 
-  .grid{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
-  }
-  .card{
-    background:var(--card);border:1px solid var(--border);
-    border-radius:var(--radius);padding:24px;
-    transition:border-color .15s, transform .15s;
-  }
-  .card:hover{border-color:#33415a;transform:translateY(-2px);}
-  .card .ic{
-    width:42px;height:42px;border-radius:11px;
-    display:flex;align-items:center;justify-content:center;
-    font-size:20px;margin-bottom:14px;
-    background:rgba(61,139,255,0.12);
-  }
-  .card h3{margin:0 0 8px;font-size:16.5px;}
-  .card p{margin:0;color:var(--text-dim);font-size:14px;}
+interface YahooQuote {
+  price: number;
+  previousClose: number;
+  changePercent: number;
+}
 
-  .panel{
-    background:var(--bg-elev);border:1px solid var(--border);
-    border-radius:20px;padding:36px;
-    display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;
-  }
-  .panel h3{font-size:22px;margin:0 0 12px;letter-spacing:-0.02em;}
-  .panel p{color:var(--text-dim);font-size:15px;margin:0 0 14px;}
-  .panel code{
-    display:block;background:#0a0e14;border:1px solid var(--border);
-    border-radius:10px;padding:14px 16px;font-size:12.5px;
-    color:#9be3c6;overflow-x:auto;white-space:pre;
-  }
-  .badge-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
-  .badge{
-    font-size:12px;color:var(--text-dim);
-    border:1px solid var(--border);border-radius:8px;padding:5px 10px;
+async function fetchYahooQuote(symbol: string): Promise<YahooQuote> {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${
+    encodeURIComponent(symbol)
+  }?interval=5m&range=1d`;
+
+  const res = await fetch(url, { headers: YAHOO_HEADERS });
+
+  if (!res.ok) {
+    throw new Error(`Yahoo Finance hatası (${symbol}): ${res.status}`);
   }
 
-  footer{
-    border-top:1px solid var(--border);
-    padding:36px 0;margin-top:24px;
-    color:var(--text-dim);font-size:13px;
-    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+  const decoded = await res.json();
+  const result = decoded?.chart?.result?.[0];
+  const meta = result?.meta;
+
+  const price = Number(meta?.regularMarketPrice);
+  const previousClose = Number(
+    meta?.chartPreviousClose ?? meta?.previousClose,
+  );
+
+  if (!Number.isFinite(price) || price <= 0) {
+    throw new Error(`${symbol} için geçerli fiyat bulunamadı.`);
   }
 
-  @media (max-width:820px){
-    .grid{grid-template-columns:repeat(2,1fr);}
-    .panel{grid-template-columns:1fr;}
-    .stats{grid-template-columns:repeat(2,1fr);}
-    nav.links{display:none;}
+  const changePercent =
+    Number.isFinite(previousClose) && previousClose > 0
+      ? ((price - previousClose) / previousClose) * 100
+      : 0;
+
+  return {
+    price,
+    previousClose: Number.isFinite(previousClose) ? previousClose : price,
+    changePercent,
+  };
+}
+
+async function getUsdTryQuote(): Promise<YahooQuote> {
+  return fetchYahooQuote("USDTRY=X");
+}
+
+// ============================================================
+// HİSSE
+// ============================================================
+
+async function getStockPrice(symbol: string): Promise<YahooQuote> {
+  const code = symbol.trim().toUpperCase();
+  if (!code) throw new Error("Hisse kodu boş bırakılamaz.");
+  const yahooSymbol = code.endsWith(".IS") ? code : `${code}.IS`;
+  return fetchYahooQuote(yahooSymbol);
+}
+
+// ---- YENİ: stock-ohlc (genel amaçlı geçmiş veri — hisse/endeks/emtia/döviz) ----
+// Mobildeki StockPriceService.getOhlcHistory ile aynı Yahoo chart
+// endpoint'ini, aynı interval/range mantığıyla kullanır. `symbol`
+// parametresi ÇAĞIRAN TARAFTAN tam Yahoo sembolü olarak gelir
+// (örn. "THYAO.IS", "XU030.IS", "GC=F", "USDTRY=X") — bu fonksiyon
+// otomatik ".IS" eklemez, çünkü emtia/döviz sembollerinde bu YANLIŞ
+// olurdu. Web tarafı hangi sembolü göndereceğini kendi bilir.
+
+interface OhlcPoint {
+  t: number;
+  o: number | null;
+  h: number | null;
+  l: number | null;
+  c: number | null;
+  v: number | null;
+}
+
+async function getOhlcHistory(
+  rawSymbol: string,
+  range: string,
+  interval: string,
+): Promise<OhlcPoint[]> {
+  const symbol = rawSymbol.trim();
+  if (!symbol) throw new Error("Sembol boş bırakılamaz.");
+
+  const safeRange = /^[a-zA-Z0-9]+$/.test(range) ? range : "1y";
+  const safeInterval = /^[a-zA-Z0-9]+$/.test(interval) ? interval : "1d";
+
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${
+    encodeURIComponent(symbol)
+  }?interval=${safeInterval}&range=${safeRange}`;
+
+  const res = await fetch(url, { headers: YAHOO_HEADERS });
+  if (!res.ok) {
+    throw new Error(`Yahoo Finance geçmiş veri hatası (${symbol}): ${res.status}`);
   }
-  @media (max-width:520px){
-    .grid{grid-template-columns:1fr;}
+
+  const decoded = await res.json();
+  const result = decoded?.chart?.result?.[0];
+  if (!result) throw new Error(`${symbol} için geçmiş veri bulunamadı.`);
+
+  const timestamps: number[] = Array.isArray(result.timestamp)
+    ? result.timestamp
+    : [];
+  const quote = result.indicators?.quote?.[0] ?? {};
+  const opens: (number | null)[] = quote.open ?? [];
+  const highs: (number | null)[] = quote.high ?? [];
+  const lows: (number | null)[] = quote.low ?? [];
+  const closes: (number | null)[] = quote.close ?? [];
+  const volumes: (number | null)[] = quote.volume ?? [];
+
+  const points: OhlcPoint[] = [];
+  for (let i = 0; i < timestamps.length; i++) {
+    const c = closes[i];
+    if (c == null || !Number.isFinite(Number(c))) continue;
+    points.push({
+      t: timestamps[i] * 1000,
+      o: opens[i] != null ? Number(opens[i]) : null,
+      h: highs[i] != null ? Number(highs[i]) : null,
+      l: lows[i] != null ? Number(lows[i]) : null,
+      c: Number(c),
+      v: volumes[i] != null ? Number(volumes[i]) : null,
+    });
   }
-</style>
-</head>
-<body>
 
-<header class="top">
-  <div class="wrap topbar">
-    <div class="brand"><span class="logo">V</span> Varlığım</div>
-    <nav class="links">
-      <a href="#ozellikler">Özellikler</a>
-      <a href="#veri">Veri Kaynağı</a>
-      <a href="#sss">SSS</a>
-      <a href="portfoy.html" style="color:var(--brand);">Portföyüm →</a>
-    </nav>
-  </div>
-</header>
+  if (points.length === 0) {
+    throw new Error(`${symbol} için kullanılabilir geçmiş veri noktası yok.`);
+  }
 
-<main>
-  <section class="hero">
-    <div class="wrap">
-      <span class="eyebrow">● Tüm varlıklarınız, tek bakışta</span>
-      <h1>Servetinizi <span class="accent">tek ekranda</span><br/>görün ve yönetin</h1>
-      <p class="sub">Hisse senedi, kripto para, döviz, altın, fon, gayrimenkul, araç ve mevduatınızı
-        tek bir uygulamada takip edin. Canlı piyasa verileri, analist tavsiyeleri ve
-        akıllı bildirimlerle finansal tablonuz her an güncel.</p>
-      <div class="cta-row">
-        <a class="btn primary" href="#indir">Uygulamayı İndir</a>
-        <a class="btn ghost" href="#ozellikler">Özellikleri Gör</a>
-      </div>
-      <p class="note">iOS ve Android için geliştiriliyor.</p>
+  return points;
+}
 
-      <div class="stats">
-        <div class="stat"><div class="num">9+</div><div class="lbl">Varlık Türü</div></div>
-        <div class="stat"><div class="num">Canlı</div><div class="lbl">Piyasa Verisi</div></div>
-        <div class="stat"><div class="num">BIST</div><div class="lbl">Analist Tavsiyeleri</div></div>
-        <div class="stat"><div class="num">%100</div><div class="lbl">Kişisel Kontrol</div></div>
-      </div>
-    </div>
-  </section>
+// ============================================================
+// DÖVİZ
+// ============================================================
 
-  <section id="ozellikler">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="tag">Özellikler</span>
-        <h2>Finansal hayatınızın tamamı, tek çatı altında</h2>
-        <p>Portföyünüzü oluşturun, Varlığım geri kalanını sizin için takip etsin.</p>
-      </div>
-      <div class="grid">
-        <div class="card"><div class="ic">📈</div><h3>Hisse Senedi (BIST)</h3><p>Portföyünüzü takip edin, canlı fiyatlar, gelişmiş grafikler ve teknik göstergelerle analiz yapın.</p></div>
-        <div class="card"><div class="ic">🪙</div><h3>Kripto Para</h3><p>Kripto varlıklarınızı anlık fiyatlarla izleyin, kâr/zarar durumunuzu tek bakışta görün.</p></div>
-        <div class="card"><div class="ic">💵</div><h3>Döviz</h3><p>USD, EUR ve diğer döviz varlıklarınızı güncel kurlarla takip edin.</p></div>
-        <div class="card"><div class="ic">🥇</div><h3>Emtia</h3><p>Altın, gümüş ve diğer emtia yatırımlarınızın güncel değerini görün.</p></div>
-        <div class="card"><div class="ic">📊</div><h3>Yatırım Fonları</h3><p>TEFAS fonlarınızı, performans geçmişi ve kategori dağılımıyla birlikte izleyin.</p></div>
-        <div class="card"><div class="ic">🏠</div><h3>Gayrimenkul &amp; Araç</h3><p>Ev, araç ve diğer maddi varlıklarınızı toplam servetinize dahil edin.</p></div>
-        <div class="card"><div class="ic">🏦</div><h3>Mevduat</h3><p>Vadeli/vadesiz mevduat hesaplarınızı ve faiz getirinizi hesaplayın.</p></div>
-        <div class="card"><div class="ic">🧾</div><h3>Bütçe Takibi</h3><p>Gelir ve giderlerinizi planlayın, harcamalarınızı kontrol altında tutun.</p></div>
-        <div class="card"><div class="ic">🔔</div><h3>Alarmlar &amp; Bildirimler</h3><p>Favori varlıklarınız için fiyat alarmları kurun, önemli hareketleri kaçırmayın.</p></div>
-      </div>
-    </div>
-  </section>
+const DIRECT_TRY_CODES = new Set(["USD", "EUR", "GBP", "CHF", "AUD", "CAD"]);
 
-  <section id="veri">
-    <div class="wrap">
-      <div class="panel">
-        <div>
-          <h3>Analist tavsiyeleri veri kaynağı</h3>
-          <p>Varlığım, BIST hisseleri için aracı kurum analist tavsiyelerini bu sitede
-            barındırılan açık JSON dosyasından çeker. Veri, kamuya açık raporlar
-            takip edilerek elle güncellenir ve uygulama otomatik olarak en güncel
-            sürümü kullanır.</p>
-          <div class="badge-list">
-            <span class="badge">JSON</span>
-            <span class="badge">Genel erişime açık</span>
-            <span class="badge">Periyodik güncelleme</span>
-          </div>
-        </div>
-        <div>
-          <code>GET /analyst-recommendations.json
+const USD_BASE_YAHOO_SYMBOLS: Record<string, string> = {
+  JPY: "JPY=X",
+  CNY: "CNY=X",
+  RUB: "RUB=X",
+  UAH: "UAH=X",
+  KRW: "KRW=X",
+  INR: "INR=X",
+  HKD: "HKD=X",
+  SGD: "SGD=X",
+};
 
-{
-  "THYAO": [
-    {
-      "bank": "İş Yatırım",
-      "recommendation": "al",
-      "targetPrice": 397.50,
-      "date": "2026-08-06"
+async function getCurrencyTryQuote(rawCode: string): Promise<YahooQuote> {
+  const code = rawCode.trim().toUpperCase();
+  if (!code) throw new Error("Döviz kodu boş bırakılamaz.");
+
+  if (code === "TRY") {
+    return { price: 1, previousClose: 1, changePercent: 0 };
+  }
+
+  if (DIRECT_TRY_CODES.has(code)) {
+    return fetchYahooQuote(`${code}TRY=X`);
+  }
+
+  const usdBaseSymbol = USD_BASE_YAHOO_SYMBOLS[code];
+  if (usdBaseSymbol) {
+    const [usdTry, usdCode] = await Promise.all([
+      getUsdTryQuote(),
+      fetchYahooQuote(usdBaseSymbol),
+    ]);
+
+    const price = usdTry.price / usdCode.price;
+    const previousClose = usdTry.previousClose / usdCode.previousClose;
+    const changePercent = previousClose > 0
+      ? ((price - previousClose) / previousClose) * 100
+      : 0;
+
+    return { price, previousClose, changePercent };
+  }
+
+  // Bilinmeyen bir kod gelirse son çare: doğrudan CODE/TRY paritesini dene.
+  return fetchYahooQuote(`${code}TRY=X`);
+}
+
+// ============================================================
+// EMTİA
+// ============================================================
+
+async function getGoldGramTry(): Promise<number> {
+  const res = await fetch(
+    "https://turkpidya.com/wp-json/turkpidya-data/v1/gold",
+    { headers: YAHOO_HEADERS },
+  );
+
+  if (!res.ok) {
+    throw new Error(`Altın verisi alınamadı: ${res.status}`);
+  }
+
+  const decoded = await res.json();
+  const prices = decoded?.prices;
+
+  if (!Array.isArray(prices)) {
+    throw new Error("Altın fiyat listesi bulunamadı.");
+  }
+
+  for (const item of prices) {
+    if (!item || typeof item !== "object") continue;
+    if (String(item.type ?? "") !== "gram_24k") continue;
+
+    const raw = item.sell ?? item.selling ?? item.price;
+    let price: number | null = null;
+
+    if (typeof raw === "number") {
+      price = raw;
+    } else if (typeof raw === "string") {
+      price = Number(raw.replaceAll(".", "").replaceAll(",", "."));
     }
-  ]
-}</code>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <section id="sss">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="tag">SSS</span>
-        <h2>Sık sorulan sorular</h2>
-      </div>
-      <div class="grid" style="grid-template-columns:1fr 1fr;">
-        <div class="card">
-          <h3>Verilerim nerede saklanıyor?</h3>
-          <p>Portföy verileriniz cihazınızda saklanır; Varlığım yalnızca fiyat ve
-            piyasa bilgilerini almak için harici kaynaklara bağlanır.</p>
-        </div>
-        <div class="card">
-          <h3>Uygulama ücretsiz mi?</h3>
-          <p>Evet, Varlığım'ın temel özellikleri ücretsizdir.</p>
-        </div>
-        <div class="card">
-          <h3>Analist tavsiyeleri ne sıklıkla güncelleniyor?</h3>
-          <p>Veri kaynağı düzenli olarak elle güncellenir; uygulama her açılışta
-            en güncel sürümü otomatik olarak çeker.</p>
-        </div>
-        <div class="card">
-          <h3>Hangi platformlarda kullanılabilir?</h3>
-          <p>Varlığım, iOS ve Android için Flutter ile geliştirilmektedir.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+    if (price != null && Number.isFinite(price) && price > 0) {
+      return price;
+    }
+  }
 
-  <section id="indir">
-    <div class="wrap" style="text-align:center;">
-      <div class="section-head" style="margin-bottom:24px;">
-        <span class="tag">Hemen Başlayın</span>
-        <h2>Varlığınızı takip etmeye bugün başlayın</h2>
-      </div>
-      <div class="cta-row">
-        <span class="btn disabled" aria-disabled="true">🍎 App Store — yakında</span>
-        <span class="btn disabled" aria-disabled="true">▶ Google Play — yakında</span>
-      </div>
-    </div>
-  </section>
-</main>
+  throw new Error("Gram altın fiyatı bulunamadı.");
+}
 
-<footer>
-  <div class="wrap" style="display:flex;justify-content:space-between;width:100%;flex-wrap:wrap;gap:12px;">
-    <span>© 2026 Varlığım</span>
-    <span>Kişisel finans takip uygulaması</span>
-  </div>
-</footer>
+// ============================================================
+// YENİ: BANKA ORANLARI (teklifimgelsin.com)
+// ============================================================
+// Mobildeki BankRateService ile AYNI kaynak ve AYNI öncelikli
+// ayrıştırma yöntemi: sayfaya SEO amacıyla gömülü
+// `<script type="application/ld+json">` (schema.org) verisi —
+// mobil koddaki kendi yorumuna göre bu, gerçek cihazda doğrulanmış
+// EN SAĞLAM kaynak. Mobildeki HTML tablo/kart tabanlı YEDEK
+// ayrıştırıcılar (site JSON-LD'yi kaldırırsa diye) burada
+// PORTLANMADI — bilinçli bir kapsam kararı (bkz. teslim raporu,
+// bilinen sınırlamalar): DOM kütüphanesi eklemeden regex ile tam
+// bir HTML tablo/kart ayrıştırıcısı yazmak güvenilirlik/bakım
+// riskini artırıyor. JSON-LD bulunamazsa boş liste döner, istemci
+// mobildeki ile aynı mesajı gösterir ("Güncel banka verisi şu anda
+// alınamadı"); ORANLAR ASLA UYDURULMAZ.
+interface BankRateOffer {
+  bankName: string;
+  minRate: number;
+  maxRate: number;
+  minTermDays: number;
+  maxTermDays: number;
+  isMonthlyRate: boolean;
+  minAmount: number | null;
+  maxAmount: number | null;
+  logoDomain: string | null;
+}
 
-</body>
-</html>
+const BANK_RATE_URLS: Record<string, string> = {
+  deposit: "https://teklifimgelsin.com/mevduat",
+  ihtiyac: "https://teklifimgelsin.com/kredi/ihtiyac-kredisi",
+  tasit: "https://teklifimgelsin.com/kredi/tasit-kredisi",
+  konut: "https://teklifimgelsin.com/kredi/konut-kredisi",
+};
+
+// Mobildeki _logoDomains listesiyle AYNI — istemci bu domain'den
+// Google favicon servisiyle (anahtarsız, güvenilir) bir logo üretir.
+const BANK_LOGO_DOMAINS: [RegExp, string][] = [
+  [/ZİRAAT KATILIM|ZIRAAT KATILIM/, "ziraatkatilim.com.tr"],
+  [/VAKIF ?KATILIM/, "vakifkatilim.com.tr"],
+  [/EMLAK KATILIM/, "emlakkatilim.com.tr"],
+  [/ALBARAKA/, "albaraka.com.tr"],
+  [/KUVEYT/, "kuveytturk.com.tr"],
+  [/ZİRAAT|ZIRAAT/, "ziraatbank.com.tr"],
+  [/HALKBANK/, "halkbank.com.tr"],
+  [/VAKIF/, "vakifbank.com.tr"],
+  [/İŞ ?BANKASI|ISBANK|TÜRKİYE İŞ/, "isbank.com.tr"],
+  [/GARANTİ|GARANTI/, "garantibbva.com.tr"],
+  [/AKBANK/, "akbank.com"],
+  [/YAPI ?KREDİ|YAPI ?KREDI/, "yapikredi.com.tr"],
+  [/DENİZBANK|DENIZBANK/, "denizbank.com"],
+  [/QNB|FİNANSBANK|FINANSBANK/, "qnb.com.tr"],
+  [/CEPTETEB|\bTEB\b/, "teb.com.tr"],
+  [/\bING\b/, "ingbank.com.tr"],
+  [/HSBC/, "hsbc.com.tr"],
+  [/FİBABANKA|FIBABANKA/, "fibabanka.com.tr"],
+  [/ODEA/, "odeabank.com.tr"],
+  [/ALTERNATİFBANK|ALTERNATIFBANK/, "abank.com.tr"],
+  [/ŞEKERBANK|SEKERBANK/, "sekerbank.com.tr"],
+  [/TÜRKİYE FİNANS|TURKIYE FINANS/, "turkiyefinans.com.tr"],
+  [/GETİRFİNANS|GETIRFINANS/, "getirfinans.com"],
+  [/AKTİF ?BANK|AKTIF ?BANK/, "aktifbank.com.tr"],
+  [/BURGAN/, "burgan.com.tr"],
+  [/ANADOLUBANK/, "anadolubank.com.tr"],
+  [/TURKISH ?BANK/, "turkishbank.com"],
+];
+
+function resolveBankLogoDomain(bankName: string): string | null {
+  const normalized = bankName.toUpperCase();
+  for (const [re, domain] of BANK_LOGO_DOMAINS) {
+    if (re.test(normalized)) return domain;
+  }
+  return null;
+}
+
+function extractJsonLdBlocks(html: string): unknown[] {
+  const blocks: unknown[] = [];
+  const re = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html)) !== null) {
+    try {
+      blocks.push(JSON.parse(m[1].trim()));
+    } catch {
+      // geçersiz JSON-LD bloğu — yut, devam et.
+    }
+  }
+  return blocks;
+}
+
+function collectByType(
+  node: unknown,
+  wantedType: string,
+  out: Record<string, unknown>[],
+): void {
+  if (Array.isArray(node)) {
+    for (const v of node) collectByType(v, wantedType, out);
+  } else if (node && typeof node === "object") {
+    const obj = node as Record<string, unknown>;
+    if (obj["@type"] === wantedType) out.push(obj);
+    for (const v of Object.values(obj)) collectByType(v, wantedType, out);
+  }
+}
+
+function toNum(v: unknown): number | null {
+  if (typeof v === "number") return Number.isFinite(v) ? v : null;
+  if (typeof v === "string") {
+    const n = Number(v.replace(",", "."));
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+function bankProviderName(item: Record<string, unknown>): string | null {
+  const provider = item.provider as Record<string, unknown> | undefined;
+  const pn = provider?.name;
+  if (typeof pn === "string" && pn.trim()) return pn.trim();
+  const n = item.name;
+  if (typeof n === "string" && n.trim()) return n.trim();
+  return null;
+}
+
+async function getBankRates(product: string): Promise<BankRateOffer[]> {
+  const url = BANK_RATE_URLS[product];
+  if (!url) throw new Error("Geçersiz ürün türü.");
+  const isLoan = product !== "deposit";
+
+  const res = await fetch(url, {
+    headers: {
+      "Accept": "text/html",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+        "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+      "Accept-Language": "tr-TR,tr;q=0.9",
+    },
+  });
+  if (!res.ok) throw new Error(`Banka oranları alınamadı: ${res.status}`);
+  const html = await res.text();
+
+  const blocks = extractJsonLdBlocks(html);
+  const wantedType = isLoan ? "LoanOrCredit" : "DepositAccount";
+  const matches: Record<string, unknown>[] = [];
+  for (const b of blocks) collectByType(b, wantedType, matches);
+
+  const offers: BankRateOffer[] = [];
+  const seen = new Set<string>();
+
+  for (const item of matches) {
+    const bankName = bankProviderName(item);
+    if (!bankName || seen.has(bankName)) continue;
+
+    const amount = item.amount as Record<string, unknown> | undefined;
+    let minRate: number | null;
+    let maxRate: number | null;
+    let minTermDays = 1;
+    let maxTermDays = 365;
+
+    if (!isLoan) {
+      const rate = item.interestRate as Record<string, unknown> | undefined;
+      if (!rate) continue;
+      minRate = toNum(rate.minValue);
+      maxRate = toNum(rate.maxValue);
+    } else {
+      const rate = item.annualPercentageRate as Record<string, unknown> | undefined;
+      if (!rate) continue;
+      minRate = toNum(rate.minValue);
+      maxRate = toNum(rate.maxValue);
+      minTermDays = 30;
+      maxTermDays = 1080;
+      const term = item.loanTerm as Record<string, unknown> | undefined;
+      if (term) {
+        const minM = toNum(term.minValue);
+        const maxM = toNum(term.maxValue);
+        if (minM != null) minTermDays = Math.round(minM * 30);
+        if (maxM != null) maxTermDays = Math.round(maxM * 30);
+      }
+    }
+
+    if (minRate == null || maxRate == null) continue;
+
+    seen.add(bankName);
+    offers.push({
+      bankName,
+      minRate,
+      maxRate,
+      minTermDays,
+      maxTermDays,
+      isMonthlyRate: isLoan,
+      minAmount: amount ? toNum(amount.minValue) : null,
+      maxAmount: amount ? toNum(amount.maxValue) : null,
+      logoDomain: resolveBankLogoDomain(bankName),
+    });
+  }
+
+  return offers;
+}
+
+function pctChange(prev: number, curr: number): number | null {
+  if (!Number.isFinite(prev) || prev <= 0) return null;
+  return ((curr - prev) / prev) * 100;
+}
+
+// ---- YENİ: turkpidya'nın aynı JSON'ından madeni altın (22 Ayar,
+// Çeyrek, Yarım, Tam, Ata) fiyatları — mobildeki StockPriceService.
+// getGoldCoinPrices() ile AYNI kaynak + AYNI tutarlılık düzeltmesi
+// (Tam ~ Çeyrek×4, Yarım ~ Çeyrek×2; %25'ten fazla sapma varsa
+// çeyrek üzerinden yeniden hesaplanır). Kaynağın kendi "change_percent"
+// alanı kullanılır — uydurulmaz.
+interface GoldCoinPrices {
+  gram24k: number; gram24kChange: number | null;
+  gram22k: number; gram22kChange: number | null;
+  ceyrek: number; ceyrekChange: number | null;
+  yarim: number; yarimChange: number | null;
+  tam: number; tamChange: number | null;
+  ata: number; ataChange: number | null;
+  wasCorrected: boolean;
+}
+
+let goldCoinCache: { data: GoldCoinPrices; at: number } | null = null;
+
+async function getGoldCoinPrices(): Promise<GoldCoinPrices> {
+  if (goldCoinCache && Date.now() - goldCoinCache.at < 30_000) {
+    return goldCoinCache.data;
+  }
+
+  const res = await fetch(
+    "https://turkpidya.com/wp-json/turkpidya-data/v1/gold",
+    { headers: YAHOO_HEADERS },
+  );
+  if (!res.ok) throw new Error(`Altın verisi alınamadı: ${res.status}`);
+
+  const decoded = await res.json();
+  const prices = decoded?.prices;
+  if (!Array.isArray(prices)) throw new Error("Altın fiyat listesi bulunamadı.");
+
+  const findSell = (type: string): number => {
+    for (const item of prices) {
+      if (!item || typeof item !== "object") continue;
+      if (String((item as Record<string, unknown>).type ?? "") !== type) continue;
+      const raw = (item as Record<string, unknown>).sell;
+      if (typeof raw === "number") return raw;
+      if (typeof raw === "string") {
+        const n = Number(raw.replaceAll(".", "").replaceAll(",", "."));
+        if (Number.isFinite(n)) return n;
+      }
+    }
+    return 0;
+  };
+
+  const findChange = (type: string): number | null => {
+    for (const item of prices) {
+      if (!item || typeof item !== "object") continue;
+      if (String((item as Record<string, unknown>).type ?? "") !== type) continue;
+      const raw = (item as Record<string, unknown>).change_percent;
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : null;
+    }
+    return null;
+  };
+
+  const gram24k = findSell("gram_24k");
+  const gram22k = findSell("gram_22k");
+  let ceyrek = findSell("ceyrek");
+  let yarim = findSell("yarim");
+  let tam = findSell("tam");
+  const ata = findSell("ata");
+
+  const gram24kChange = findChange("gram_24k");
+  const gram22kChange = findChange("gram_22k");
+  const ceyrekChange = findChange("ceyrek");
+  let yarimChange = findChange("yarim");
+  let tamChange = findChange("tam");
+  const ataChange = findChange("ata");
+
+  let wasCorrected = false;
+  if (ceyrek > 0) {
+    const expectedTam = ceyrek * 4;
+    const expectedYarim = ceyrek * 2;
+    const tamDeviation = tam > 0 ? Math.abs(tam - expectedTam) / expectedTam : 1;
+    const yarimDeviation = yarim > 0 ? Math.abs(yarim - expectedYarim) / expectedYarim : 1;
+    if (tamDeviation > 0.25) {
+      tam = expectedTam;
+      tamChange = ceyrekChange;
+      wasCorrected = true;
+    }
+    if (yarimDeviation > 0.25) {
+      yarim = expectedYarim;
+      yarimChange = ceyrekChange;
+      wasCorrected = true;
+    }
+  }
+
+  const data: GoldCoinPrices = {
+    gram24k, gram24kChange, gram22k, gram22kChange, ceyrek, ceyrekChange,
+    yarim, yarimChange, tam, tamChange, ata, ataChange, wasCorrected,
+  };
+  goldCoinCache = { data, at: Date.now() };
+  return data;
+}
+
+async function getCommodityQuote(
+  rawKey: string,
+): Promise<{ price: number; unit: string; changePercent: number | null }> {
+  const key = rawKey.trim().toUpperCase();
+
+  if (key === "GOLD") {
+    // DÜZELTME: turkpidya JSON'ı her tür için kendi "change_percent"
+    // alanını veriyor (mobildeki GoldCoinPrices ile aynı kaynak) —
+    // önceden bu okunmuyordu ve günlük değişim hep null dönüyordu.
+    const coins = await getGoldCoinPrices();
+    return { price: coins.gram24k, unit: "gram", changePercent: coins.gram24kChange };
+  }
+
+  // YENİ: fiziki altın sikkeleri — mobille AYNI turkpidya kaynağı ve
+  // AYNI Tam/Yarım tutarlılık düzeltmesi (bkz. getGoldCoinPrices).
+  if (key === "GOLD_22K") {
+    const coins = await getGoldCoinPrices();
+    return { price: coins.gram22k, unit: "gram (22 ayar)", changePercent: coins.gram22kChange };
+  }
+  if (key === "GOLD_CEYREK") {
+    const coins = await getGoldCoinPrices();
+    return { price: coins.ceyrek, unit: "adet", changePercent: coins.ceyrekChange };
+  }
+  if (key === "GOLD_YARIM") {
+    const coins = await getGoldCoinPrices();
+    return { price: coins.yarim, unit: "adet", changePercent: coins.yarimChange };
+  }
+  if (key === "GOLD_TAM") {
+    const coins = await getGoldCoinPrices();
+    return { price: coins.tam, unit: "adet", changePercent: coins.tamChange };
+  }
+  if (key === "GOLD_ATA") {
+    const coins = await getGoldCoinPrices();
+    return { price: coins.ata, unit: "adet", changePercent: coins.ataChange };
+  }
+
+  if (key === "BRENT_USD") {
+    const quote = await fetchYahooQuote("BZ=F");
+    return { price: quote.price, unit: "varil", changePercent: quote.changePercent };
+  }
+
+  // Ons bazlı (USD) fiyatlar — futures fiyatı zaten USD/ons olarak
+  // geldiği için TRY dönüşümü/gram çevirisi YAPILMAZ, ham fiyat döner.
+  if (key === "GOLD_ONS_USD") {
+    const quote = await fetchYahooQuote("GC=F");
+    return { price: quote.price, unit: "ons", changePercent: quote.changePercent };
+  }
+  if (key === "SILVER_ONS_USD") {
+    const quote = await fetchYahooQuote("SI=F");
+    return { price: quote.price, unit: "ons", changePercent: quote.changePercent };
+  }
+  if (key === "PLATINUM_ONS_USD") {
+    const quote = await fetchYahooQuote("PL=F");
+    return { price: quote.price, unit: "ons", changePercent: quote.changePercent };
+  }
+  if (key === "PALLADIUM_ONS_USD") {
+    const quote = await fetchYahooQuote("PA=F");
+    return { price: quote.price, unit: "ons", changePercent: quote.changePercent };
+  }
+
+  const usdTry = await getUsdTryQuote();
+
+  if (key === "BRENT") {
+    const quote = await fetchYahooQuote("BZ=F");
+    const price = quote.price * usdTry.price;
+    const prevPrice = quote.previousClose * usdTry.previousClose;
+    return { price, unit: "varil", changePercent: pctChange(prevPrice, price) };
+  }
+
+  if (key === "SILVER") {
+    const quote = await fetchYahooQuote("SI=F");
+    const price = (quote.price * usdTry.price) / GRAMS_PER_TROY_OUNCE;
+    const prevPrice = (quote.previousClose * usdTry.previousClose) / GRAMS_PER_TROY_OUNCE;
+    return { price, unit: "gram", changePercent: pctChange(prevPrice, price) };
+  }
+
+  if (key === "PLATINUM") {
+    const quote = await fetchYahooQuote("PL=F");
+    const price = (quote.price * usdTry.price) / GRAMS_PER_TROY_OUNCE;
+    const prevPrice = (quote.previousClose * usdTry.previousClose) / GRAMS_PER_TROY_OUNCE;
+    return { price, unit: "gram", changePercent: pctChange(prevPrice, price) };
+  }
+
+  if (key === "PALLADIUM") {
+    const quote = await fetchYahooQuote("PA=F");
+    const price = (quote.price * usdTry.price) / GRAMS_PER_TROY_OUNCE;
+    const prevPrice = (quote.previousClose * usdTry.previousClose) / GRAMS_PER_TROY_OUNCE;
+    return { price, unit: "gram", changePercent: pctChange(prevPrice, price) };
+  }
+
+  if (key === "COPPER") {
+    const quote = await fetchYahooQuote("HG=F");
+    const price = quote.price * usdTry.price * POUNDS_PER_KG;
+    const prevPrice = quote.previousClose * usdTry.previousClose * POUNDS_PER_KG;
+    return { price, unit: "kg", changePercent: pctChange(prevPrice, price) };
+  }
+
+  throw new Error(`Bilinmeyen emtia türü: ${key}`);
+}
+
+// ============================================================
+// FON (TEFAS)
+// ============================================================
+
+const TEFAS_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+    "Chrome/120.0.0.0 Safari/537.36",
+  "Accept": "*/*",
+  "Content-Type": "application/json",
+  "Origin": "https://www.tefas.gov.tr",
+  "Referer": "https://www.tefas.gov.tr/tr/fon-verileri",
+};
+
+function findList(decoded: unknown): unknown[] {
+  if (Array.isArray(decoded)) return decoded;
+
+  if (decoded && typeof decoded === "object") {
+    const obj = decoded as Record<string, unknown>;
+
+    if (Array.isArray(obj.resultList)) return obj.resultList;
+    if (Array.isArray(obj.data)) return obj.data;
+
+    for (const value of Object.values(obj)) {
+      if (Array.isArray(value) && value.length > 0) return value;
+      if (value && typeof value === "object") {
+        const nested = findList(value);
+        if (nested.length > 0) return nested;
+      }
+    }
+  }
+
+  return [];
+}
+
+function firstNumberField(
+  item: Record<string, unknown>,
+  keys: string[],
+): number | null {
+  for (const key of keys) {
+    const raw = item[key];
+    if (raw == null) continue;
+    const num = typeof raw === "number" ? raw : Number(raw);
+    if (Number.isFinite(num)) return num;
+  }
+  return null;
+}
+
+function firstStringField(
+  item: Record<string, unknown>,
+  keys: string[],
+): string | null {
+  for (const key of keys) {
+    const raw = item[key];
+    if (raw == null) continue;
+    const text = String(raw).trim();
+    if (text) return text;
+  }
+  return null;
+}
+
+function parseTefasDate(value: unknown): number {
+  if (value == null) return 0;
+  const text = String(value);
+
+  // DD.MM.YYYY
+  const dotMatch = text.match(/^(\d{2})\.(\d{2})\.(\d{4})/);
+  if (dotMatch) {
+    const [, dd, mm, yyyy] = dotMatch;
+    return new Date(`${yyyy}-${mm}-${dd}`).getTime();
+  }
+
+  // /Date(epoch)/ .NET formatı
+  const dotNetMatch = text.match(/\/Date\((\d+)\)\//);
+  if (dotNetMatch) {
+    return Number(dotNetMatch[1]);
+  }
+
+  const parsed = Date.parse(text);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+async function getFundPrice(rawCode: string): Promise<number> {
+  const code = rawCode.trim().toUpperCase();
+  if (!code) throw new Error("Fon kodu boş olamaz.");
+
+  const res = await fetch(
+    "https://www.tefas.gov.tr/api/funds/fonFiyatBilgiGetir",
+    {
+      method: "POST",
+      headers: TEFAS_HEADERS,
+      body: JSON.stringify({ fonKodu: code, dil: "TR", periyod: 1 }),
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error(`TEFAS sunucu hatası: ${res.status}`);
+  }
+
+  const decoded = await res.json();
+  const rawItems = findList(decoded);
+
+  if (rawItems.length === 0) {
+    throw new Error(`${code} için fiyat bulunamadı.`);
+  }
+
+  type Point = { date: number; price: number };
+  const points: Point[] = [];
+
+  for (const rawItem of rawItems) {
+    if (!rawItem || typeof rawItem !== "object") continue;
+    const item = rawItem as Record<string, unknown>;
+
+    const price = firstNumberField(item, [
+      "fiyat",
+      "FIYAT",
+      "Fiyat",
+      "price",
+      "Price",
+      "PRICE",
+    ]);
+
+    const date = parseTefasDate(
+      item.tarih ?? item.TARIH ?? item.Tarih ?? item.date ?? item.Date ??
+        item.DATE,
+    );
+
+    if (price != null && price > 0) {
+      points.push({ date, price });
+    }
+  }
+
+  if (points.length === 0) {
+    throw new Error(`${code} için kullanılabilir fiyat bulunamadı.`);
+  }
+
+  points.sort((a, b) => a.date - b.date);
+  return points[points.length - 1].price;
+}
+
+// ---- YENİ: fund-history (grafik için tam periyot geçmişi) ----
+// Mobildeki TefasFundService.getFundHistory ile aynı endpoint, `periyod`
+// (ay sayısı) parametresi ile. fund_detail_screen.dart'taki zaman
+// filtreleriyle birebir: 1,3,6,12,36,60.
+
+async function getFundHistory(
+  rawCode: string,
+  months: number,
+): Promise<{ t: number; c: number }[]> {
+  const code = rawCode.trim().toUpperCase();
+  if (!code) throw new Error("Fon kodu boş olamaz.");
+  const periyod = Number.isFinite(months) && months > 0
+    ? Math.round(months)
+    : 12;
+
+  const res = await fetch(
+    "https://www.tefas.gov.tr/api/funds/fonFiyatBilgiGetir",
+    {
+      method: "POST",
+      headers: TEFAS_HEADERS,
+      body: JSON.stringify({ fonKodu: code, dil: "TR", periyod }),
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error(`TEFAS sunucu hatası: ${res.status}`);
+  }
+
+  const decoded = await res.json();
+  const rawItems = findList(decoded);
+
+  const points: { t: number; c: number }[] = [];
+  for (const rawItem of rawItems) {
+    if (!rawItem || typeof rawItem !== "object") continue;
+    const item = rawItem as Record<string, unknown>;
+
+    const price = firstNumberField(item, [
+      "fiyat",
+      "FIYAT",
+      "Fiyat",
+      "price",
+      "Price",
+      "PRICE",
+    ]);
+    const date = parseTefasDate(
+      item.tarih ?? item.TARIH ?? item.Tarih ?? item.date ?? item.Date ??
+        item.DATE,
+    );
+
+    if (price != null && price > 0) {
+      points.push({ t: date, c: price });
+    }
+  }
+
+  if (points.length === 0) {
+    throw new Error(`${code} için geçmiş fiyat verisi bulunamadı.`);
+  }
+
+  points.sort((a, b) => a.t - b.t);
+  return points;
+}
+
+// ---- YENİ: fund-catalog (TEFAS'ın tüm fon kataloğu, tek istekte) ----
+// Mobildeki TefasFundService.getFunds ile aynı `fonGnlBlgSiraliGetir`
+// uç noktası, fonTipi=YAT ve fonTipi=SEC için paralel çekilip koda göre
+// birleştirilir (YAT önceliklidir). Bugünden geriye doğru en fazla 5 gün
+// denenir (hafta sonu/tatil boş dönebiliyor — mobille aynı davranış).
+// NOT (bilinen sınırlama): mobildeki ayrı `fonGetiriBazliBilgiGetir`
+// toplu-getiri endpoint'i BURADA proxy'lenmiyor — yüzlerce fonu tek
+// Edge Function çağrısında getiri bazında sıralamak, çok sayıda ek
+// sayfalı isteğe (mobilde 2 tip × 10 sayfa) ihtiyaç duyduğundan
+// performans/zaman-aşımı riskini artırıyordu (kural 12). Bu yüzden
+// getiri bazlı SIRALAMA v1'de yok; fon DETAY sayfasında dönemsel getiri
+// yine de `fund-history`'den hesaplanan gerçek veriyle gösteriliyor.
+
+function tefasDateString(d: Date): string {
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}.${mm}.${yyyy}`;
+}
+
+// YYYYMMDD (ayraçsız) — fonGnlBlgSiraliGetir'in beklediği tarih biçimi.
+function tefasDateStringCompact(d: Date): string {
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${d.getFullYear()}${mm}${dd}`;
+}
+
+// DÜZELTME #2 (2026-09, hata raporu #8: "Fon kataloğu şu anda alınamıyor"
+// hâlâ devam ediyordu): Önceki düzeltme (`/api/DB/BindHistoryInfo`,
+// form-urlencoded, DD.MM.YYYY) YANLIŞ uç noktaymış — canlı testte
+// `funds: []` (boş, hatasız) dönüyordu. Mobil uygulamanın kendi
+// `tefas_fund_service.dart` (`_getFundsForDate`) kaynağı incelenerek asıl
+// doğru istek bulundu: TEFAS'ın fon kataloğu GERÇEKTE
+// `/api/funds/fonGnlBlgSiraliGetir` ucundan, JSON gövdeyle (form-encoded
+// DEĞİL) ve tarih YYYYMMDD (ayraçsız) formatında geliyor. Bu düzeltme,
+// mobil ile BİREBİR aynı istek gövdesini/başlıklarını kullanır — artık
+// oturum çerezi almaya de gerek yok (mobil de kullanmıyor).
+async function fetchFonGnlBlgSirali(
+  fonTipi: "YAT" | "SEC",
+  dateStr: string,
+): Promise<Record<string, unknown>[]> {
+  const body = {
+    fonTipi,
+    fonKodu: null,
+    aramaMetni: null,
+    fonTurKod: null,
+    fonGrubu: null,
+    sfonTurKod: null,
+    fonTurAciklama: null,
+    kurucuKod: null,
+    basTarih: dateStr,
+    bitTarih: dateStr,
+    basSira: 1,
+    bitSira: 100000,
+    dil: "TR",
+    sFonTurKod: "",
+    fonKod: "",
+    fonGrup: "",
+    fonUnvanTip: "",
+  };
+
+  const res = await fetch(
+    "https://www.tefas.gov.tr/api/funds/fonGnlBlgSiraliGetir",
+    {
+      method: "POST",
+      headers: {
+        "User-Agent": TEFAS_HEADERS["User-Agent"],
+        "Accept": "*/*",
+        "Content-Type": "application/json",
+        "Origin": "https://www.tefas.gov.tr",
+        "Referer": "https://www.tefas.gov.tr/tr/fon-verileri",
+      },
+      body: JSON.stringify(body),
+    },
+  );
+
+  if (!res.ok) return [];
+  const decoded = await res.json().catch(() => null);
+  const rawList = decoded && typeof decoded === "object"
+    ? (decoded as Record<string, unknown>).resultList
+    : null;
+  const list = Array.isArray(rawList) ? rawList : findList(decoded);
+  return list.filter((x): x is Record<string, unknown> =>
+    !!x && typeof x === "object"
+  );
+}
+
+interface CatalogFund {
+  code: string;
+  name: string;
+  price: number;
+  date: string | null;
+  founderCode: string | null;
+  founderName: string | null;
+  fundType: string | null;
+  fundTitle: string | null;
+  riskValue: number | null;
+}
+
+async function getFundCatalog(): Promise<
+  { date: string | null; funds: CatalogFund[] }
+> {
+  let items: Record<string, unknown>[] = [];
+  let usedDate: string | null = null;
+
+  for (let back = 0; back < 5 && items.length === 0; back++) {
+    const d = new Date();
+    d.setDate(d.getDate() - back);
+    const dateStr = tefasDateStringCompact(d);
+
+    const [yat, sec] = await Promise.all([
+      fetchFonGnlBlgSirali("YAT", dateStr),
+      fetchFonGnlBlgSirali("SEC", dateStr),
+    ]);
+
+    if (yat.length > 0 || sec.length > 0) {
+      const merged = new Map<string, Record<string, unknown>>();
+      for (const item of sec) {
+        const code = firstStringField(item, ["fonKodu", "FONKODU", "fonKod", "code"]);
+        if (code) merged.set(code.toUpperCase(), item);
+      }
+      for (const item of yat) {
+        const code = firstStringField(item, ["fonKodu", "FONKODU", "fonKod", "code"]);
+        if (code) merged.set(code.toUpperCase(), item); // YAT üzerine yazar (öncelikli)
+      }
+      items = Array.from(merged.values());
+      usedDate = dateStr;
+    }
+  }
+
+  const funds: CatalogFund[] = [];
+  for (const item of items) {
+    const code = firstStringField(item, ["fonKodu", "FONKODU", "fonKod", "code"]);
+    const name = firstStringField(item, ["fonUnvan", "FONUNVAN", "fonAdi", "name"]);
+    const price = firstNumberField(item, ["fiyat", "FIYAT", "price"]);
+    if (!code || !name || price == null || price <= 0) continue;
+
+    funds.push({
+      code: code.toUpperCase(),
+      name,
+      price,
+      date: usedDate,
+      founderCode: firstStringField(item, ["kurucuKod", "KURUCUKOD", "kurucuKodu"]),
+      founderName: firstStringField(item, ["kurucuUnvan", "kurucuAdi", "kurucuAd", "KURUCUUNVAN", "KURUCUADI"]),
+      fundType: firstStringField(item, ["fonTurAciklama", "fonTurAdi", "fonTuru", "FON_TUR_ACIKLAMA", "fonturaciklama"]),
+      fundTitle: firstStringField(item, ["fonUnvanTip", "fonUnvanTipi", "fonUnvanAciklama", "FONUNVANTIP"]),
+      riskValue: firstNumberField(item, ["riskDegeri", "riskDeğeri", "riskValue", "RISKDEGERI"]),
+    });
+  }
+
+  return { date: usedDate, funds };
+}
+
+// ============================================================
+// VİOP (isyatirim.com.tr)
+// ============================================================
+//
+// isyatirim.com.tr'nin türev piyasalar sayfası JSON API sunmuyor —
+// tek kaynak, aktif sözleşmelerin listelendiği statik HTML tablosu.
+// Bu yüzden mobil uygulamadaki `ViopService` gibi burada da HTML
+// regex ile ayrıştırılıyor (tam bir DOM kütüphanesi eklemeden).
+
+const VIOP_URL =
+  "https://www.isyatirim.com.tr/en-us/analysis/Pages/derivatives-market.aspx";
+
+const VIOP_MONTH_YEAR_PATTERN =
+  /(Ocak|Şubat|Subat|Mart|Nisan|Mayıs|Mayis|Haziran|Temmuz|Ağustos|Agustos|Eylül|Eylul|Ekim|Kasım|Kasim|Aralık|Aralik|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+20\d{2}/i;
+
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'");
+}
+
+function stripTags(html: string): string {
+  return decodeHtmlEntities(html.replace(/<[^>]+>/g, " "))
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Hem Türkçe (1.234,56) hem İngilizce (1,234.56) sayı biçimlerini
+// ayrıştırır — ondalık ayraç olarak metindeki EN SONDAKİ ',' veya '.'
+// kabul edilir, diğeri binlik ayracı sayılıp silinir.
+function parseTurkishNumber(raw: string): number | null {
+  let cleaned = raw.replace(/[^0-9.,-]/g, "");
+  if (cleaned === "" || cleaned === "-") return null;
+
+  const lastComma = cleaned.lastIndexOf(",");
+  const lastDot = cleaned.lastIndexOf(".");
+
+  if (lastComma === -1 && lastDot === -1) {
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  if (lastComma > lastDot) {
+    cleaned = cleaned.replaceAll(".", "").replaceAll(",", ".");
+  } else {
+    cleaned = cleaned.replaceAll(",", "");
+  }
+
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+
+type ViopCategory = "equity" | "index" | "currency" | "metal" | "other";
+
+function categorizeViop(underlying: string): ViopCategory {
+  const u = underlying.trim().toUpperCase();
+  if (!u) return "other";
+  if (u.startsWith("XU") || u.startsWith("XBANK") || u.startsWith("XL")) {
+    return "index";
+  }
+  if (
+    u.startsWith("XAU") || u.startsWith("XAG") || u.startsWith("XCU") ||
+    u.startsWith("XPD") || u.startsWith("XPT")
+  ) {
+    return "metal";
+  }
+  const currencyTokens = ["USD", "EUR", "GBP", "TRY", "JPY", "CHF"];
+  if (
+    currencyTokens.some((t) => u.includes(t)) && !/\d/.test(u)
+  ) {
+    return "currency";
+  }
+  if (/^[A-ZÇĞİÖŞÜ]{4,6}$/.test(u)) return "equity";
+  return "other";
+}
+
+interface ViopContract {
+  symbol: string;
+  underlying: string;
+  expiry: string;
+  price: number;
+  changePercent: number | null;
+  differenceTl: number | null;
+  volumeTl: number | null;
+  volumeLot: number | null;
+  isOption: boolean;
+  category: ViopCategory;
+}
+
+async function fetchViopHtml(): Promise<string> {
+  const res = await fetch(VIOP_URL, {
+    headers: {
+      "Accept": "text/html",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+        "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+      "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.7",
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`VİOP sayfası alınamadı: ${res.status}`);
+  }
+
+  return await res.text();
+}
+
+function parseViopRows(html: string): ViopContract[] {
+  const rowPattern = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+  const cellPattern = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+
+  const contracts: ViopContract[] = [];
+
+  let rowMatch: RegExpExecArray | null;
+  while ((rowMatch = rowPattern.exec(html)) !== null) {
+    const rowHtml = rowMatch[1];
+    const cells: string[] = [];
+
+    let cellMatch: RegExpExecArray | null;
+    cellPattern.lastIndex = 0;
+    while ((cellMatch = cellPattern.exec(rowHtml)) !== null) {
+      const text = stripTags(cellMatch[1]);
+      if (text) cells.push(text);
+    }
+
+    if (cells.length < 2) continue;
+
+    const rawName = cells[0];
+    if (rawName.length > 60) continue;
+    const monthMatch = VIOP_MONTH_YEAR_PATTERN.exec(rawName);
+    if (!monthMatch) continue;
+
+    const underlying = rawName.slice(0, monthMatch.index).trim();
+    const expiry = rawName.slice(monthMatch.index).trim();
+    if (!underlying) continue;
+
+    let price: number | null = null;
+    let changePercent: number | null = null;
+    let differenceTl: number | null = null;
+    let volumeTl: number | null = null;
+    let volumeLot: number | null = null;
+
+    if (cells.length >= 6) {
+      price = parseTurkishNumber(cells[1]);
+      changePercent = parseTurkishNumber(cells[2]);
+      differenceTl = parseTurkishNumber(cells[3]);
+      volumeTl = parseTurkishNumber(cells[4]);
+      volumeLot = parseTurkishNumber(cells[5]);
+    } else {
+      for (let i = 1; i < cells.length; i++) {
+        const numeric = parseTurkishNumber(cells[i]);
+        if (numeric != null && price == null) price = numeric;
+      }
+    }
+
+    if (price == null || price <= 0) continue;
+
+    const previousClose = differenceTl != null ? price - differenceTl : price;
+    const pct = changePercent ?? (
+      previousClose > 0 ? ((price - previousClose) / previousClose) * 100 : 0
+    );
+
+    contracts.push({
+      symbol: rawName.trim(),
+      underlying,
+      expiry,
+      price,
+      changePercent: pct,
+      differenceTl,
+      volumeTl,
+      volumeLot,
+      isOption: /\bCall\b|\bPut\b/i.test(expiry),
+      category: categorizeViop(underlying),
+    });
+  }
+
+  return contracts;
+}
+
+async function getViopQuote(rawSymbol: string): Promise<YahooQuote> {
+  const targetSymbol = rawSymbol.trim().toUpperCase();
+  if (!targetSymbol) throw new Error("VİOP sözleşme adı boş olamaz.");
+
+  const html = await fetchViopHtml();
+  const contracts = parseViopRows(html);
+
+  const match = contracts.find((c) => c.symbol.toUpperCase() === targetSymbol);
+  if (!match) {
+    throw new Error(
+      `${rawSymbol} için aktif sözleşme bulunamadı (vadesi dolmuş olabilir).`,
+    );
+  }
+
+  const previousClose = match.differenceTl != null
+    ? match.price - match.differenceTl
+    : match.price;
+
+  return {
+    price: match.price,
+    previousClose,
+    changePercent: match.changePercent ?? 0,
+  };
+}
+
+async function getViopList(): Promise<ViopContract[]> {
+  const html = await fetchViopHtml();
+  const contracts = parseViopRows(html);
+  if (contracts.length === 0) {
+    throw new Error("Aktif VİOP sözleşmesi bulunamadı.");
+  }
+  return contracts;
+}
+
+// ============================================================
+// HİSSE KATALOĞU (KAP) — best-effort, başarısız olursa istemci
+// kendi sabit/yedek 475 hisselik listesine döner (kural 9).
+// ============================================================
+
+const KAP_STOCK_LIST_URL = "https://www.kap.org.tr/tr/bist-sirketler";
+
+interface KapCompany {
+  symbol: string;
+  name: string;
+}
+
+function parseKapCompanies(html: string): KapCompany[] {
+  const companies: KapCompany[] = [];
+  const seen = new Set<string>();
+
+  // KAP'ın hisse listesi sayfası her şirket satırını, sembolü ve adını
+  // içeren bir link/etiket grubu olarak render ediyor. Sayfa yapısı
+  // zamanla değişebileceğinden burada esnek bir yaklaşım kullanılıyor:
+  // "SEMBOL" görünümündeki (2-6 büyük harf) kısa metinlerin hemen
+  // ardından gelen daha uzun bir metni şirket adı olarak eşleştiriyoruz.
+  const rowPattern = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+  const cellPattern = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+
+  let rowMatch: RegExpExecArray | null;
+  while ((rowMatch = rowPattern.exec(html)) !== null) {
+    const rowHtml = rowMatch[1];
+    const cells: string[] = [];
+    let cellMatch: RegExpExecArray | null;
+    cellPattern.lastIndex = 0;
+    while ((cellMatch = cellPattern.exec(rowHtml)) !== null) {
+      const text = stripTags(cellMatch[1]);
+      if (text) cells.push(text);
+    }
+    if (cells.length < 2) continue;
+
+    const symbolCandidate = cells[0].trim().toUpperCase();
+    const nameCandidate = cells[1].trim();
+
+    if (
+      /^[A-ZÇĞİÖŞÜ]{2,6}$/.test(symbolCandidate) &&
+      nameCandidate.length >= 3 && nameCandidate.length <= 120 &&
+      !seen.has(symbolCandidate)
+    ) {
+      seen.add(symbolCandidate);
+      companies.push({ symbol: symbolCandidate, name: nameCandidate });
+    }
+  }
+
+  return companies;
+}
+
+// ---- stock-fundamentals (best-effort temel oranlar/çarpanlar) ----
+// Mobildeki tam KAP/İş Yatırım finansal tablo scraping'i (bkz.
+// stock_financial_service.dart, 7000+ satır, banka bazlı şablonlar)
+// bu kapsama dahil edilmedi — Edge Function zaman aşımı riski çok
+// yüksek ve güvenilir biçimde yeniden üretilmesi ayrı, kapsamlı bir
+// çalışma gerektiriyor (bilinen sınırlama, teslim raporunda belirtilir).
+//
+// GÜNCELLEME (2026-09, kullanıcı geri bildirimi: "---" görünen alanlar):
+// Yahoo Finance 2024 ortasından itibaren v10/finance/quoteSummary uç
+// noktasına "crumb" (oturum anahtarı) doğrulaması getirdi — bu yüzden
+// önceki sürüm neredeyse HER ZAMAN boş/null dönüyordu (istisnasız
+// hepsi "best-effort" idi ama pratikte hep başarısız oluyordu). Bu
+// düzeltmede birincil kaynak, crumb GEREKTİRMEYEN ve zaten stock-batch
+// için doğrulanmış çalışan v7/finance/quote uç noktasına taşındı — bu
+// tek istekte fiyat + F/K + PD/DD + piyasa değeri + temettü verimi +
+// 52 hafta aralığı + EPS + açılış/önceki kapanış/gün içi düşük-yüksek/
+// hacim bilgilerinin NEREDEYSE TAMAMINI güvenilir şekilde döndürüyor.
+// quoteSummary yine de İKİNCİL (best-effort) kaynak olarak denenir —
+// crumb olmadan çalışırsa (bazı Yahoo bölgelerinde/anlarda hâlâ
+// çalışabiliyor) ROE/net kâr marjı/beta/sektör/net borç/borç-özkaynak/
+// cari oran gibi v7'de bulunmayan alanları da doldurur; başarısız
+// olursa (401/403) bu alanlar sadece "-" gösterilir — uydurulmaz.
+interface StockFundamentals {
+  trailingPE: number | null;
+  priceToBook: number | null;
+  marketCap: number | null;
+  dividendYield: number | null;
+  fiftyTwoWeekHigh: number | null;
+  fiftyTwoWeekLow: number | null;
+  returnOnEquity: number | null;
+  profitMargins: number | null;
+  epsTrailingTwelveMonths: number | null;
+  beta: number | null;
+  // YENİ alanlar:
+  netDebt: number | null;
+  debtToEquity: number | null;
+  currentRatio: number | null;
+  mostRecentQuarter: number | null; // epoch saniye — son bilanço tarihi
+  sector: string | null;
+  industry: string | null;
+  open: number | null;
+  previousClose: number | null;
+  dayHigh: number | null;
+  dayLow: number | null;
+  volume: number | null;
+  longName: string | null;
+}
+
+function emptyFundamentals(): StockFundamentals {
+  return {
+    trailingPE: null, priceToBook: null, marketCap: null, dividendYield: null,
+    fiftyTwoWeekHigh: null, fiftyTwoWeekLow: null, returnOnEquity: null,
+    profitMargins: null, epsTrailingTwelveMonths: null, beta: null,
+    netDebt: null, debtToEquity: null, currentRatio: null,
+    mostRecentQuarter: null, sector: null, industry: null,
+    open: null, previousClose: null, dayHigh: null, dayLow: null,
+    volume: null, longName: null,
+  };
+}
+
+function rawYahooNumber(v: unknown): number | null {
+  if (v && typeof v === "object" && "raw" in (v as Record<string, unknown>)) {
+    const n = Number((v as Record<string, unknown>).raw);
+    return Number.isFinite(n) ? n : null;
+  }
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+// GÜNCELLEME (2026-09, hata raporu #7): Canlıda doğrulandı — Yahoo'nun
+// v7/finance/quote VE v10/finance/quoteSummary uç noktalarının İKİSİ DE
+// Supabase Edge Function'ın IP aralığından TAMAMEN boş/null dönüyor
+// (muhtemelen Yahoo bu iki "quote" tipi ucu bulut/Deno IP'lerinden
+// kısıtlıyor), oysa v8/finance/chart (stock-ohlc'nin de kullandığı uç)
+// AYNI IP'DEN sorunsuz çalışıyor. Bu yüzden ÜÇÜNCÜ bir "son çare" katmanı
+// eklendi: v8/finance/chart'tan 1 yıllık GERÇEK günlük mumlar çekilip,
+// yalnızca bu mumlardan doğrudan türetilebilecek alanlar (52 hafta
+// düşük/yüksek, önceki kapanış, bugünkü açılış/düşük/yüksek/hacim,
+// şirket adı) doldurulur. F/K, PD/DD, piyasa değeri, temettü verimi,
+// ROE, net kâr marjı, beta, sektör, net borç, borç/özkaynak, cari oran
+// gibi ORAN/ÇARPAN alanları mum verisinden türetilEMEZ — bunlar bu
+// kaynaklardan gelmezse null kalır ve arayüzde "-" gösterilir (kural 11:
+// dürüstlük, uydurma yok).
+async function getStockFundamentalsChartFallback(yahooSymbol: string): Promise<{
+  fiftyTwoWeekHigh: number | null;
+  fiftyTwoWeekLow: number | null;
+  previousClose: number | null;
+  open: number | null;
+  dayHigh: number | null;
+  dayLow: number | null;
+  volume: number | null;
+  longName: string | null;
+}> {
+  const empty = {
+    fiftyTwoWeekHigh: null, fiftyTwoWeekLow: null, previousClose: null,
+    open: null, dayHigh: null, dayLow: null, volume: null, longName: null,
+  };
+  try {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${
+      encodeURIComponent(yahooSymbol)
+    }?interval=1d&range=1y`;
+    const res = await fetch(url, { headers: YAHOO_HEADERS });
+    if (!res.ok) return empty;
+    const decoded = await res.json();
+    const result = decoded?.chart?.result?.[0];
+    if (!result) return empty;
+
+    const meta = result.meta ?? {};
+    const quote = result.indicators?.quote?.[0] ?? {};
+    const highs: (number | null)[] = (quote.high ?? []).filter((v: unknown) => v != null);
+    const lows: (number | null)[] = (quote.low ?? []).filter((v: unknown) => v != null);
+    const closes: (number | null)[] = (quote.close ?? []).filter((v: unknown) => v != null);
+    const opens: (number | null)[] = quote.open ?? [];
+    const volumes: (number | null)[] = quote.volume ?? [];
+
+    const lastIdx = (quote.close ?? []).length - 1;
+    const lastClose = lastIdx >= 0 ? quote.close[lastIdx] : null;
+    const prevIdx = closes.length >= 2 ? closes.length - 2 : -1;
+
+    return {
+      fiftyTwoWeekHigh: highs.length ? Math.max(...(highs as number[])) : rawYahooNumber(meta.fiftyTwoWeekHigh),
+      fiftyTwoWeekLow: lows.length ? Math.min(...(lows as number[])) : rawYahooNumber(meta.fiftyTwoWeekLow),
+      previousClose: prevIdx >= 0 ? Number(closes[prevIdx]) : rawYahooNumber(meta.chartPreviousClose ?? meta.previousClose),
+      open: lastIdx >= 0 && opens[lastIdx] != null ? Number(opens[lastIdx]) : null,
+      dayHigh: rawYahooNumber(meta.regularMarketDayHigh),
+      dayLow: rawYahooNumber(meta.regularMarketDayLow),
+      volume: rawYahooNumber(meta.regularMarketVolume),
+      longName: typeof meta.longName === "string" ? meta.longName : (typeof meta.shortName === "string" ? meta.shortName : null),
+    };
+  } catch {
+    return empty;
+  }
+}
+
+async function getStockFundamentals(rawSymbol: string): Promise<StockFundamentals> {
+  const result = emptyFundamentals();
+  const code = rawSymbol.trim().toUpperCase();
+  if (!code) return result;
+  const yahooSymbol = code.endsWith(".IS") ? code : `${code}.IS`;
+
+  // 1) BİRİNCİL: v7/finance/quote (crumb gerektirmez, güvenilir).
+  try {
+    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${
+      encodeURIComponent(yahooSymbol)
+    }`;
+    const res = await fetch(url, { headers: YAHOO_HEADERS });
+    if (res.ok) {
+      const decoded = await res.json();
+      const q = decoded?.quoteResponse?.result?.[0];
+      if (q) {
+        result.trailingPE = rawYahooNumber(q.trailingPE);
+        result.priceToBook = rawYahooNumber(q.priceToBook);
+        result.marketCap = rawYahooNumber(q.marketCap);
+        result.dividendYield = rawYahooNumber(q.trailingAnnualDividendYield);
+        result.fiftyTwoWeekHigh = rawYahooNumber(q.fiftyTwoWeekHigh);
+        result.fiftyTwoWeekLow = rawYahooNumber(q.fiftyTwoWeekLow);
+        result.epsTrailingTwelveMonths = rawYahooNumber(q.epsTrailingTwelveMonths);
+        result.open = rawYahooNumber(q.regularMarketOpen);
+        result.previousClose = rawYahooNumber(q.regularMarketPreviousClose);
+        result.dayHigh = rawYahooNumber(q.regularMarketDayHigh);
+        result.dayLow = rawYahooNumber(q.regularMarketDayLow);
+        result.volume = rawYahooNumber(q.regularMarketVolume);
+        result.longName = typeof q.longName === "string"
+          ? q.longName
+          : (typeof q.shortName === "string" ? q.shortName : null);
+      }
+    }
+  } catch {
+    // sessizce yut — aşağıdaki ikincil kaynak yine de denenecek.
+  }
+
+  // 2) İKİNCİL (best-effort): quoteSummary — crumb olmadan bazen hâlâ
+  // çalışabiliyor; çalışmazsa (401/403/timeout) bu blok atlanır ve
+  // yalnızca aşağıdaki alanlar null kalır (istemci "-" gösterir).
+  try {
+    const url = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${
+      encodeURIComponent(yahooSymbol)
+    }?modules=summaryDetail,defaultKeyStatistics,financialData,assetProfile`;
+    const res = await fetch(url, { headers: YAHOO_HEADERS });
+    if (res.ok) {
+      const decoded = await res.json();
+      const r2 = decoded?.quoteSummary?.result?.[0];
+      if (r2) {
+        const summaryDetail = r2.summaryDetail ?? {};
+        const keyStats = r2.defaultKeyStatistics ?? {};
+        const financialData = r2.financialData ?? {};
+        const assetProfile = r2.assetProfile ?? {};
+
+        result.returnOnEquity ??= rawYahooNumber(financialData.returnOnEquity);
+        result.profitMargins ??= rawYahooNumber(financialData.profitMargins);
+        result.beta ??= rawYahooNumber(summaryDetail.beta);
+        result.netDebt ??= rawYahooNumber(financialData.totalDebt) != null &&
+            rawYahooNumber(financialData.totalCash) != null
+          ? (rawYahooNumber(financialData.totalDebt)! - rawYahooNumber(financialData.totalCash)!)
+          : null;
+        result.debtToEquity ??= rawYahooNumber(financialData.debtToEquity);
+        result.currentRatio ??= rawYahooNumber(financialData.currentRatio);
+        result.mostRecentQuarter ??= rawYahooNumber(keyStats.mostRecentQuarter);
+        result.sector ??= typeof assetProfile.sector === "string" ? assetProfile.sector : null;
+        result.industry ??= typeof assetProfile.industry === "string" ? assetProfile.industry : null;
+        // v7'de bulunamamışsa buradan tamamla:
+        result.trailingPE ??= rawYahooNumber(summaryDetail.trailingPE);
+        result.priceToBook ??= rawYahooNumber(keyStats.priceToBook);
+        result.marketCap ??= rawYahooNumber(summaryDetail.marketCap);
+        result.dividendYield ??= rawYahooNumber(summaryDetail.dividendYield);
+        result.fiftyTwoWeekHigh ??= rawYahooNumber(summaryDetail.fiftyTwoWeekHigh);
+        result.fiftyTwoWeekLow ??= rawYahooNumber(summaryDetail.fiftyTwoWeekLow);
+        result.epsTrailingTwelveMonths ??= rawYahooNumber(keyStats.trailingEps);
+      }
+    }
+  } catch {
+    // sessizce yut — bu tamamen ek/opsiyonel bir kaynak.
+  }
+
+  // 3) ÜÇÜNCÜ (son çare): v7 ve v10 ikisi de başarısız/boş kaldıysa,
+  // her zaman çalışan v8/finance/chart'tan GERÇEK mum verisiyle
+  // türetilebilen alanları doldur (bkz. yukarıdaki fonksiyon yorumu).
+  const needsChartFallback = result.fiftyTwoWeekHigh == null || result.fiftyTwoWeekLow == null ||
+    result.previousClose == null || result.dayHigh == null || result.dayLow == null ||
+    result.volume == null || result.longName == null;
+  if (needsChartFallback) {
+    const fb = await getStockFundamentalsChartFallback(yahooSymbol);
+    result.fiftyTwoWeekHigh ??= fb.fiftyTwoWeekHigh;
+    result.fiftyTwoWeekLow ??= fb.fiftyTwoWeekLow;
+    result.previousClose ??= fb.previousClose;
+    result.open ??= fb.open;
+    result.dayHigh ??= fb.dayHigh;
+    result.dayLow ??= fb.dayLow;
+    result.volume ??= fb.volume;
+    result.longName ??= fb.longName;
+  }
+
+  return result;
+}
+
+// ---- YENİ: stock-batch (Ana Sayfa "Piyasa Hareketleri" için TEK
+// istekte çoklu hisse fiyatı — kural 12: 100 hisse için 100 ayrı
+// istek atılmasın diye Yahoo'nun toplu quote uç noktası kullanılır) ----
+interface BatchQuote {
+  symbol: string;
+  price: number | null;
+  changePercent: number | null;
+  volume: number | null;
+}
+
+async function getStockBatch(rawSymbols: string): Promise<BatchQuote[]> {
+  const codes = rawSymbols.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean).slice(0, 150);
+  if (codes.length === 0) return [];
+  const yahooSymbols = codes.map((c) => (c.endsWith(".IS") ? c : `${c}.IS`));
+  const empty = () => codes.map((c) => ({ symbol: c, price: null, changePercent: null, volume: null }));
+  try {
+    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${
+      encodeURIComponent(yahooSymbols.join(","))
+    }`;
+    const res = await fetch(url, { headers: YAHOO_HEADERS });
+    if (!res.ok) return empty();
+    const decoded = await res.json();
+    const results: Record<string, unknown>[] = decoded?.quoteResponse?.result ?? [];
+    const bySymbol = new Map<string, Record<string, unknown>>();
+    for (const r of results) bySymbol.set(String(r.symbol), r);
+    return codes.map((c, i) => {
+      const r = bySymbol.get(yahooSymbols[i]);
+      if (!r) return { symbol: c, price: null, changePercent: null, volume: null };
+      const price = Number(r.regularMarketPrice);
+      const changePercent = Number(r.regularMarketChangePercent);
+      const volume = Number(r.regularMarketVolume);
+      return {
+        symbol: c,
+        price: Number.isFinite(price) ? price : null,
+        changePercent: Number.isFinite(changePercent) ? changePercent : null,
+        volume: Number.isFinite(volume) ? volume : null,
+      };
+    });
+  } catch {
+    return empty();
+  }
+}
+
+async function getStockCatalog(): Promise<
+  { companies: KapCompany[]; source: "kap" | "error" }
+> {
+  try {
+    const res = await fetch(KAP_STOCK_LIST_URL, {
+      headers: {
+        "Accept": "text/html",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+          "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.7",
+      },
+    });
+    if (!res.ok) return { companies: [], source: "error" };
+
+    const html = await res.text();
+    const companies = parseKapCompanies(html);
+
+    // Güvenlik eşiği: makul sayıda (>=50) sonuç yoksa sayfa yapısı
+    // değişmiş/bozuk parse olmuş demektir — istemci kendi sabit
+    // listesine düşsün, yarım/şüpheli veri döndürülmesin (kural 9).
+    if (companies.length < 50) return { companies: [], source: "error" };
+
+    return { companies, source: "kap" };
+  } catch {
+    return { companies: [], source: "error" };
+  }
+}
+
+// ============================================================
+// HABERLER (Bülten) — FAZ 10
+// Mobildeki bulletin_screen.dart ile AYNI 5 RSS kaynağı, aynı
+// User-Agent, aynı 48 saatlik tazelik filtresi ve link'e göre
+// dedup mantığı. Ayrı bir "news-proxy" Edge Function açmak yerine
+// (kural: gereksiz servis çoğaltma) mevcut price-proxy'ye yeni bir
+// type olarak eklendi — mobil de isterse aynı uca geçebilir, ama bu
+// FAZ'da yalnızca WEB tarafı bu uca bağlandı (mobil zaten kendi RSS
+// istemcisiyle çalışıyor, ikisi de AYNI kaynaklardan okuduğu için
+// tutarsızlık riski yok).
+// ============================================================
+interface NewsArticle {
+  id: string;
+  title: string;
+  link: string;
+  category: string;
+  source: string;
+  imageUrl: string | null;
+  summary: string | null;
+  publishedAt: string | null;
+}
+
+const NEWS_FEEDS: Record<string, { url: string; source: string }> = {
+  ekonomi: { url: "https://tr.investing.com/rss/news_14.rss", source: "Investing.com" },
+  borsa: { url: "https://tr.investing.com/rss/news_25.rss", source: "Investing.com" },
+  emtia: { url: "https://tr.investing.com/rss/news_11.rss", source: "Investing.com" },
+  doviz: { url: "https://tr.investing.com/rss/news_1.rss", source: "Investing.com" },
+  kap: { url: "https://paratic.com/haberleri/kap/feed/", source: "Paratic" },
+};
+
+function stripCdataAndTags(s: string): string {
+  return decodeHtmlEntities(
+    s.replace(/<!\[CDATA\[/g, "").replace(/\]\]>/g, "").replace(/<[^>]*>/g, " ")
+  ).trim();
+}
+function decodeNewsEntities(s: string): string {
+  return decodeHtmlEntities(s.replace(/<!\[CDATA\[/g, "").replace(/\]\]>/g, ""));
+}
+
+async function fetchOneNewsFeed(category: string): Promise<NewsArticle[]> {
+  const feed = NEWS_FEEDS[category];
+  if (!feed) return [];
+  try {
+    const res = await fetch(feed.url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+          "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "Accept": "application/rss+xml, text/xml, */*",
+      },
+    });
+    if (!res.ok) return [];
+    const xml = await res.text();
+
+    const items: NewsArticle[] = [];
+    const itemPattern = /<item[^>]*>([\s\S]*?)<\/item>/gi;
+    let m: RegExpExecArray | null;
+    while ((m = itemPattern.exec(xml)) !== null) {
+      const block = m[1];
+      const titleMatch = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(block);
+      const linkMatch = /<link[^>]*>([\s\S]*?)<\/link>/i.exec(block);
+      const descMatch = /<description[^>]*>([\s\S]*?)<\/description>/i.exec(block);
+      const pubMatch = /<pubDate[^>]*>([\s\S]*?)<\/pubDate>/i.exec(block);
+      const imgMatch = /<img[^>]+src=["']([^"']+)["']/i.exec(block) ??
+        /<enclosure[^>]+url=["']([^"']+)["']/i.exec(block);
+
+      const title = titleMatch ? stripCdataAndTags(titleMatch[1]) : "";
+      const link = linkMatch ? decodeNewsEntities(linkMatch[1]).trim() : "";
+      if (!title || !link) continue;
+
+      const rawDesc = descMatch ? descMatch[1] : "";
+      const summary = stripCdataAndTags(rawDesc).slice(0, 400) || null;
+      const imageUrl = imgMatch ? imgMatch[1] : null;
+      const pubDate = pubMatch ? new Date(pubMatch[1]) : null;
+      const publishedAt = pubDate && !isNaN(pubDate.getTime()) ? pubDate.toISOString() : null;
+
+      items.push({ id: link, title, link, category, source: feed.source, imageUrl, summary, publishedAt });
+    }
+    return items;
+  } catch {
+    return [];
+  }
+}
+
+async function getNews(categoriesParam: string): Promise<NewsArticle[]> {
+  const categories = categoriesParam
+    ? categoriesParam.split(",").map((c) => c.trim()).filter(Boolean)
+    : Object.keys(NEWS_FEEDS);
+
+  const results = await Promise.all(categories.map((c) => fetchOneNewsFeed(c)));
+  let all = results.flat();
+
+  // 48 saatlik tazelik filtresi + link'e göre dedup (mobille aynı kural).
+  const seen = new Set<string>();
+  const cutoff = Date.now() - 48 * 3600 * 1000;
+  all = all.filter((a) => {
+    if (seen.has(a.id)) return false;
+    seen.add(a.id);
+    if (a.publishedAt) {
+      const t = new Date(a.publishedAt).getTime();
+      if (Number.isFinite(t) && t < cutoff) return false;
+    }
+    return true;
+  });
+
+  all.sort((a, b) => {
+    const ta = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+    const tb = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+    return tb - ta;
+  });
+
+  return all;
+}
+
+// ============================================================
+// HTTP HANDLER
+// ============================================================
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: CORS_HEADERS });
+  }
+
+  try {
+    const url = new URL(req.url);
+    const type = url.searchParams.get("type");
+
+    if (type === "stock") {
+      const symbol = url.searchParams.get("symbol") ?? "";
+      const quote = await getStockPrice(symbol);
+      return jsonResponse(quote);
+    }
+
+    if (type === "currency") {
+      const code = url.searchParams.get("code") ?? "";
+      const quote = await getCurrencyTryQuote(code);
+      return jsonResponse(quote);
+    }
+
+    if (type === "commodity") {
+      const key = url.searchParams.get("key") ?? "";
+      const quote = await getCommodityQuote(key);
+      return jsonResponse({
+        price: quote.price,
+        previousClose: null,
+        changePercent: quote.changePercent,
+        unit: quote.unit,
+      });
+    }
+
+    if (type === "fund") {
+      const code = url.searchParams.get("code") ?? "";
+      const price = await getFundPrice(code);
+      return jsonResponse({ price, previousClose: null, changePercent: null });
+    }
+
+    if (type === "viop") {
+      const symbol = url.searchParams.get("symbol") ?? "";
+      const quote = await getViopQuote(symbol);
+      return jsonResponse(quote);
+    }
+
+    if (type === "stock-ohlc") {
+      const symbol = url.searchParams.get("symbol") ?? "";
+      const range = url.searchParams.get("range") ?? "1y";
+      const interval = url.searchParams.get("interval") ?? "1d";
+      const points = await getOhlcHistory(symbol, range, interval);
+      return jsonResponse({ points });
+    }
+
+    if (type === "fund-catalog") {
+      const result = await getFundCatalog();
+      return jsonResponse(result);
+    }
+
+    if (type === "fund-history") {
+      const code = url.searchParams.get("code") ?? "";
+      const months = Number(url.searchParams.get("months") ?? "12");
+      const points = await getFundHistory(code, months);
+      return jsonResponse({ points });
+    }
+
+    if (type === "viop-list") {
+      const contracts = await getViopList();
+      return jsonResponse({ contracts });
+    }
+
+    if (type === "stock-catalog") {
+      const result = await getStockCatalog();
+      return jsonResponse(result);
+    }
+
+    if (type === "stock-fundamentals") {
+      const symbol = url.searchParams.get("symbol") ?? "";
+      const result = await getStockFundamentals(symbol);
+      return jsonResponse(result);
+    }
+
+    if (type === "stock-batch") {
+      const symbols = url.searchParams.get("symbols") ?? "";
+      const quotes = await getStockBatch(symbols);
+      return jsonResponse({ quotes });
+    }
+
+    if (type === "news") {
+      const categories = url.searchParams.get("categories") ?? "";
+      const articles = await getNews(categories);
+      return jsonResponse({ articles });
+    }
+
+    // YENİ: birleşik geçmiş fiyat (grafik) uç noktası — app-charts.js
+    // artık asset türünden bağımsız TEK bir uç nokta çağırıyor; bu,
+    // mevcut stock-ohlc/fund-history mantığını TEKRARLAMADAN (aynı
+    // fonksiyonları çağırarak) dispatch eder. Eski `stock-ohlc` ve
+    // `fund-history` type'ları geriye dönük uyumluluk için AYNEN
+    // korunuyor (hiçbir şey bozulmadı).
+    if (type === "history") {
+      const assetType = url.searchParams.get("assetType") ?? "stock";
+      const symbol = url.searchParams.get("symbol") ?? "";
+      if (assetType === "fund") {
+        const months = Number(url.searchParams.get("months") ?? "12");
+        const points = await getFundHistory(symbol, months);
+        return jsonResponse({
+          points: points.map((p) => ({ t: p.t, o: null, h: null, l: null, c: p.c, v: null })),
+        });
+      }
+      // stock, index, commodity, sector — hepsi Yahoo sembolü kullanır.
+      const range = url.searchParams.get("range") ?? "1y";
+      const interval = url.searchParams.get("interval") ?? "1d";
+      const points = await getOhlcHistory(symbol, range, interval);
+      return jsonResponse({ points });
+    }
+
+    // YENİ: gerçek banka mevduat/kredi oranları (bkz. bölüm yukarıda).
+    if (type === "bank-rates") {
+      const product = url.searchParams.get("product") ?? "deposit";
+      const offers = await getBankRates(product);
+      return jsonResponse({ offers });
+    }
+
+    return jsonResponse({ error: "Geçersiz 'type' parametresi." }, 400);
+  } catch (e) {
+    return jsonResponse({ error: String((e as Error)?.message ?? e) }, 502);
+  }
+});
