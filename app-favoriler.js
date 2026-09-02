@@ -26,6 +26,20 @@ const FAVORI_CATEGORY_LABELS = {
 let favoriRows = [];
 let favoriActiveCategory = 'all';
 
+// Favoriler listesi karma kategoriler içerdiğinden (hisse/endeks/emtia/
+// fon/kripto/viop/doviz), her satır kendi türüne uygun logoyu/ikonu
+// dener; bulunamazsa app-logos.js'in kendi harf-rozeti yedeğine düşer.
+function favoriRowLogo(catSlug, r) {
+  const sym = r.symbol || '';
+  if (catSlug === 'hisse') return stockLogoImg(sym, 26);
+  if (catSlug === 'endeks') return viopLogo(sym, 'index', 26);
+  if (catSlug === 'emtia') return commodityIconSvg(sym, 26);
+  if (catSlug === 'fon') return fundLogoImg(null, r.name, sym, 26);
+  if (catSlug === 'viop') return viopLogo(r.name || sym, 'equity', 26);
+  if (catSlug === 'doviz') return `<span class="logo-slot logo-emoji" style="width:26px;height:26px;font-size:17px;">💱</span>`;
+  return letterAvatarHtml(sym, 26);
+}
+
 async function loadFavorilerPage() {
   const tbody = document.getElementById('favoriBody');
   const emptyState = document.getElementById('favoriEmptyState');
@@ -61,6 +75,7 @@ function renderFavoriList() {
     const label = FAVORI_CATEGORY_LABELS[catSlug] || r.category || '';
     return `
     <tr>
+      <td>${favoriRowLogo(catSlug, r)}</td>
       <td>${escapeHtml(label)}</td>
       <td>
         <div class="sym">${escapeHtml(r.symbol)}</div>

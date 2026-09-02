@@ -196,10 +196,37 @@ const ASSET_DISTRIBUTION_COLORS = {
   diger: '#64748B', viop: '#22D3EE'
 };
 
+// Donut'un merkezine "TOPLAM NET VARLIK" + TL tutarını çizen Chart.js
+// eklentisi (yalnızca bu grafik örneğine bağlanır — global Chart.js
+// davranışını etkilemez, kural 15: mevcut tasarım/diğer grafikler bozulmaz).
+function assetDistributionCenterTextPlugin(totalLabel, totalValueText) {
+  return {
+    id: 'assetDistributionCenterText',
+    afterDraw(chart) {
+      const { ctx, chartArea } = chart;
+      if (!chartArea) return;
+      const cx = (chartArea.left + chartArea.right) / 2;
+      const cy = (chartArea.top + chartArea.bottom) / 2;
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted') || '#94A3B8';
+      ctx.font = '600 10px system-ui, sans-serif';
+      ctx.fillText(totalLabel, cx, cy - 10);
+      ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text') || '#F1F5F9';
+      ctx.font = '700 15px system-ui, sans-serif';
+      ctx.fillText(totalValueText, cx, cy + 9);
+      ctx.restore();
+    }
+  };
+}
+
 function renderAssetDistributionChart(cards) {
   const canvas = document.getElementById('assetDistributionChart');
   const legendEl = document.getElementById('assetDistributionLegend');
   if (!canvas || typeof Chart === 'undefined') return;
+  // Sıfır/negatif değerli kategoriler grafikte gösterilmez (kural: sadece
+  // gerçek, mevcut varlıklar; boş dilim yok).
   const dist = cards.filter(c => ASSET_DISTRIBUTION_COLORS[c.key] && c.value > 0);
   if (_chartInstances['assetDistributionChart']) {
     _chartInstances['assetDistributionChart'].destroy();
@@ -223,9 +250,22 @@ function renderAssetDistributionChart(cards) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { enabled: true } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          callbacks: {
+            label: (item) => {
+              const c = dist[item.dataIndex];
+              const pct = total > 0 ? (c.value / total) * 100 : 0;
+              return `${CATEGORY_META[c.key].label}: ${fmtTL(c.value)} (%${pct.toFixed(1)})`;
+            }
+          }
+        }
+      },
       cutout: '65%'
-    }
+    },
+    plugins: [assetDistributionCenterTextPlugin('TOPLAM NET VARLIK', fmtTL(total))]
   });
   legendEl.innerHTML = dist
     .sort((a, b) => b.value - a.value)
@@ -235,7 +275,8 @@ function renderAssetDistributionChart(cards) {
       <div style="display:flex; align-items:center; gap:8px; padding:6px 0;">
         <span style="width:10px; height:10px; border-radius:50%; background:${ASSET_DISTRIBUTION_COLORS[c.key]}; flex-shrink:0;"></span>
         <span style="flex:1;">${escapeHtml(CATEGORY_META[c.key].label)}</span>
-        <span style="color:var(--text-muted);">%${pct.toFixed(1)}</span>
+        <span style="color:var(--text-muted); font-weight:600; margin-right:6px;">${fmtTL(c.value)}</span>
+        <span style="color:var(--text-muted); min-width:42px; text-align:right;">%${pct.toFixed(1)}</span>
       </div>`;
     }).join('');
 }

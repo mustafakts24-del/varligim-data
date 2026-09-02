@@ -140,7 +140,7 @@
           <div class="table-wrap">
           <table id="emtiaMarketTable">
             <thead><tr>
-              <th></th><th>Emtia</th><th class="num">Fiyat</th><th class="num">Değişim</th><th></th>
+              <th></th><th></th><th>Emtia</th><th class="num">Fiyat</th><th class="num">Değişim</th><th></th>
             </tr></thead>
             <tbody id="emtiaMarketBody"></tbody>
           </table>
@@ -169,7 +169,7 @@
           <div class="table-wrap">
           <table id="hisseMarketTable">
             <thead><tr>
-              <th></th><th>Hisse</th><th class="num">Fiyat</th><th class="num">Değişim</th><th></th>
+              <th></th><th></th><th>Hisse</th><th class="num">Fiyat</th><th class="num">Değişim</th><th></th>
             </tr></thead>
             <tbody id="hisseMarketBody"></tbody>
           </table>
@@ -187,10 +187,22 @@
           <div class="market-toolbar">
             <input type="search" id="fonSearchInput" placeholder="Fon kodu, adı veya kurucu ara..." />
           </div>
+          <div class="chip-row" id="fonCategoryChips">
+            <div class="filter-chip active" data-cat="all">Tüm Fonlar</div>
+            <div class="filter-chip" data-cat="Hisse Senedi">Hisse Senedi</div>
+            <div class="filter-chip" data-cat="Değişken">Değişken</div>
+            <div class="filter-chip" data-cat="Para Piyasası">Para Piyasası</div>
+            <div class="filter-chip" data-cat="Borçlanma Araçları">Borçlanma Araçları</div>
+            <div class="filter-chip" data-cat="Kıymetli Madenler">Kıymetli Maden</div>
+            <div class="filter-chip" data-cat="Fon Sepeti">Fon Sepeti</div>
+            <div class="filter-chip" data-cat="Katılım">Katılım</div>
+            <div class="filter-chip" data-cat="Emeklilik">Emeklilik</div>
+            <div class="filter-chip" data-cat="Serbest">Serbest</div>
+          </div>
           <div class="table-wrap">
           <table id="fonMarketTable">
             <thead><tr>
-              <th></th><th>Fon</th><th class="num">Fiyat</th><th></th>
+              <th></th><th></th><th>Fon</th><th class="num">Fiyat</th><th></th>
             </tr></thead>
             <tbody id="fonMarketBody"></tbody>
           </table>
@@ -211,7 +223,7 @@
           <div class="table-wrap">
           <table id="kriptoMarketTable">
             <thead><tr>
-              <th></th><th>Kripto</th><th class="num">Fiyat</th><th class="num">Değişim (24s)</th><th></th>
+              <th></th><th></th><th>Kripto</th><th class="num">Fiyat</th><th class="num">Değişim (24s)</th><th></th>
             </tr></thead>
             <tbody id="kriptoMarketBody"></tbody>
           </table>
@@ -249,6 +261,25 @@
             </div>
           </div>
         </div>
+
+        <div class="card">
+          <div class="section-title" style="justify-content:space-between;">
+            <span><span class="msr">account_balance</span> Güncel Banka Mevduat Oranları</span>
+            <button class="btn outline small" id="depositBankRefreshBtn" type="button">Yenile</button>
+          </div>
+          <p class="page-lead" style="margin-top:0;">
+            teklifimgelsin.com üzerinden anlık çekilir (mobil uygulamayla aynı kaynak). Gösterilen
+            kazanç/vade sonu tutarları <strong>brüttür</strong> (stopaj dahil değildir) — kesin net tutar için
+            yukarıdaki Hesaplayıcı'yı kendi stopaj oranınla kullan.
+          </p>
+          <div class="calc-inline-row">
+            <label for="depositBankPrincipal">Ana Para (₺)</label>
+            <input id="depositBankPrincipal" type="number" step="any" min="0" value="100000" />
+          </div>
+          <div class="chip-row" id="depositBankTermChips"></div>
+          <div id="depositBankList"><div class="empty" style="padding:14px 0;">Yükleniyor…</div></div>
+        </div>
+
         <div class="card">
           <div class="section-title">Mevcut Mevduat Kayıtların</div>
           <div class="table-wrap">
@@ -291,7 +322,7 @@
             <select id="loanType">
               <option value="ihtiyac">İhtiyaç Kredisi (KKDF %15, BSMV %5)</option>
               <option value="tasit">Taşıt Kredisi (KKDF %15, BSMV %5)</option>
-              <option value="konut">Konut Kredisi (KKDF %0, BSMV %0)</option>
+              <option value="konut">Konut Kredisi (KKDF %0, BSMV %5)</option>
             </select>
             <label for="loanFeeRate">Tahsis ücreti oranı (%)</label>
             <input id="loanFeeRate" type="number" step="any" min="0" value="0.5" />
@@ -307,6 +338,32 @@
             </div>
           </div>
         </div>
+        <div class="card">
+          <div class="section-title" style="justify-content:space-between;">
+            <span><span class="msr">account_balance</span> Güncel Banka Kredi Oranları</span>
+            <button class="btn outline small" id="creditBankRefreshBtn" type="button">Yenile</button>
+          </div>
+          <p class="page-lead" style="margin-top:0;">
+            teklifimgelsin.com üzerinden anlık çekilir (mobil uygulamayla aynı kaynak ve hesap yöntemi).
+            Yalnızca <strong>İhtiyaç / Taşıt / Konut</strong> kredisi türleri desteklenir — mobil
+            uygulamada ve kaynak sitede "Ticari Kredi" türü bulunmadığından bu web sürümüne de
+            uydurma bir veri kaynağıyla eklenmedi.
+          </p>
+          <div class="calc-inline-row">
+            <label for="creditBankAmount">Kredi tutarı (₺)</label>
+            <input id="creditBankAmount" type="number" step="any" min="0" value="500000" />
+          </div>
+          <label for="creditBankType" style="margin-top:10px;">Kredi türü</label>
+          <select id="creditBankType">
+            <option value="ihtiyac">İhtiyaç Kredisi</option>
+            <option value="tasit">Taşıt Kredisi</option>
+            <option value="konut">Konut Kredisi</option>
+          </select>
+          <div class="chip-row" id="creditBankInstallmentChips" style="margin-top:10px;"></div>
+          <div id="creditBankBddkNotice" class="empty" style="display:none; padding:8px 0; font-size:12px; color:var(--warning, #F5A623);"></div>
+          <div id="creditBankList"><div class="empty" style="padding:14px 0;">Yükleniyor…</div></div>
+        </div>
+
         <div class="card" id="loanScheduleCard" style="display:none;">
           <div class="section-title" style="justify-content:space-between;">
             <span><span class="msr">table_chart</span> Ödeme Planı</span>
@@ -340,7 +397,7 @@
           <div class="table-wrap">
           <table id="viopMarketTable">
             <thead><tr>
-              <th></th><th>Sözleşme</th><th class="num">Fiyat</th><th class="num">Değişim</th><th class="num">Hacim (TL)</th><th></th>
+              <th></th><th></th><th>Sözleşme</th><th class="num">Fiyat</th><th class="num">Değişim</th><th class="num">Hacim (TL)</th><th></th>
             </tr></thead>
             <tbody id="viopMarketBody"></tbody>
           </table>
@@ -415,7 +472,7 @@
           <div class="table-wrap">
           <table id="favoriTable">
             <thead><tr>
-              <th>Kategori</th><th>Enstrüman</th><th class="num">Fiyat</th><th class="num">Değişim</th><th></th>
+              <th></th><th>Kategori</th><th>Enstrüman</th><th class="num">Fiyat</th><th class="num">Değişim</th><th></th>
             </tr></thead>
             <tbody id="favoriBody"></tbody>
           </table>
@@ -760,18 +817,21 @@
   </div>
 </div>
 
-<script src="app-core.js"></script>
-<script src="bist-stocks-data.js"></script>
-<script src="app-piyasa-emtia.js"></script>
-<script src="app-piyasa-hisse.js"></script>
-<script src="app-piyasa-fon.js"></script>
-<script src="app-piyasa-kripto.js"></script>
-<script src="app-piyasa-viop.js"></script>
-<script src="app-favoriler.js"></script>
-<script src="app-bulten.js"></script>
-<script src="app-home.js"></script>
-<script src="app-varliklar.js"></script>
-<script src="app-butce.js"></script>
-<script src="app-varligim.js"></script>
+<script src="app-core.js?v=20260902"></script>
+<script src="app-logos.js?v=20260902"></script>
+<script src="app-charts.js?v=20260902"></script>
+<script src="bist-stocks-data.js?v=20260902"></script>
+<script src="app-piyasa-emtia.js?v=20260902"></script>
+<script src="app-piyasa-hisse.js?v=20260902"></script>
+<script src="app-piyasa-fon.js?v=20260902"></script>
+<script src="app-piyasa-kripto.js?v=20260902"></script>
+<script src="app-piyasa-viop.js?v=20260902"></script>
+<script src="app-favoriler.js?v=20260902"></script>
+<script src="app-bulten.js?v=20260902"></script>
+<script src="app-home.js?v=20260902"></script>
+<script src="app-varliklar.js?v=20260902"></script>
+<script src="app-interest.js?v=20260902"></script>
+<script src="app-butce.js?v=20260902"></script>
+<script src="app-varligim.js?v=20260902"></script>
 </body>
 </html>

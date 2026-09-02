@@ -121,6 +121,7 @@ async function renderHisseList() {
   tbody.innerHTML = visible.map(s => `
     <tr>
       <td>${favoriteStarHtml('hisse', s.symbol, { name: s.name })}</td>
+      <td class="market-row-logo">${stockLogoImg(s.symbol, 26)}</td>
       <td>
         <div class="sym">${escapeHtml(s.symbol)}</div>
         <div class="name">${escapeHtml(s.name || '')}</div>
@@ -188,8 +189,12 @@ async function openIndexDetail(code, items) {
     </div>
     <div class="chart-wrap"><canvas id="detailChartIndex"></canvas></div>
     <div class="stat-mini-grid" id="indexPeriodStats"></div>
+    ${technicalAnalysisButtonHtml('indexTaBtn')}
     `
   );
+  bindTechnicalAnalysisButton('indexTaBtn', {
+    title: meta.name, assetType: 'index', yahooSymbol: `${code}.IS`,
+  });
   try {
     const quote = await fetchPriceProxy(`type=stock&symbol=${encodeURIComponent(code)}`);
     document.getElementById('idxDetailPrice').textContent = fmtNumber(quote.price);
@@ -202,7 +207,7 @@ async function openIndexDetail(code, items) {
     const statsEl = document.getElementById('indexPeriodStats');
     try {
       const points = await fetchYahooRangeSeries(`${code}.IS`, rangeKey);
-      renderSeriesChart('detailChartIndex', points);
+      renderPriceChart('detailChartIndex', points);
       const stats = periodStatsFromPoints(points);
       statsEl.innerHTML = stats ? `
         <div class="stat-mini"><div class="lbl">Dönem Düşük</div><div class="val">${fmtNumber(stats.low)}</div></div>
@@ -244,6 +249,12 @@ async function openStockDetail(symbol) {
     </div>
     <div class="chart-wrap"><canvas id="detailChartStock"></canvas></div>
     <div class="stat-mini-grid" id="stockPeriodStats"></div>
+    ${technicalAnalysisButtonHtml('stockTaBtn')}
+
+    <div class="detail-section-title">Şirket Bilgisi</div>
+    <table class="kv-table" id="stockCompanyInfoTable">
+      <tr><td>Şirket</td><td>…</td></tr>
+    </table>
 
     <div class="detail-section-title">Temel Oranlar / Çarpanlar</div>
     <table class="kv-table" id="stockFundamentalsTable">
@@ -259,6 +270,9 @@ async function openStockDetail(symbol) {
     <div id="stockAnalystBlock"><div class="empty" style="padding:14px 0;">Yükleniyor…</div></div>
     `
   );
+  bindTechnicalAnalysisButton('stockTaBtn', {
+    title: symbol, assetType: 'stock', yahooSymbol: `${symbol}.IS`,
+  });
 
   try {
     const quote = await fetchPriceProxy(`type=stock&symbol=${encodeURIComponent(symbol)}`);
@@ -292,7 +306,7 @@ async function openStockDetail(symbol) {
     const statsEl = document.getElementById('stockPeriodStats');
     try {
       const points = await fetchYahooRangeSeries(`${symbol}.IS`, rangeKey);
-      renderSeriesChart('detailChartStock', points);
+      renderPriceChart('detailChartStock', points);
       const stats = periodStatsFromPoints(points);
       statsEl.innerHTML = stats ? `
         <div class="stat-mini"><div class="lbl">Dönem Düşük</div><div class="val">${fmtNumber(stats.low)}</div></div>
@@ -318,9 +332,24 @@ async function openStockDetail(symbol) {
       <tr><td>Net Kâr Marjı</td><td>${pct(fx.profitMargins)}</td></tr>
       <tr><td>Hisse Başı Kazanç (EPS, TTM)</td><td>${naIfMissing(fx.epsTrailingTwelveMonths, v => v.toFixed(2))}</td></tr>
       <tr><td>Beta</td><td>${naIfMissing(fx.beta, v => v.toFixed(2))}</td></tr>
+      <tr><td>Net Borç</td><td>${naIfMissing(fx.netDebt, v => fmtTL(v))}</td></tr>
+      <tr><td>Borç/Özkaynak (D/E)</td><td>${naIfMissing(fx.debtToEquity, v => v.toFixed(2))}</td></tr>
+      <tr><td>Cari Oran</td><td>${naIfMissing(fx.currentRatio, v => v.toFixed(2))}</td></tr>
+      <tr><td>Son Bilanço Tarihi</td><td>${naIfMissing(fx.mostRecentQuarter, v => new Date(v * 1000).toLocaleDateString('tr-TR'))}</td></tr>
+    `;
+    document.getElementById('stockCompanyInfoTable').innerHTML = `
+      <tr><td>Şirket Adı</td><td>${naIfMissing(fx.longName, v => escapeHtml(v))}</td></tr>
+      <tr><td>Kod</td><td>${escapeHtml(symbol)}</td></tr>
+      <tr><td>Sektör</td><td>${naIfMissing(fx.sector, v => escapeHtml(v))}</td></tr>
+      <tr><td>Alt Sektör / Endüstri</td><td>${naIfMissing(fx.industry, v => escapeHtml(v))}</td></tr>
+      <tr><td>Açılış</td><td>${naIfMissing(fx.open, v => fmtTL(v))}</td></tr>
+      <tr><td>Önceki Kapanış</td><td>${naIfMissing(fx.previousClose, v => fmtTL(v))}</td></tr>
+      <tr><td>Gün İçi Düşük/Yüksek</td><td>${naIfMissing(fx.dayLow, v => fmtNumber(v))} / ${naIfMissing(fx.dayHigh, v => fmtNumber(v))}</td></tr>
+      <tr><td>Hacim</td><td>${naIfMissing(fx.volume, v => fmtNumber(v))}</td></tr>
     `;
   } catch (e) {
     document.getElementById('stockFundamentalsTable').innerHTML = `<tr><td colspan="2">Veri alınamadı.</td></tr>`;
+    document.getElementById('stockCompanyInfoTable').innerHTML = `<tr><td colspan="2">Veri alınamadı.</td></tr>`;
   }
 
   try {

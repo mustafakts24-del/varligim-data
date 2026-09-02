@@ -641,6 +641,24 @@ tbody tr:hover { background: var(--bg-elevated); }
 .fav-star.active { color: #FFC531; }
 .fav-star:hover { color: #FFC531; }
 
+/* ============================================================
+   LOGO / İKON (app-logos.js) — hisse/fon/emtia/VİOP satırlarında
+   yıldız ile isim arasına yerleştirilen küçük görsel
+   ============================================================ */
+.logo-slot {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; border-radius: 6px; overflow: hidden;
+  background: var(--bg-elevated); vertical-align: middle; margin-right: 4px;
+}
+.logo-slot .logo-img { display: block; object-fit: contain; width: 100%; height: 100%; }
+.logo-fallback {
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 6px; background: var(--secondary); color: #fff;
+  font-weight: 700; flex-shrink: 0;
+}
+.logo-emoji { background: transparent; }
+.market-row-logo { display: inline-flex; align-items: center; }
+
 .detail-btn {
   background: var(--bg-elevated); border: 1px solid var(--border);
   color: var(--text-muted); border-radius: var(--radius-pill);
@@ -734,6 +752,58 @@ tbody tr:hover { background: var(--bg-elevated); }
 .movers-row {
   display: flex; align-items: center; justify-content: space-between;
   background: var(--bg-elevated); border-radius: var(--radius-sm); padding: 10px 14px;
+}
+
+/* ============================================================
+   TEKNİK ANALİZ (app-technical-analysis.js) — tam ekran overlay
+   ============================================================ */
+.ta-overlay {
+  position: fixed; inset: 0; z-index: 500; background: var(--bg);
+  display: flex; flex-direction: column; outline: none;
+}
+.ta-topbar {
+  display: flex; flex-direction: column; gap: 8px; padding: 12px 16px;
+  border-bottom: 1px solid var(--border); background: var(--bg-elevated);
+}
+.ta-title { font-weight: 700; font-size: 15px; }
+.ta-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.ta-group { display: flex; gap: 4px; flex-wrap: wrap; background: var(--bg); border-radius: var(--radius-pill); padding: 3px; }
+.ta-btn {
+  background: none; border: none; color: var(--text-muted); font-size: 12px; font-weight: 600;
+  padding: 6px 11px; border-radius: var(--radius-pill); cursor: pointer; white-space: nowrap;
+}
+.ta-btn:hover { color: var(--text); }
+.ta-btn.active { background: var(--secondary); color: #fff; }
+.ta-btn.ta-close { background: var(--negative); color: #fff; }
+.ta-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 10px 16px 16px; }
+.ta-chart-stack { flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.ta-main-pane { position: relative; flex: 1; min-height: 0; }
+.ta-chart-el { position: absolute; inset: 0; }
+.ta-draw-canvas { position: absolute; inset: 0; pointer-events: none; }
+#taDrawGroup.ta-group ~ .ta-draw-canvas,
+.ta-draw-canvas { pointer-events: auto; }
+.ta-osc-pane { height: 160px; flex-shrink: 0; position: relative; }
+.ta-osc-pane .ta-chart-el { position: absolute; inset: 0; }
+.ta-status { font-size: 11.5px; color: var(--text-faint); padding-top: 6px; }
+
+/* ============================================================
+   FAİZ/KREDİ — banka teklif kartları (app-interest.js)
+   ============================================================ */
+.calc-inline-row { max-width: 320px; }
+.bank-offer-row {
+  display: grid; grid-template-columns: 40px 1.4fr 1fr 1fr 1fr; gap: 10px; align-items: center;
+  background: var(--bg-elevated); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px;
+}
+.bank-offer-row .bank-logo-cell img { width: 28px; height: 28px; border-radius: 6px; object-fit: contain; background: #fff; }
+.bank-offer-row .bank-name { font-weight: 700; font-size: 13.5px; }
+.bank-offer-row .bank-sub { font-size: 11.5px; color: var(--text-faint); }
+.bank-offer-select { background: var(--secondary); color: #fff; border: none; border-radius: var(--radius-pill); padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.bank-offer-select.selected { background: var(--positive); }
+
+@media (max-width: 960px) {
+  .bank-offer-row { grid-template-columns: 1fr; text-align: left; }
+  .ta-toolbar { gap: 6px; }
+  .ta-osc-pane { height: 120px; }
 }
 
 @media (max-width: 960px) {

@@ -13,12 +13,39 @@
  * getiri, fund-history üzerinden istemci tarafında hesaplanır.
  * ================================================================== */
 
-const FON_RANGE_MONTHS = { '1A': 1, '3A': 3, '6A': 6, '1Y': 12, '3Y': 36, '5Y': 60 };
+const FON_RANGE_MONTHS = { '1A': 1, '3A': 3, '6A': 6, 'YBB': null, '1Y': 12, '3Y': 36, '5Y': 60 };
+
+// Mobildeki funds_screen.dart _matchesFundType() anahtar kelime haritasından
+// BİREBİR alınmıştır (kural: mobildeki mantığı referans al). "Emeklilik"
+// mobilde ayrı bir anahtar kelime seti olarak yok; TEFAS'ta emeklilik
+// fonları genelde ad içinde "Emeklilik Yatırım Fonu" ibaresi taşıdığından
+// bu tek anahtar kelimeyle (ad üzerinden) eklenmiştir — şeffaflık için
+// burada not ediliyor.
+const FON_CATEGORY_KEYWORDS = {
+  'Hisse Senedi': ['HİSSE SENEDİ', 'HISSE SENEDI'],
+  'Değişken': ['DEĞİŞKEN', 'DEGISKEN'],
+  'Para Piyasası': ['PARA PİYASASI', 'PARA PIYASASI'],
+  'Borçlanma Araçları': ['BORÇLANMA', 'TAHVİL', 'BONO'],
+  'Kıymetli Madenler': ['KIYMETLİ MADEN', 'KIYMETLI MADEN', 'ALTIN', 'GÜMÜŞ', 'GUMUS'],
+  'Fon Sepeti': ['FON SEPETİ', 'FON SEPETI'],
+  'Katılım': ['KATILIM'],
+  'Emeklilik': ['EMEKLİLİK', 'EMEKLILIK'],
+  'Serbest': ['SERBEST']
+};
+
+function fundMatchesCategory(fund, catLabel) {
+  if (catLabel === 'all') return true;
+  const keywords = FON_CATEGORY_KEYWORDS[catLabel];
+  if (!keywords) return true;
+  const source = `${fund.fundType || ''} ${fund.name || ''}`.toLocaleUpperCase('tr-TR');
+  return keywords.some(k => source.includes(k));
+}
 
 let fonCatalog = [];
 let fonVisibleCount = 40;
 const FON_PAGE_SIZE = 40;
 let fonFilterText = '';
+let fonActiveCategory = 'all';
 
 async function ensureFonCatalog() {
   if (fonCatalog.length > 0) return;
@@ -33,12 +60,13 @@ async function ensureFonCatalog() {
 
 function filteredFonCatalog() {
   const q = fonFilterText.trim().toLocaleUpperCase('tr-TR');
-  if (!q) return fonCatalog;
-  return fonCatalog.filter(f =>
-    (f.code || '').toLocaleUpperCase('tr-TR').includes(q) ||
-    (f.name || '').toLocaleUpperCase('tr-TR').includes(q) ||
-    (f.founderName || '').toLocaleUpperCase('tr-TR').includes(q)
-  );
+  return fonCatalog.filter(f => {
+    if (!fundMatchesCategory(f, fonActiveCategory)) return false;
+    if (!q) return true;
+    return (f.code || '').toLocaleUpperCase('tr-TR').includes(q) ||
+      (f.name || '').toLocaleUpperCase('tr-TR').includes(q) ||
+      (f.founderName || '').toLocaleUpperCase('tr-TR').includes(q);
+  });
 }
 
 function renderFonList() {
@@ -57,6 +85,7 @@ function renderFonList() {
   tbody.innerHTML = visible.map(f => `
     <tr>
       <td>${favoriteStarHtml('fon', f.code, { name: f.name, price: f.price })}</td>
+      <td class="market-row-logo">${fundLogoImg(f.founderName, f.name, f.code, 26)}</td>
       <td>
         <div class="sym">${escapeHtml(f.code)}</div>
         <div class="name">${escapeHtml(f.name || '')}${f.founderName ? ' · ' + escapeHtml(f.founderName) : ''}</div>
@@ -96,6 +125,16 @@ document.getElementById('fonLoadMoreBtn').addEventListener('click', () => {
   renderFonList();
 });
 
+document.querySelectorAll('#fonCategoryChips .filter-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#fonCategoryChips .filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    fonActiveCategory = chip.dataset.cat;
+    fonVisibleCount = FON_PAGE_SIZE;
+    renderFonList();
+  });
+});
+
 async function openFundDetail(code) {
   const meta = fonCatalog.find(f => f.code === code) || { code, name: '' };
   openDetailModal(
@@ -113,17 +152,18 @@ async function openFundDetail(code) {
     <div class="chart-wrap"><canvas id="detailChartFund"></canvas></div>
     <div class="detail-section-title">Getiri Performansı</div>
     <table class="kv-table" id="fundReturnTable"><tr><td>Yükleniyor…</td><td></td></tr></table>
+    ${technicalAnalysisButtonHtml('fundTaBtn')}
     `
   );
+  bindTechnicalAnalysisButton('fundTaBtn', {
+    title: `${code} — ${meta.name || ''}`, assetType: 'fund', fundCode: code,
+  });
 
   bindChartRangeChips(document.getElementById('fundRangeChips'), '1Y', async (rangeKey) => {
-    const months = FON_RANGE_MONTHS[rangeKey] || 12;
     const table = document.getElementById('fundReturnTable');
     try {
-      const data = await cachedFetch(`fund-history:${code}:${months}`, 5 * 60 * 1000, () =>
-        fetchPriceProxy(`type=fund-history&code=${encodeURIComponent(code)}&months=${months}`));
-      const points = data.points || [];
-      renderSeriesChart('detailChartFund', points);
+      const points = await fetchFundRangeSeries(code, rangeKey);
+      renderPriceChart('detailChartFund', points);
       const stats = periodStatsFromPoints(points);
       table.innerHTML = stats
         ? `<tr><td>${escapeHtml(rangeKey)} Getiri</td><td>${changeChipHtml(stats.changePercent)}</td></tr>
@@ -131,7 +171,7 @@ async function openFundDetail(code) {
            <tr><td>Dönem Yüksek</td><td>${fmtTLPrecise(stats.high)}</td></tr>`
         : `<tr><td colspan="2">Bu dönem için veri yok.</td></tr>`;
     } catch (e) {
-      renderSeriesChart('detailChartFund', []);
+      renderPriceChart('detailChartFund', []);
       table.innerHTML = `<tr><td colspan="2">Fiyat geçmişi alınamadı.</td></tr>`;
     }
   });

@@ -5,17 +5,24 @@
  * aynı mantık). Bu, kullanıcının KENDİ emtia varlıkları DEĞİL — o
  * "Varlığım" menüsünde (app-varligim.js).
  *
- * Kapsam notu (FAZ 2, bilinen sınırlama): mobildeki 5 adet fiziki
- * altın sikke türü (22 Ayar/Çeyrek/Yarım/Tam/Ata Altın) bu ilk
- * sürüme DAHİL EDİLMEDİ — mobil kaynak kodunda bu sikkelerin gram
- * altına göre tam ağırlık/prim çarpanı doğrulanamadı ve yanlış fiyat
- * uydurmamak için bilinçli olarak dışarıda bırakıldı. Aşağıdaki 11
- * emtia, mobildeki price-proxy eşlemeleri doğrulanmış olanlardır.
+ * GÜNCELLEME: mobildeki 5 fiziki altın sikkesi (22 Ayar/Çeyrek/Yarım/
+ * Tam/Ata Altın) artık DAHİL — mobil kaynak incelemesinde bunların
+ * mobilde de AYNI turkpidya kaynağından (StockPriceService.
+ * getGoldCoinPrices, Tam/Yarım için %25 sapma düzeltmesiyle) geldiği
+ * görüldü; price-proxy'ye aynı mantıkla eklendi (bkz. index.ts
+ * getGoldCoinPrices). Önceki sürümde bu sikkeler "doğrulanamadı"
+ * gerekçesiyle dışarıda bırakılmıştı — bu, mobil kaynağın daha
+ * derinlemesine incelenmesiyle düzeltilen bir eksiklikti.
  * ================================================================== */
 
 const COMMODITY_MARKET_ITEMS = [
-  { key: 'GOLD', name: 'Altın', unit: 'gram', currency: 'TRY', yahooSymbol: 'GC=F', isReference: true },
+  { key: 'GOLD', name: 'Altın (Has/24 Ayar)', unit: 'gram', currency: 'TRY', yahooSymbol: 'GC=F', isReference: true },
   { key: 'GOLD_ONS_USD', name: 'Ons Altın', unit: 'ons', currency: 'USD', yahooSymbol: 'GC=F', isReference: false },
+  { key: 'GOLD_22K', name: '22 Ayar Altın', unit: 'gram', currency: 'TRY', yahooSymbol: 'GC=F', isReference: true },
+  { key: 'GOLD_CEYREK', name: 'Çeyrek Altın', unit: 'adet', currency: 'TRY', yahooSymbol: 'GC=F', isReference: true },
+  { key: 'GOLD_YARIM', name: 'Yarım Altın', unit: 'adet', currency: 'TRY', yahooSymbol: 'GC=F', isReference: true },
+  { key: 'GOLD_TAM', name: 'Tam Altın', unit: 'adet', currency: 'TRY', yahooSymbol: 'GC=F', isReference: true },
+  { key: 'GOLD_ATA', name: 'Ata Altın', unit: 'adet', currency: 'TRY', yahooSymbol: 'GC=F', isReference: true },
   { key: 'SILVER', name: 'Gümüş', unit: 'gram', currency: 'TRY', yahooSymbol: 'SI=F', isReference: true },
   { key: 'SILVER_ONS_USD', name: 'Ons Gümüş', unit: 'ons', currency: 'USD', yahooSymbol: 'SI=F', isReference: false },
   { key: 'COPPER', name: 'Bakır', unit: 'kg', currency: 'TRY', yahooSymbol: 'HG=F', isReference: true },
@@ -38,6 +45,7 @@ async function loadEmtiaMarketPage() {
   tbody.innerHTML = COMMODITY_MARKET_ITEMS.map(item => `
     <tr data-commodity-key="${item.key}">
       <td>${favoriteStarHtml('emtia', item.key, { name: item.name })}</td>
+      <td class="market-row-logo">${commodityIconSvg(item.key, 26)}</td>
       <td>
         <div class="sym">${escapeHtml(item.name)}</div>
         <div class="name">${escapeHtml(item.unit)} · ${item.currency}</div>
@@ -93,8 +101,12 @@ async function openCommodityDetail(key) {
       USD vadeli işlem fiyatının (${escapeHtml(item.yahooSymbol)}) geçmiş seyrini gösterir. TL fiyatının
       kendi geçmiş verisi mevcut olmadığından uydurulmamıştır; yön ve dalgalanma USD seriyle büyük ölçüde
       örtüşür, seviye USD/TRY değişimine göre farklılık gösterebilir.</p>` : ''}
+    ${technicalAnalysisButtonHtml('commodityTaBtn')}
     `
   );
+  bindTechnicalAnalysisButton('commodityTaBtn', {
+    title: item.name, assetType: 'commodity', yahooSymbol: item.yahooSymbol,
+  });
 
   try {
     const quote = await fetchPriceProxy(`type=commodity&key=${encodeURIComponent(key)}`);
@@ -110,7 +122,7 @@ async function openCommodityDetail(key) {
     statsEl.innerHTML = `<div class="stat-mini"><div class="lbl">Yükleniyor…</div><div class="val">…</div></div>`;
     try {
       const points = await fetchYahooRangeSeries(item.yahooSymbol, rangeKey);
-      renderSeriesChart('detailChartCommodity', points);
+      renderPriceChart('detailChartCommodity', points);
       const stats = periodStatsFromPoints(points);
       if (stats) {
         statsEl.innerHTML = `
@@ -122,7 +134,6 @@ async function openCommodityDetail(key) {
         statsEl.innerHTML = `<div class="stat-mini"><div class="lbl">Dönem verisi</div><div class="val">—</div></div>`;
       }
     } catch (e) {
-      document.getElementById('detailChartCommodity').getContext && renderSeriesChart('detailChartCommodity', []);
       statsEl.innerHTML = `<div class="stat-mini"><div class="lbl">Veri alınamadı</div><div class="val">—</div></div>`;
     }
   });

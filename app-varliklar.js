@@ -148,10 +148,15 @@ document.getElementById('calcDepositBtn').addEventListener('click', () => {
  * çevrildi (öncesinde bisection kullanılıyordu; ikisi de aynı doğru
  * sonuca yakınsıyordu, bu kozmetik bir uyum değişikliği).
  * ================================================================== */
+// DÜZELTME (FAZ 13): konut kredisinde BSMV %0 DEĞİL %5'tir (yalnızca
+// KKDF konutta muaftır) — mobildeki interest_credit_calculator_screen.
+// dart'ın _loanTaxRates() fonksiyonuyla karşılaştırılarak bulunan bir
+// düzeltme; önceki sürümde konut kredisi için hem KKDF hem BSMV
+// hatalı şekilde sıfırlanmıştı.
 const LOAN_TAX_RATES = {
   ihtiyac: { kkdf: 0.15, bsmv: 0.05 },
   tasit: { kkdf: 0.15, bsmv: 0.05 },
-  konut: { kkdf: 0, bsmv: 0 }
+  konut: { kkdf: 0, bsmv: 0.05 }
 };
 
 function annuityPayment(principal, monthlyRate, months) {

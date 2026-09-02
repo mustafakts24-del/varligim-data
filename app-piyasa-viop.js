@@ -50,6 +50,7 @@ function renderViopList() {
   tbody.innerHTML = filtered.map((c, idx) => `
     <tr>
       <td>${favoriteStarHtml('viop', c.symbol, { name: c.underlying || c.symbol, price: c.price, changePercent: c.changePercent })}</td>
+      <td class="market-row-logo">${viopLogo(c.underlying, c.category, 26)}</td>
       <td>
         <div class="sym">${escapeHtml(c.symbol)}</div>
         <div class="name">${escapeHtml([c.underlying, c.isOption ? 'Opsiyon' : 'Vadeli İşlem'].filter(Boolean).join(' • '))}</div>
