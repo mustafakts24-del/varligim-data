@@ -129,6 +129,16 @@ function fundLogoFile(founderName, fundName) {
   return null;
 }
 
+// DÜZELTME #10 (2026-09, kullanıcı raporu: "fon logoları eksik"): Canlı
+// sitede GitHub API ile repo ağacı incelendiğinde 54 PNG'nin GERÇEKTEN
+// yüklendiği ama `fund_logos/` alt klasörüne DEĞİL, repo KÖKÜNE düz
+// (ör. `pardus_portfoy.png`) yüklendiği doğrulandı — GitHub'ın web
+// arayüzünden bir klasörü sürüklerken içindekilerin düzleşmesi
+// (klasör yapısının korunmaması) sık karşılaşılan bir durum. Kullanıcıya
+// tekrar manuel taşıma/yeniden yükleme yaptırmak yerine (hataya açık),
+// <img> önce beklenen `fund_logos/` alt yolunu dener, 404 olursa TEK
+// SEFERLİK olarak repo kökünü dener, o da yoksa harf rozetine döner —
+// böylece dosyalar ister alt klasörde ister kökte olsun logo görünür.
 function fundLogoImg(founderName, fundName, code, size) {
   const px = size || 24;
   const file = fundLogoFile(founderName, fundName);
@@ -136,7 +146,7 @@ function fundLogoImg(founderName, fundName, code, size) {
   const fallback = letterAvatarHtml(code, px).replace(/"/g, '&quot;');
   return `<span class="logo-slot" style="width:${px}px;height:${px}px;">` +
     `<img src="fund_logos/${file}" alt="" width="${px}" height="${px}" loading="lazy" class="logo-img" ` +
-    `onerror="this.outerHTML='${fallback}';">` +
+    `onerror="if(!this.dataset.rootTried){this.dataset.rootTried='1';this.src='${file}';}else{this.outerHTML='${fallback}';}">` +
     `</span>`;
 }
 
