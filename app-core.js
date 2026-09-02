@@ -68,6 +68,73 @@ function fmtDecimal(n, decimals) {
   const d = decimals == null ? 2 : decimals;
   return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d }).format(Number(n) || 0);
 }
+// DÜZELTME (2026-09, kullanıcı raporu: "tutar girme kısımlarını her 3
+// basamakta 1 nokta ekleyerek kolay okunur hale getir"): yukarıdaki not
+// artık kısmen aşılıyor — büyük TL tutarı girilen alanlar (kredi/mevduat
+// anaparası, gayrimenkul/araç alış-güncel değeri, bütçe tutarı vb.)
+// `type="number"`'dan `type="text" inputmode="decimal"`'e çevrilip bu
+// yardımcılarla canlı olarak binlik nokta ile biçimlendiriliyor — birim
+// maliyet/oran/lot/adet gibi küçük veya ondalıklı alanlar (mobildeki
+// ThousandsInputFormatter'ın kapsamı DIŞINDA tutulduğu gibi) DEĞİŞMEDİ.
+// Mantık mobildeki utils/number_format.dart (formatGroupedNumber/
+// ThousandsInputFormatter/parseGroupedAmount) ile AYNI: nokta binlik
+// ayraç, virgül ondalık ayracı, imleç konumu rakam sayısına göre korunur.
+function formatGroupedInputText(digitsOnly) {
+  let d = String(digitsOnly || '').replace(/[^\d]/g, '');
+  d = d.replace(/^0+(?=\d)/, '');
+  if (!d) return '';
+  return d.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function parseGroupedAmount(text) {
+  if (text == null) return NaN;
+  const raw = String(text).trim();
+  if (!raw) return NaN;
+  // Zaten düz sayısal bir metin (programatik `input.value = 500000`
+  // ataması gibi, nokta/virgül YOK) gelirse dokunmadan çözülür.
+  if (/^-?\d+(\.\d+)?$/.test(raw)) return Number(raw);
+  const cleaned = raw.replace(/\./g, '').replace(',', '.');
+  return Number(cleaned);
+}
+
+function setGroupedInputValue(elOrId, num) {
+  const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+  if (!el) return;
+  if (num == null || !Number.isFinite(Number(num))) { el.value = ''; return; }
+  el.value = formatGroupedInputText(String(Math.round(Number(num))));
+}
+
+function attachGroupedAmountFormatter(el) {
+  if (!el || el.dataset.groupedFmtAttached === '1') return;
+  el.dataset.groupedFmtAttached = '1';
+  if (el.value) el.value = formatGroupedInputText(el.value.replace(/[^\d]/g, ''));
+  el.addEventListener('input', () => {
+    const prevValue = el.value;
+    const prevCursor = el.selectionStart ?? prevValue.length;
+    const digitsBeforeCursor = prevValue.slice(0, prevCursor).replace(/[^\d]/g, '').length;
+    const digitsOnly = prevValue.replace(/[^\d]/g, '');
+    const next = formatGroupedInputText(digitsOnly);
+    el.value = next;
+    // İmleci, önceki konumdaki rakam SAYISINI koruyarak yeniden konumla
+    // (mobildeki ThousandsInputFormatter ile aynı yaklaşım).
+    let seen = 0, pos = next.length;
+    for (let i = 0; i < next.length; i++) {
+      if (/\d/.test(next[i])) seen++;
+      if (seen >= digitsBeforeCursor) { pos = i + 1; break; }
+    }
+    if (digitsBeforeCursor === 0) pos = 0;
+    try { el.setSelectionRange(pos, pos); } catch (e) {}
+  });
+}
+
+function initGroupedAmountInputs() {
+  document.querySelectorAll('.amt-grouped').forEach(attachGroupedAmountFormatter);
+}
+document.addEventListener('DOMContentLoaded', initGroupedAmountInputs);
+// Sayfa yüklendiğinde DOMContentLoaded çoktan geçmiş olabilir (bu script
+// modallar açıldıktan sonra da çalışabilir) — güvenlik için hemen de dene.
+if (document.readyState !== 'loading') initGroupedAmountInputs();
+
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -508,6 +575,7 @@ document.getElementById('signOutBtn').addEventListener('click', async () => {
  * ------------------------------------------------------------------ */
 const PAGE_TITLES = {
   home: 'Ana Sayfa',
+  varliklar: 'Varlıklar',
   emtia: 'Emtialar',
   hisse: 'Hisse Senetleri',
   fon: 'Yatırım Fonları',
@@ -558,19 +626,46 @@ function showPage(pageId) {
   }
 
   try {
-    window.location.hash = pageId;
+    if (window.location.hash.replace('#', '') !== pageId) {
+      window.location.hash = pageId;
+    }
   } catch (e) {}
 }
+
+// DÜZELTME (2026-09, kullanıcı raporu: "tarayıcı geri gitme butonu aktif
+// çalışsın basıldığında bir önceki ekran geri gelsin"): showPage() her
+// sayfa değişiminde location.hash'i güncelliyordu (bu tarayıcı geçmişine
+// bir kayıt ekliyordu) ama hash DEĞİŞTİĞİNDE uygulamayı bilgilendirecek
+// hiçbir dinleyici YOKTU — yani geri/ileri tuşuna basıldığında adres
+// çubuğundaki hash değişiyordu ama görünen sayfa AYNI kalıyordu. Bu
+// dinleyici, tarayıcı geçmiş gezinmesiyle (geri/ileri) veya hash'in
+// programatik/manuel değişmesiyle tetiklenen her hashchange'de doğru
+// sayfayı gösterir. showPage() içindeki yukarıdaki "sadece farklıysa
+// yaz" koruması, bu dinleyicinin kendi tetiklediği döngüyü önler.
+window.addEventListener('hashchange', () => {
+  const pageId = (window.location.hash || '').replace('#', '') || 'home';
+  showPage(pageId);
+});
 
 document.querySelectorAll('.nav-item[data-page], .nav-subitem[data-page]').forEach(el => {
   el.addEventListener('click', () => showPage(el.dataset.page));
 });
 
+// DÜZELTME (kullanıcı raporu #4): "Varlıklar" üst menü öğesine tıklamak
+// artık sadece alt menüyü açıp kapatmıyor — aynı zamanda alt sayfaların
+// (Emtialar/Hisse/Fon/Kripto/Faiz/Kredi/VİOP) kısa özetlerini gösteren
+// yeni "Varlıklar" hub sayfasını açıyor (mobil uygulamadaki Varlıklar
+// ekranıyla aynı 6 kategori kartı).
 document.getElementById('navVarliklarToggle').addEventListener('click', () => {
   const toggle = document.getElementById('navVarliklarToggle');
   const submenu = document.getElementById('submenuVarliklar');
   toggle.classList.toggle('expanded');
   submenu.classList.toggle('open');
+  showPage('varliklar');
+});
+
+document.querySelectorAll('.varliklar-hub-card[data-page]').forEach(el => {
+  el.addEventListener('click', () => showPage(el.dataset.page));
 });
 
 /* ------------------------------------------------------------------
@@ -602,8 +697,17 @@ supa.auth.onAuthStateChange((_event, session) => {
     if (typeof loadCommodityOptions === 'function') loadCommodityOptions();
     loadFavorites();
 
+    // DÜZELTME (2026-09, kullanıcı raporu: tarayıcı geri tuşu çalışmıyor):
+    // önceki satır yanlışlıkla PAGE_TITLES[initialPage] (başlık METNİ,
+    // örn. "Yatırım Fonları") döndürüyordu ve bunu showPage'e sayfa KİMLİĞİ
+    // olarak veriyordu — showPage içindeki geçerlilik kontrolü (satır
+    // ~532) bunu tanımadığı için her zaman 'home'a düşülüyordu. Yani
+    // #hisse/#fon/vb. gibi bir sayfada sayfayı yenilemek/geri gitmek her
+    // zaman Ana Sayfa'ya dönüyordu. showPage kendi içinde zaten geçersiz
+    // pageId'leri 'home'a düşürdüğü için doğrudan initialPage verilmesi
+    // yeterli ve doğru.
     const initialPage = (window.location.hash || '').replace('#', '') || 'home';
-    showPage(PAGE_TITLES[initialPage] ? initialPage : 'home');
+    showPage(initialPage);
   } else {
     authView.style.display = '';
     appShell.style.display = 'none';

@@ -74,7 +74,7 @@ document.getElementById('addDepositBtn').addEventListener('click', async () => {
   const { data: { user } } = await supa.auth.getUser();
   if (!user) return;
   const bankName = document.getElementById('newDepositBankName').value.trim();
-  const principal = parseFloat(document.getElementById('newDepositPrincipal').value);
+  const principal = parseGroupedAmount(document.getElementById('newDepositPrincipal').value);
   const annualRate = parseFloat(document.getElementById('newDepositAnnualRate').value);
   const withholdingRateRaw = document.getElementById('newDepositWithholdingRate').value.trim();
   const withholdingRate = withholdingRateRaw === '' ? 0 : parseFloat(withholdingRateRaw);
@@ -104,7 +104,7 @@ document.getElementById('addDepositBtn').addEventListener('click', async () => {
 
 document.getElementById('calcDepositBtn').addEventListener('click', () => {
   const resultsEl = document.getElementById('calcDepositResults');
-  const principal = parseFloat(document.getElementById('calcDepositPrincipal').value);
+  const principal = parseGroupedAmount(document.getElementById('calcDepositPrincipal').value);
   const annualRate = parseFloat(document.getElementById('calcDepositRate').value);
   const withholdingRate = parseFloat(document.getElementById('calcDepositWithholding').value) || 0;
   const startRaw = document.getElementById('calcDepositStart').value;
@@ -227,7 +227,7 @@ document.getElementById('toggleLoanScheduleBtn').addEventListener('click', () =>
 document.getElementById('calcLoanBtn').addEventListener('click', () => {
   const resultsEl = document.getElementById('loanResults');
   const scheduleCard = document.getElementById('loanScheduleCard');
-  const principal = parseFloat(document.getElementById('loanAmount').value);
+  const principal = parseGroupedAmount(document.getElementById('loanAmount').value);
   const annualRate = parseFloat(document.getElementById('loanRate').value);
   const months = parseInt(document.getElementById('loanTerm').value, 10);
   const loanType = document.getElementById('loanType').value;

@@ -154,7 +154,7 @@ function renderDepositBankTermChips() {
 function renderDepositBankList() {
   const listEl = document.getElementById('depositBankList');
   if (!listEl) return;
-  const principal = parseFloat(document.getElementById('depositBankPrincipal').value) || 100000;
+  const principal = parseGroupedAmount(document.getElementById('depositBankPrincipal').value) || 100000;
   if (depositBankOffers.length === 0) {
     listEl.innerHTML = `<div class="empty" style="padding:14px 0;">Güncel banka verisi şu anda alınamadı.</div>`;
     return;
@@ -193,7 +193,7 @@ function renderDepositBankList() {
       const today = new Date();
       const maturity = new Date(today.getTime() + depositBankTermDays * 86400000);
       const toInputDate = d => d.toISOString().slice(0, 10);
-      document.getElementById('calcDepositPrincipal').value = principal;
+      setGroupedInputValue('calcDepositPrincipal', principal);
       document.getElementById('calcDepositRate').value = rate.toFixed(2);
       document.getElementById('calcDepositStart').value = toInputDate(today);
       document.getElementById('calcDepositMaturity').value = toInputDate(maturity);
@@ -234,7 +234,7 @@ async function loadCreditBankRates() {
 
 function applyCreditBddkRule() {
   const noticeEl = document.getElementById('creditBankBddkNotice');
-  const principal = parseFloat(document.getElementById('creditBankAmount').value) || 0;
+  const principal = parseGroupedAmount(document.getElementById('creditBankAmount').value) || 0;
   const maxAllowed = bddkMaxInstallments(creditBankLoanType(), principal);
   if (maxAllowed != null && creditBankInstallmentMonths > maxAllowed) {
     const previous = creditBankInstallmentMonths;
@@ -277,7 +277,7 @@ function renderCreditBankInstallmentChips() {
 function renderCreditBankList() {
   const listEl = document.getElementById('creditBankList');
   if (!listEl) return;
-  const principal = parseFloat(document.getElementById('creditBankAmount').value) || 0;
+  const principal = parseGroupedAmount(document.getElementById('creditBankAmount').value) || 0;
   const months = creditBankInstallmentMonths;
   if (creditBankOffers.length === 0) {
     listEl.innerHTML = `<div class="empty" style="padding:14px 0;">Güncel banka verisi şu anda alınamadı.</div>`;
@@ -328,7 +328,7 @@ function renderCreditBankList() {
     btn.addEventListener('click', () => {
       const offer = sorted[parseInt(btn.dataset.creditIdx, 10)];
       const monthlyRatePct = bankAverageRate(offer);
-      document.getElementById('loanAmount').value = principal;
+      setGroupedInputValue('loanAmount', principal);
       // Manuel form YILLIK oran bekliyor (annualRate/12/100 iç
       // hesabıyla); banka kaynağı AYLIK oran verdiği için ×12 ile
       // geri yıllığa çevrilir — kural: mobildeki gerçek AYLIK oranı

@@ -23,13 +23,35 @@ const CATEGORY_META = {
   tasarruf: { label: 'Tasarruf', icon: 'savings', color: 'var(--secondary)' }
 };
 
+// KULLANICI RAPORU #3: Ana Sayfa'daki bu özet kartların (Hisse Portföyü,
+// Kripto, Döviz, Emtia, Fonlar, Gayrimenkul, Araç, Mevduat, Diğer
+// Varlıklar, VİOP, Aylık Gelir/Gider/Tasarruf) hiçbiri tıklanabilir
+// değildi. Her kart artık kendi kategorisinin bulunduğu "Varlığım" alt
+// sekmesini (veya Gelir/Gider/Tasarruf için "Bütçe" sayfasını) açar —
+// bkz. HOME_STAT_CARD_TARGETS + document-level click delegasyonu altta.
+const HOME_STAT_CARD_TARGETS = {
+  hisse: { page: 'varligim', subtab: 'hisse' },
+  kripto: { page: 'varligim', subtab: 'kripto' },
+  doviz: { page: 'varligim', subtab: 'nakit-doviz' },
+  emtia: { page: 'varligim', subtab: 'emtia' },
+  fon: { page: 'varligim', subtab: 'fon' },
+  gayrimenkul: { page: 'varligim', subtab: 'gayrimenkul' },
+  arac: { page: 'varligim', subtab: 'arac' },
+  mevduat: { page: 'varligim', subtab: 'mevduat' },
+  diger: { page: 'varligim', subtab: 'diger' },
+  viop: { page: 'varligim', subtab: 'viop' },
+  gelir: { page: 'butce' },
+  gider: { page: 'butce' },
+  tasarruf: { page: 'butce' },
+};
+
 function statCardHtml(key, value, pl) {
   const meta = CATEGORY_META[key];
   const plHtml = pl == null
     ? `<span class="chip neu">—</span>`
     : profitLossHtml(pl.invested, pl.value);
   return `
-    <div class="stat-card">
+    <div class="stat-card" data-cat-key="${key}" role="button" tabindex="0" style="cursor:pointer;">
       <div class="stat-card-top">
         <div class="stat-icon" style="background:${meta.color};"><span class="msr">${meta.icon}</span></div>
         <div class="stat-name">${meta.label}</div>
@@ -39,6 +61,27 @@ function statCardHtml(key, value, pl) {
     </div>
   `;
 }
+
+function goToVarligimSubtab(subtabKey) {
+  showPage('varligim');
+  if (!subtabKey) return;
+  // showPage() senkron olarak DOM'u günceller; alt sekme butonu
+  // sayfa geçişinden hemen sonra DOM'da hazır olur.
+  const chip = document.querySelector(`#page-varligim .subtab-chip[data-subtab="${subtabKey}"]`);
+  if (chip) chip.click();
+}
+
+document.addEventListener('click', (e) => {
+  const card = e.target.closest('.stat-card[data-cat-key]');
+  if (!card) return;
+  const target = HOME_STAT_CARD_TARGETS[card.dataset.catKey];
+  if (!target) return;
+  if (target.subtab) {
+    goToVarligimSubtab(target.subtab);
+  } else {
+    showPage(target.page);
+  }
+});
 
 async function computeYahooBackedCategory(rows, priceParamFn, amountField, costField) {
   let value = 0;
@@ -72,7 +115,7 @@ async function computeYahooBackedCategory(rows, priceParamFn, amountField, costF
  * ------------------------------------------------------------------ */
 const HOME_QUICK_LINKS = [
   { page: 'varligim', icon: 'account_balance_wallet', label: 'Varlığım' },
-  { page: 'emtia', icon: 'storefront', label: 'Varlıklar' },
+  { page: 'varliklar', icon: 'storefront', label: 'Varlıklar' },
   { page: 'butce', icon: 'savings', label: 'Bütçe' },
   { page: 'bulten', icon: 'newspaper', label: 'Bülten' }
 ];
@@ -340,17 +383,23 @@ async function loadHomePage() {
 
   const cards = [];
 
-  // ---- HİSSE ----
-  {
-    const rows = stockRes.data || [];
+  // PERFORMANS (kullanıcı raporu: "veri akışını hızlandır" — #127):
+  // HİSSE/DÖVİZ/EMTİA/FON/VİOP/KRİPTO kategorilerinin her biri kendi
+  // fiyat isteklerini ZATEN Promise.all ile paralel çekiyordu, ama bu
+  // 6 kategorinin KENDİSİ birbiri ardına (sıralı await) çalışıyordu —
+  // toplam süre 6 kategorinin süresinin TOPLAMI oluyordu (~yavaş ana
+  // sayfa yüklemesi). Şimdi hepsi TEK bir Promise.all içinde birlikte
+  // başlatılıyor; toplam süre artık en YAVAŞ kategorinin süresine eşit.
+  // Gayrimenkul/Araç/Mevduat/Diğer Varlıklar zaten ağ isteği yapmadığı
+  // (yalnızca yerel toplama) için senkron bırakıldı.
+  async function computeHisseCard() {
     const r = await computeYahooBackedCategory(
-      rows, row => `type=stock&symbol=${encodeURIComponent(row.symbol)}`, 'lot', 'cost'
+      stockRes.data || [], row => `type=stock&symbol=${encodeURIComponent(row.symbol)}`, 'lot', 'cost'
     );
-    cards.push({ key: 'hisse', value: r.value, invested: r.invested, valueKnown: r.valueKnown });
+    return { key: 'hisse', value: r.value, invested: r.invested, valueKnown: r.valueKnown };
   }
 
-  // ---- KRİPTO ----
-  {
+  async function computeKriptoCard() {
     const rows = cryptoRes.data || [];
     let value = 0, invested = 0;
     try {
@@ -364,20 +413,17 @@ async function loadHomePage() {
         }
       }
     } catch (e) {}
-    cards.push({ key: 'kripto', value, invested, valueKnown: value });
+    return { key: 'kripto', value, invested, valueKnown: value };
   }
 
-  // ---- DÖVİZ ----
-  {
-    const rows = currencyRes.data || [];
+  async function computeDovizCard() {
     const r = await computeYahooBackedCategory(
-      rows, row => `type=currency&code=${encodeURIComponent(row.currency_code)}`, 'amount', 'cost'
+      currencyRes.data || [], row => `type=currency&code=${encodeURIComponent(row.currency_code)}`, 'amount', 'cost'
     );
-    cards.push({ key: 'doviz', value: r.value, invested: r.invested, valueKnown: r.valueKnown });
+    return { key: 'doviz', value: r.value, invested: r.invested, valueKnown: r.valueKnown };
   }
 
-  // ---- EMTİA ----
-  {
+  async function computeEmtiaCard() {
     const rows = commodityRes.data || [];
     let value = 0, investedKnown = 0, valueKnown = 0, usdTry = null;
     await Promise.all(rows.map(async row => {
@@ -401,17 +447,33 @@ async function loadHomePage() {
         }
       } catch (e) {}
     }));
-    cards.push({ key: 'emtia', value, invested: investedKnown, valueKnown });
+    return { key: 'emtia', value, invested: investedKnown, valueKnown };
   }
 
-  // ---- FON ----
-  {
-    const rows = fundRes.data || [];
+  async function computeFonCard() {
     const r = await computeYahooBackedCategory(
-      rows, row => `type=fund&code=${encodeURIComponent(row.code)}`, 'units', 'cost'
+      fundRes.data || [], row => `type=fund&code=${encodeURIComponent(row.code)}`, 'units', 'cost'
     );
-    cards.push({ key: 'fon', value: r.value, invested: r.invested, valueKnown: r.valueKnown });
+    return { key: 'fon', value: r.value, invested: r.invested, valueKnown: r.valueKnown };
   }
+
+  async function computeViopCard() {
+    const r = await computeYahooBackedCategory(
+      viopRes.data || [], row => `type=viop&symbol=${encodeURIComponent(row.symbol)}`, 'lot', 'cost'
+    );
+    return { key: 'viop', value: r.value, invested: r.invested, valueKnown: r.valueKnown };
+  }
+
+  const [hisseCard, kriptoCard, dovizCard, emtiaCard, fonCard, viopCard] = await Promise.all([
+    computeHisseCard(), computeKriptoCard(), computeDovizCard(),
+    computeEmtiaCard(), computeFonCard(), computeViopCard(),
+  ]);
+
+  cards.push(hisseCard);
+  cards.push(kriptoCard);
+  cards.push(dovizCard);
+  cards.push(emtiaCard);
+  cards.push(fonCard);
 
   // ---- GAYRİMENKUL ----
   {
@@ -447,14 +509,7 @@ async function loadHomePage() {
     cards.push({ key: 'diger', value, invested, valueKnown });
   }
 
-  // ---- VİOP ----
-  {
-    const rows = viopRes.data || [];
-    const r = await computeYahooBackedCategory(
-      rows, row => `type=viop&symbol=${encodeURIComponent(row.symbol)}`, 'lot', 'cost'
-    );
-    cards.push({ key: 'viop', value: r.value, invested: r.invested, valueKnown: r.valueKnown });
-  }
+  cards.push(viopCard);
 
   // ---- BÜTÇE (bu ayki gelir / gider / tasarruf) ----
   {

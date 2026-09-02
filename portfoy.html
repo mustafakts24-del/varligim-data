@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Varlığım — Web Paneli</title>
+<link rel="icon" type="image/png" href="app-logo.png" />
 <meta
   name="description"
   content="Varlığım hesabınızla giriş yapın; hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı web üzerinden yönetin."
@@ -20,7 +21,7 @@
 <div id="authView">
   <div class="auth-card">
     <div class="brand-row">
-      <div class="brand-badge">V</div>
+      <div class="brand-badge"><img src="app-logo.png" alt="Varlığım" onerror="this.parentElement.innerHTML='V';" /></div>
       <div class="name" style="font-weight:700; font-size:18px;">Varlığım</div>
     </div>
     <h1>Portföyüme giriş yap</h1>
@@ -50,7 +51,7 @@
   <div id="sidebarOverlay"></div>
   <aside id="sidebar">
     <div class="brand-row">
-      <div class="brand-badge">V</div>
+      <div class="brand-badge"><img src="app-logo.png" alt="Varlığım" onerror="this.parentElement.innerHTML='V';" /></div>
       <div class="name">Varlığım</div>
     </div>
     <nav>
@@ -129,6 +130,44 @@
         <div class="home-section-title"><span class="msr">trending_up</span> Piyasa Hareketleri (BIST 100, işlem hacmine göre)</div>
         <div class="movers-list" id="moversList">
           <div class="empty" style="padding:14px 0;">Yükleniyor…</div>
+        </div>
+      </div>
+
+      <!-- VARLIKLAR (HUB) -->
+      <div class="page" id="page-varliklar">
+        <h1 class="page-title">Varlıklar</h1>
+        <p class="page-lead">Aşağıdaki kategorilerden birine tıklayarak ilgili piyasa sayfasını aç.</p>
+        <div class="varliklar-hub-grid">
+          <div class="varliklar-hub-card" data-page="emtia" style="--vhc-color:#7047EB;">
+            <div class="vhc-icon"><span class="msr">diamond</span></div>
+            <div class="vhc-title">Emtialar</div>
+            <div class="vhc-desc">Altın, gümüş, petrol ve diğer emtia fiyatları</div>
+          </div>
+          <div class="varliklar-hub-card" data-page="hisse" style="--vhc-color:#5B6EF5;">
+            <div class="vhc-icon"><span class="msr">show_chart</span></div>
+            <div class="vhc-title">Hisse Senetleri</div>
+            <div class="vhc-desc">BIST hisseleri, endeksler ve sektör verileri</div>
+          </div>
+          <div class="varliklar-hub-card" data-page="fon" style="--vhc-color:#9B3FF0;">
+            <div class="vhc-icon"><span class="msr">donut_small</span></div>
+            <div class="vhc-title">Yatırım Fonları</div>
+            <div class="vhc-desc">TEFAS fonları, getiri ve risk bilgileri</div>
+          </div>
+          <div class="varliklar-hub-card" data-page="kripto" style="--vhc-color:#3984F6;">
+            <div class="vhc-icon"><span class="msr">currency_bitcoin</span></div>
+            <div class="vhc-title">Kripto Paralar</div>
+            <div class="vhc-desc">Bitcoin, Ethereum ve diğer kripto paralar</div>
+          </div>
+          <div class="varliklar-hub-card" data-page="faiz" style="--vhc-color:#2AA9E0;">
+            <div class="vhc-icon"><span class="msr">account_balance</span></div>
+            <div class="vhc-title">Faiz ve Kredi Hesaplama</div>
+            <div class="vhc-desc">Mevduat, kredi ve faiz hesaplamaları</div>
+          </div>
+          <div class="varliklar-hub-card" data-page="viop" style="--vhc-color:#22D3EE;">
+            <div class="vhc-icon"><span class="msr">candlestick_chart</span></div>
+            <div class="vhc-title">VİOP Aktif Vade</div>
+            <div class="vhc-desc">Vadeli işlem sözleşmeleri ve aktif vadeler</div>
+          </div>
         </div>
       </div>
 
@@ -240,7 +279,7 @@
           <div class="card">
             <div class="section-title"><span class="msr">calculate</span> Hesaplayıcı</div>
             <label for="calcDepositPrincipal">Anapara (₺)</label>
-            <input id="calcDepositPrincipal" type="number" step="any" min="0" placeholder="örn. 100000" />
+            <input id="calcDepositPrincipal" type="text" inputmode="decimal" class="amt-grouped" placeholder="örn. 100.000" />
             <label for="calcDepositRate">Yıllık faiz oranı (%)</label>
             <input id="calcDepositRate" type="number" step="any" min="0" placeholder="örn. 48" />
             <label for="calcDepositWithholding">Stopaj oranı (%)</label>
@@ -269,7 +308,7 @@
           </div>
           <div class="calc-inline-row">
             <label for="depositBankPrincipal">Ana Para (₺)</label>
-            <input id="depositBankPrincipal" type="number" step="any" min="0" value="100000" />
+            <input id="depositBankPrincipal" type="text" inputmode="decimal" class="amt-grouped" value="100.000" />
           </div>
           <div class="chip-row" id="depositBankTermChips"></div>
           <div id="depositBankList"><div class="empty" style="padding:14px 0;">Yükleniyor…</div></div>
@@ -290,7 +329,7 @@
           <div class="add-form">
             <div class="full section-title" style="margin:0;">Mevduat kaydı ekle</div>
             <input id="newDepositBankName" class="full" type="text" autocomplete="off" placeholder="Banka adı" />
-            <input id="newDepositPrincipal" type="number" step="any" min="0" placeholder="Anapara (₺)" />
+            <input id="newDepositPrincipal" type="text" inputmode="decimal" class="amt-grouped" placeholder="Anapara (₺)" />
             <input id="newDepositAnnualRate" type="number" step="any" min="0" placeholder="Yıllık faiz oranı (%)" />
             <input id="newDepositWithholdingRate" type="number" step="any" min="0" placeholder="Stopaj oranı (%)" />
             <input id="newDepositStartDate" type="date" />
@@ -308,7 +347,7 @@
           <div class="card">
             <div class="section-title"><span class="msr">calculate</span> Kredi Bilgileri</div>
             <label for="loanAmount">Kredi tutarı (₺)</label>
-            <input id="loanAmount" type="number" step="any" min="0" placeholder="örn. 500000" />
+            <input id="loanAmount" type="text" inputmode="decimal" class="amt-grouped" placeholder="örn. 500.000" />
             <label for="loanRate">Yıllık faiz oranı (%)</label>
             <input id="loanRate" type="number" step="any" min="0" placeholder="örn. 3.5" />
             <label for="loanTerm">Vade (ay)</label>
@@ -340,7 +379,7 @@
           </div>
           <div class="calc-inline-row">
             <label for="creditBankAmount">Kredi tutarı (₺)</label>
-            <input id="creditBankAmount" type="number" step="any" min="0" value="500000" />
+            <input id="creditBankAmount" type="text" inputmode="decimal" class="amt-grouped" value="500.000" />
           </div>
           <label for="creditBankType" style="margin-top:10px;">Kredi türü</label>
           <select id="creditBankType">
@@ -407,6 +446,22 @@
 
         <div class="stat-grid" id="budgetSummaryGrid"></div>
 
+        <!-- KULLANICI RAPORU (ekstra kontrol, #126 parite denetimi): mobildeki
+             budget_calendar_screen.dart'ta olan aylık takvim görünümü web'de
+             yoktu. Veri zaten budget_transactions tablosunda mevcut olduğu
+             için yeni bir kaynak gerekmedi — sadece bu görünüm eklendi. -->
+        <div class="card">
+          <div class="section-title"><span class="msr">calendar_view_month</span> Aylık Takvim</div>
+          <div class="budget-calendar-weekdays">
+            <span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span>
+          </div>
+          <div class="budget-calendar-grid" id="budgetCalendarGrid"></div>
+          <div class="budget-calendar-legend">
+            <span class="budget-calendar-legend-item"><span class="dot pos"></span>Gelir</span>
+            <span class="budget-calendar-legend-item"><span class="dot neg"></span>Gider</span>
+          </div>
+        </div>
+
         <div class="card">
           <div class="section-title" id="budgetFormTitle">İşlem ekle</div>
           <div class="add-form">
@@ -417,7 +472,7 @@
             <select id="budgetCategory"></select>
             <input id="budgetTitle" class="full" type="text" autocomplete="off" placeholder="Başlık (örn. Market alışverişi)" />
             <input id="budgetNote" class="full" type="text" autocomplete="off" placeholder="Not (isteğe bağlı)" />
-            <input id="budgetAmount" type="number" step="any" min="0" placeholder="Tutar (₺)" />
+            <input id="budgetAmount" type="text" inputmode="decimal" class="amt-grouped" placeholder="Tutar (₺)" />
             <input id="budgetDate" type="date" />
             <label style="display:flex; align-items:center; gap:8px; margin:0; grid-column:1 / -1; color:var(--text-muted); font-size:13px;">
               <input id="budgetRecurring" type="checkbox" style="width:auto;" />
@@ -665,7 +720,7 @@
             <div class="add-form">
               <div class="full section-title" style="margin:0;">Mevduat ekle</div>
               <input id="newVarligimDepositBankName" class="full" type="text" autocomplete="off" placeholder="Banka adı" />
-              <input id="newVarligimDepositPrincipal" type="number" step="any" min="0" placeholder="Anapara (₺)" />
+              <input id="newVarligimDepositPrincipal" type="text" inputmode="decimal" class="amt-grouped" placeholder="Anapara (₺)" />
               <input id="newVarligimDepositAnnualRate" type="number" step="any" min="0" placeholder="Yıllık faiz oranı (%)" />
               <input id="newVarligimDepositWithholdingRate" type="number" step="any" min="0" placeholder="Stopaj oranı (%)" />
               <input id="newVarligimDepositStartDate" type="date" />
@@ -703,9 +758,9 @@
               <input id="newRealEstateTitle" type="text" autocomplete="off" placeholder="Başlık (örn. Yazlık ev)" />
               <input id="newRealEstateCity" type="text" autocomplete="off" placeholder="Şehir" />
               <input id="newRealEstateDistrict" type="text" autocomplete="off" placeholder="İlçe" />
-              <input id="newRealEstatePurchasePrice" type="number" step="any" min="0" placeholder="Alış fiyatı (₺)" />
-              <input id="newRealEstateCurrentValue" type="number" step="any" min="0" placeholder="Güncel değer (₺)" />
-              <input id="newRealEstateMonthlyRent" type="number" step="any" min="0" placeholder="Aylık kira (₺) - isteğe bağlı" />
+              <input id="newRealEstatePurchasePrice" type="text" inputmode="decimal" class="amt-grouped" placeholder="Alış fiyatı (₺)" />
+              <input id="newRealEstateCurrentValue" type="text" inputmode="decimal" class="amt-grouped" placeholder="Güncel değer (₺)" />
+              <input id="newRealEstateMonthlyRent" type="text" inputmode="decimal" class="amt-grouped" placeholder="Aylık kira (₺) - isteğe bağlı" />
               <input id="newRealEstatePurchaseDate" type="date" />
               <button class="btn primary full" id="addRealEstateBtn" type="button">Ekle</button>
             </div>
@@ -740,8 +795,8 @@
               <input id="newVehicleModel" type="text" autocomplete="off" placeholder="Model" />
               <input id="newVehicleModelYear" type="number" step="1" placeholder="Model yılı" />
               <input id="newVehiclePlate" type="text" autocomplete="off" placeholder="Plaka" />
-              <input id="newVehiclePurchasePrice" type="number" step="any" min="0" placeholder="Alış fiyatı (₺)" />
-              <input id="newVehicleCurrentValue" type="number" step="any" min="0" placeholder="Güncel değer (₺)" />
+              <input id="newVehiclePurchasePrice" type="text" inputmode="decimal" class="amt-grouped" placeholder="Alış fiyatı (₺)" />
+              <input id="newVehicleCurrentValue" type="text" inputmode="decimal" class="amt-grouped" placeholder="Güncel değer (₺)" />
               <input id="newVehiclePurchaseDate" type="date" />
               <button class="btn primary full" id="addVehicleBtn" type="button">Ekle</button>
             </div>
@@ -776,8 +831,8 @@
               </select>
               <input id="newOtherAssetTitle" type="text" autocomplete="off" placeholder="Başlık (örn. Rolex Submariner)" />
               <input id="newOtherAssetDescription" class="full" type="text" autocomplete="off" placeholder="Açıklama (isteğe bağlı)" />
-              <input id="newOtherAssetPurchasePrice" type="number" step="any" min="0" placeholder="Alış değeri (₺)" />
-              <input id="newOtherAssetCurrentValue" type="number" step="any" min="0" placeholder="Güncel değer (₺)" />
+              <input id="newOtherAssetPurchasePrice" type="text" inputmode="decimal" class="amt-grouped" placeholder="Alış değeri (₺)" />
+              <input id="newOtherAssetCurrentValue" type="text" inputmode="decimal" class="amt-grouped" placeholder="Güncel değer (₺)" />
               <input id="newOtherAssetPurchaseDate" type="date" />
               <button class="btn primary full" id="addOtherAssetBtn" type="button">Ekle</button>
             </div>

@@ -316,10 +316,33 @@ async function openIndexDetail(code, items) {
     <div class="stat-mini-grid" id="indexPeriodStats"></div>
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
       ${technicalAnalysisButtonHtml('indexTaBtn')}
-      <button type="button" class="btn outline small" id="indexConstituentsBtn" style="margin-top:8px;">
-        <span class="msr" style="font-size:15px; vertical-align:-3px;">list_alt</span> ${escapeHtml(meta.name)} Hisseleri
-      </button>
     </div>
+
+    <!-- KULLANICI RAPORU #6: her ana endeksin içine mobildeki gibi
+         günlük piyasa haritası + hacim lot/TL + yükselen/nötr/düşen
+         sayıları eklendi (bkz. loadIndexHeatmapAndVolume()). -->
+    <div class="idx-volume-row">
+      <div class="idx-volume-item">
+        <div class="lbl">Hacim Lot</div>
+        <div class="val" id="idxVolumeLot">Hesaplanıyor…</div>
+      </div>
+      <div class="idx-volume-sep"></div>
+      <div class="idx-volume-item align-right">
+        <div class="lbl">Hacim TL</div>
+        <div class="val" id="idxVolumeTl">Hesaplanıyor…</div>
+      </div>
+    </div>
+
+    <div class="heatmap-section-title">Günlük Piyasa Haritası</div>
+    <div class="heatmap-section-sub">Kutu büyüklüğü işlem hacmini, renk günlük değişimi göstermektedir.</div>
+    <div class="heatmap-grid" id="idxHeatmapGrid">
+      <div class="heatmap-empty">Yükleniyor…</div>
+    </div>
+    <div class="heatmap-legend" id="idxHeatmapLegend"></div>
+
+    <button type="button" class="btn outline small" id="indexConstituentsBtn" style="margin-top:14px;">
+      <span class="msr" style="font-size:15px; vertical-align:-3px;">list_alt</span> ${escapeHtml(meta.name)} Hisseleri
+    </button>
     <div id="indexConstituentsBlock" style="display:none; margin-top:10px;"></div>
     `
   );
@@ -362,6 +385,153 @@ async function openIndexDetail(code, items) {
       statsEl.innerHTML = `<div class="stat-mini"><div class="lbl">Veri alınamadı</div><div class="val">—</div></div>`;
     }
   });
+  loadIndexHeatmapAndVolume(code);
+}
+
+/* ------------------------------------------------------------------
+ * GÜNLÜK PİYASA HARİTASI + HACİM LOT/TL (kullanıcı raporu #6)
+ * Mobildeki bist_index_detail_screen.dart (_loadHeatmap / _loadVolumeSummary
+ * / _MarketTreemap / _HeatmapLegend) ile AYNI mantık: endeksin ilk 20
+ * bileşeni haritada gösterilir (turnover = hacim×fiyat sıralı), ±0.05%
+ * bandı ile yükselen/nötr/düşen sayılır. Hacim Lot/TL ise endeksin TÜM
+ * bileşenleri toplanarak hesaplanır. Web tarafı, mobildeki sembol-başına
+ * ayrı ayrı Yahoo isteği yerine price-proxy'nin zaten var olan toplu
+ * `type=stock-batch` ucunu kullanır (sunucu tarafında 20'lik paralel
+ * gruplar) — bu hem daha hızlı hem de mobille aynı Yahoo v8/finance/chart
+ * kaynağından besleniyor.
+ * ------------------------------------------------------------------ */
+function heatmapTileColor(changePercent) {
+  const c = changePercent;
+  if (c > 3) return '#087F4A';
+  if (c > 1) return '#15945A';
+  if (c > 0.05) return '#246845';
+  if (c < -3) return '#B4232D';
+  if (c < -1) return '#96323A';
+  if (c < -0.05) return '#6F3439';
+  return '#46505C';
+}
+
+function fmtCompactLot(value) {
+  if (value == null || !Number.isFinite(value)) return '—';
+  if (value >= 1e9) return `${(value / 1e9).toFixed(2)} Mr`;
+  if (value >= 1e6) return `${(value / 1e6).toFixed(1)} Mn`;
+  if (value >= 1e3) return `${(value / 1e3).toFixed(1)} B`;
+  return String(Math.round(value));
+}
+
+function fmtCompactTl(value) {
+  if (value == null || !Number.isFinite(value)) return '—';
+  if (value >= 1e12) return `₺${(value / 1e12).toFixed(2)} Tr`;
+  if (value >= 1e9) return `₺${(value / 1e9).toFixed(2)} Mr`;
+  if (value >= 1e6) return `₺${(value / 1e6).toFixed(1)} Mn`;
+  return `₺${Math.round(value)}`;
+}
+
+async function fetchStockBatchQuotes(symbols) {
+  if (!symbols || symbols.length === 0) return [];
+  const chunks = [];
+  for (let i = 0; i < symbols.length; i += 150) chunks.push(symbols.slice(i, i + 150));
+  const chunkResults = await Promise.all(chunks.map(chunk =>
+    fetchPriceProxy(`type=stock-batch&symbols=${encodeURIComponent(chunk.join(','))}`)
+      .then(r => (r && Array.isArray(r.quotes)) ? r.quotes : [])
+      .catch(() => [])
+  ));
+  return chunkResults.flat();
+}
+
+async function loadIndexHeatmapAndVolume(code) {
+  const gridEl = document.getElementById('idxHeatmapGrid');
+  const legendEl = document.getElementById('idxHeatmapLegend');
+  const lotEl = document.getElementById('idxVolumeLot');
+  const tlEl = document.getElementById('idxVolumeTl');
+  if (!gridEl) return; // kullanıcı modalı zaten kapattıysa hiçbir şey yapma
+
+  if (hisseCatalog.length === 0) await ensureHisseCatalog();
+  const allSymbols = resolveIndexConstituentSymbols(code);
+  if (allSymbols.length === 0) {
+    gridEl.innerHTML = `<div class="heatmap-empty">Bu endeks için bileşen listesi bulunamadı.</div>`;
+    if (lotEl) lotEl.textContent = '—';
+    if (tlEl) tlEl.textContent = '—';
+    return;
+  }
+  const top20 = allSymbols.slice(0, 20);
+
+  let heatmapStocks = [];
+  try {
+    const quotes = await cachedFetch(`idx-heatmap:${code}`, 60000, () => fetchStockBatchQuotes(top20));
+    heatmapStocks = quotes
+      .filter(q => q && q.price != null)
+      .map(q => ({
+        symbol: q.symbol,
+        price: q.price,
+        changePercent: q.changePercent ?? 0,
+        volume: q.volume ?? 0,
+        turnover: (q.volume && q.price) ? q.volume * q.price : 0,
+      }))
+      .sort((a, b) => b.turnover - a.turnover);
+  } catch (e) {
+    heatmapStocks = [];
+  }
+
+  if (!document.getElementById('idxHeatmapGrid')) return; // modal artık DOM'da değil
+
+  if (heatmapStocks.length === 0) {
+    gridEl.innerHTML = `<div class="heatmap-empty">Piyasa haritası verisi alınamadı.</div>`;
+    legendEl.innerHTML = '';
+  } else {
+    gridEl.innerHTML = heatmapStocks.map((s, idx) => {
+      const symbolic = idx >= 15;
+      const rankClass = symbolic ? 'rank-symbolic' : (idx <= 2 ? `rank-${idx}` : '');
+      const pctText = `${s.changePercent > 0 ? '+' : ''}${s.changePercent.toFixed(2).replace('.', ',')}%`;
+      return `
+        <div class="heatmap-tile ${rankClass}" style="background:${heatmapTileColor(s.changePercent)};" data-open-stock="${escapeHtml(s.symbol)}" title="${escapeHtml(s.symbol)} ${pctText}">
+          <div class="ht-sym">${escapeHtml(s.symbol)}</div>
+          <div class="ht-pct">${pctText}</div>
+          <div class="ht-turnover">₺${fmtCompactLot(s.turnover)}</div>
+        </div>`;
+    }).join('');
+    gridEl.querySelectorAll('[data-open-stock]').forEach(tile => {
+      tile.addEventListener('click', () => openStockDetail(tile.dataset.openStock));
+    });
+
+    const positive = heatmapStocks.filter(s => s.changePercent > 0.05).length;
+    const negative = heatmapStocks.filter(s => s.changePercent < -0.05).length;
+    const neutral = heatmapStocks.length - positive - negative;
+    legendEl.innerHTML = `
+      <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#27C77A;"></span>${positive} yükselen</div>
+      <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#667085;"></span>${neutral} nötr</div>
+      <div class="heatmap-legend-item"><span class="heatmap-legend-dot" style="background:#FF525D;"></span>${negative} düşen</div>
+    `;
+  }
+
+  // Hacim Lot/TL: haritada zaten çekilen ilk 20'yi tekrar istemeden,
+  // kalan bileşenleri toplu (≤150'lik gruplar) çekip topla.
+  try {
+    const remaining = allSymbols.slice(20);
+    const remainingQuotes = remaining.length > 0
+      ? await cachedFetch(`idx-volume-rest:${code}`, 60000, () => fetchStockBatchQuotes(remaining))
+      : [];
+    let totalLot = 0, totalTl = 0;
+    for (const s of heatmapStocks) { totalLot += s.volume || 0; totalTl += s.turnover || 0; }
+    for (const q of remainingQuotes) {
+      if (!q || q.price == null || q.volume == null) continue;
+      totalLot += q.volume;
+      totalTl += q.volume * q.price;
+    }
+    if (!document.getElementById('idxVolumeLot')) return;
+    if (totalLot <= 0 && totalTl <= 0) {
+      document.getElementById('idxVolumeLot').textContent = '—';
+      document.getElementById('idxVolumeTl').textContent = '—';
+    } else {
+      document.getElementById('idxVolumeLot').textContent = fmtCompactLot(totalLot);
+      document.getElementById('idxVolumeTl').textContent = fmtCompactTl(totalTl);
+    }
+  } catch (e) {
+    if (document.getElementById('idxVolumeLot')) {
+      document.getElementById('idxVolumeLot').textContent = '—';
+      document.getElementById('idxVolumeTl').textContent = '—';
+    }
+  }
 }
 
 let analystRecommendationsCache = null;

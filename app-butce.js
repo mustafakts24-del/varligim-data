@@ -57,7 +57,7 @@ function resetBudgetForm() {
   populateBudgetCategoryOptions();
   document.getElementById('budgetTitle').value = '';
   document.getElementById('budgetNote').value = '';
-  document.getElementById('budgetAmount').value = '';
+  setGroupedInputValue('budgetAmount', null);
   document.getElementById('budgetDate').value = new Date().toISOString().slice(0, 10);
   document.getElementById('budgetRecurring').checked = false;
 }
@@ -71,7 +71,7 @@ function startEditBudget(row) {
   populateBudgetCategoryOptions(row.category);
   document.getElementById('budgetTitle').value = row.title || '';
   document.getElementById('budgetNote').value = row.note || '';
-  document.getElementById('budgetAmount').value = row.amount;
+  setGroupedInputValue('budgetAmount', row.amount);
   document.getElementById('budgetDate').value = new Date(row.transaction_date).toISOString().slice(0, 10);
   document.getElementById('budgetRecurring').checked = !!row.is_recurring;
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -103,7 +103,7 @@ document.getElementById('addBudgetBtn').addEventListener('click', async () => {
   const category = document.getElementById('budgetCategory').value;
   const title = document.getElementById('budgetTitle').value.trim();
   const note = document.getElementById('budgetNote').value.trim();
-  const amount = parseFloat(document.getElementById('budgetAmount').value);
+  const amount = parseGroupedAmount(document.getElementById('budgetAmount').value);
   const dateRaw = document.getElementById('budgetDate').value;
   const isRecurring = document.getElementById('budgetRecurring').checked;
 
@@ -181,6 +181,8 @@ async function refreshBudgetView() {
     budgetStatCardHtml('Tasarruf', 'savings', 'var(--secondary)', income - expense)
   ].join('');
 
+  renderBudgetCalendar(start, applicable);
+
   tbody.innerHTML = '';
   if (applicable.length === 0) {
     emptyState.style.display = 'block';
@@ -214,6 +216,50 @@ async function refreshBudgetView() {
     tr.querySelector('.budget-delete').addEventListener('click', () => deleteBudgetTransaction(row.id));
     tbody.appendChild(tr);
   }
+}
+
+/* ------------------------------------------------------------------
+ * AYLIK TAKVİM (mobildeki budget_calendar_screen.dart karşılığı,
+ * kullanıcı raporu ekstra kontrolü / #126 parite denetimi)
+ * ------------------------------------------------------------------ */
+function renderBudgetCalendar(monthStart, applicableRows) {
+  const grid = document.getElementById('budgetCalendarGrid');
+  if (!grid) return;
+
+  const year = monthStart.getFullYear();
+  const month = monthStart.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  // Pazartesi=0 ... Pazar=6 (mobildeki gibi hafta Pazartesi başlar).
+  const firstWeekday = (monthStart.getDay() + 6) % 7;
+
+  const byDay = new Map();
+  for (const row of applicableRows) {
+    const day = new Date(row.transaction_date).getDate();
+    if (!byDay.has(day)) byDay.set(day, { income: 0, expense: 0 });
+    const bucket = byDay.get(day);
+    const amount = Number(row.amount) || 0;
+    if (row.type === 'Gelir') bucket.income += amount;
+    else bucket.expense += amount;
+  }
+
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+  let cells = '';
+  for (let i = 0; i < firstWeekday; i++) {
+    cells += `<div class="budget-calendar-cell is-empty"></div>`;
+  }
+  for (let day = 1; day <= daysInMonth; day++) {
+    const bucket = byDay.get(day);
+    const isToday = isCurrentMonth && today.getDate() === day;
+    cells += `
+      <div class="budget-calendar-cell${isToday ? ' is-today' : ''}">
+        <div class="bc-day">${day}</div>
+        ${bucket && bucket.income > 0 ? `<div class="bc-amt pos">+${fmtTL(bucket.income)}</div>` : ''}
+        ${bucket && bucket.expense > 0 ? `<div class="bc-amt neg">-${fmtTL(bucket.expense)}</div>` : ''}
+      </div>`;
+  }
+  grid.innerHTML = cells;
 }
 
 document.getElementById('budgetMonthInput').addEventListener('change', refreshBudgetView);

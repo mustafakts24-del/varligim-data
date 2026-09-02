@@ -87,10 +87,10 @@ document.getElementById('addRealEstateBtn').addEventListener('click', async () =
   const title = document.getElementById('newRealEstateTitle').value.trim();
   const city = document.getElementById('newRealEstateCity').value.trim();
   const district = document.getElementById('newRealEstateDistrict').value.trim();
-  const purchasePrice = parseFloat(document.getElementById('newRealEstatePurchasePrice').value);
-  const currentValue = parseFloat(document.getElementById('newRealEstateCurrentValue').value);
+  const purchasePrice = parseGroupedAmount(document.getElementById('newRealEstatePurchasePrice').value);
+  const currentValue = parseGroupedAmount(document.getElementById('newRealEstateCurrentValue').value);
   const monthlyRentRaw = document.getElementById('newRealEstateMonthlyRent').value.trim();
-  const monthlyRent = monthlyRentRaw === '' ? null : parseFloat(monthlyRentRaw);
+  const monthlyRent = monthlyRentRaw === '' ? null : parseGroupedAmount(monthlyRentRaw);
   const purchaseDateRaw = document.getElementById('newRealEstatePurchaseDate').value;
 
   if (!title || isNaN(purchasePrice) || purchasePrice < 0 || isNaN(currentValue) || currentValue < 0 ||
@@ -186,8 +186,8 @@ document.getElementById('addVehicleBtn').addEventListener('click', async () => {
   const modelYearRaw = document.getElementById('newVehicleModelYear').value.trim();
   const modelYear = modelYearRaw === '' ? null : parseInt(modelYearRaw, 10);
   const plate = document.getElementById('newVehiclePlate').value.trim();
-  const purchasePrice = parseFloat(document.getElementById('newVehiclePurchasePrice').value);
-  const currentValue = parseFloat(document.getElementById('newVehicleCurrentValue').value);
+  const purchasePrice = parseGroupedAmount(document.getElementById('newVehiclePurchasePrice').value);
+  const currentValue = parseGroupedAmount(document.getElementById('newVehicleCurrentValue').value);
   const purchaseDateRaw = document.getElementById('newVehiclePurchaseDate').value;
 
   if (!brand || !model || isNaN(purchasePrice) || purchasePrice < 0 || isNaN(currentValue) || currentValue < 0 ||
@@ -277,7 +277,7 @@ document.getElementById('addVarligimDepositBtn').addEventListener('click', async
   const { data: { user } } = await supa.auth.getUser();
   if (!user) return;
   const bankName = document.getElementById('newVarligimDepositBankName').value.trim();
-  const principal = parseFloat(document.getElementById('newVarligimDepositPrincipal').value);
+  const principal = parseGroupedAmount(document.getElementById('newVarligimDepositPrincipal').value);
   const annualRate = parseFloat(document.getElementById('newVarligimDepositAnnualRate').value);
   const withholdingRateRaw = document.getElementById('newVarligimDepositWithholdingRate').value.trim();
   const withholdingRate = withholdingRateRaw === '' ? 0 : parseFloat(withholdingRateRaw);
@@ -368,8 +368,8 @@ document.getElementById('addOtherAssetBtn').addEventListener('click', async () =
   const type = document.getElementById('newOtherAssetType').value;
   const title = document.getElementById('newOtherAssetTitle').value.trim();
   const description = document.getElementById('newOtherAssetDescription').value.trim();
-  const purchasePrice = parseFloat(document.getElementById('newOtherAssetPurchasePrice').value);
-  const currentValue = parseFloat(document.getElementById('newOtherAssetCurrentValue').value);
+  const purchasePrice = parseGroupedAmount(document.getElementById('newOtherAssetPurchasePrice').value);
+  const currentValue = parseGroupedAmount(document.getElementById('newOtherAssetCurrentValue').value);
   const purchaseDateRaw = document.getElementById('newOtherAssetPurchaseDate').value;
 
   if (!title || isNaN(purchasePrice) || purchasePrice < 0 || isNaN(currentValue) || currentValue < 0 || !purchaseDateRaw) {

@@ -133,7 +133,13 @@ a { color: inherit; text-decoration: none; }
   justify-content: center;
   font-weight: 700;
   color: #fff;
+  overflow: hidden;
 }
+
+/* KULLANICI RAPORU (ekstra kontrol): mobil uygulamadaki gerçek marka
+   logosu (ic_launcher.png) web'e de tanımlandı — resim yüklenemezse
+   (onerror) eski "V" harfli rozete kendiliğinden geri döner. */
+.brand-badge img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
 
 #authView h1 { font-size: 20px; margin: 0; }
 
@@ -748,6 +754,93 @@ tbody tr:hover { background: var(--bg-elevated); }
 .home-quick-box .msr { font-size: 26px; color: var(--secondary); margin-bottom: 8px; display: block; }
 .home-quick-box .lbl { font-size: 12.5px; font-weight: 600; }
 .home-section-title { font-size: 14px; font-weight: 700; margin: 26px 0 12px; display: flex; align-items: center; gap: 8px; }
+
+/* VARLIKLAR HUB */
+.varliklar-hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-top: 18px; }
+.varliklar-hub-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 18px 16px; cursor: pointer; transition: border-color .15s, transform .1s;
+}
+.varliklar-hub-card:hover { border-color: var(--vhc-color, var(--secondary)); transform: translateY(-1px); }
+.varliklar-hub-card .vhc-icon {
+  width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--vhc-color, var(--secondary)) 16%, transparent); margin-bottom: 12px;
+}
+.varliklar-hub-card .vhc-icon .msr { font-size: 22px; color: var(--vhc-color, var(--secondary)); }
+.varliklar-hub-card .vhc-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.varliklar-hub-card .vhc-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+/* ============================================================
+   ENDEKS DETAY: HACİM ÖZETİ + GÜNLÜK PİYASA HARİTASI (ISI HARİTASI)
+   Mobil uygulamadaki bist_index_detail_screen.dart'ın "Hacim Lot/TL"
+   kartı + "_MarketTreemap" + "_HeatmapLegend" widget'larının web
+   karşılığı (aynı renk bantları, aynı ±0.05% nötr eşiği).
+   ============================================================ */
+.idx-volume-row {
+  display: flex; align-items: center; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 13px 16px; margin: 14px 0 4px;
+}
+.idx-volume-item { flex: 1; }
+.idx-volume-item.align-right { text-align: right; }
+.idx-volume-item .lbl { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
+.idx-volume-item .val { font-size: 15px; font-weight: 700; color: var(--text); }
+.idx-volume-sep { width: 1px; height: 34px; background: var(--border); margin: 0 12px; }
+
+.heatmap-section-title { font-size: 14px; font-weight: 700; margin: 18px 0 2px; }
+.heatmap-section-sub { font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px; }
+
+.heatmap-grid {
+  display: grid; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 52px;
+  grid-auto-flow: dense; gap: 3px; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 8px; min-height: 300px;
+}
+.heatmap-tile {
+  border-radius: 8px; padding: 6px 8px; display: flex; flex-direction: column; justify-content: center;
+  overflow: hidden; cursor: pointer; color: #fff; transition: transform .1s;
+}
+.heatmap-tile:hover { transform: scale(1.03); }
+.heatmap-tile .ht-sym { font-size: 12px; font-weight: 700; line-height: 1.15; white-space: nowrap; }
+.heatmap-tile .ht-pct { font-size: 9px; font-weight: 600; opacity: .94; white-space: nowrap; }
+.heatmap-tile .ht-turnover { font-size: 8px; opacity: .78; white-space: nowrap; margin-top: 1px; }
+.heatmap-tile.rank-0 { grid-column: span 2; grid-row: span 2; }
+.heatmap-tile.rank-0 .ht-sym { font-size: 16px; }
+.heatmap-tile.rank-0 .ht-pct { font-size: 11px; }
+.heatmap-tile.rank-1, .heatmap-tile.rank-2 { grid-column: span 2; grid-row: span 1; }
+.heatmap-tile.rank-1 .ht-sym, .heatmap-tile.rank-2 .ht-sym { font-size: 13px; }
+.heatmap-tile.rank-symbolic { grid-column: span 1; grid-row: span 1; }
+.heatmap-tile.rank-symbolic .ht-pct, .heatmap-tile.rank-symbolic .ht-turnover { display: none; }
+.heatmap-empty { display: flex; align-items: center; justify-content: center; min-height: 284px; color: var(--text-muted); font-size: 12.5px; text-align: center; padding: 0 16px; }
+
+.heatmap-legend { display: flex; align-items: center; justify-content: space-between; margin: 9px 2px 4px; }
+.heatmap-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--text-muted); }
+.heatmap-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ============================================================
+   BÜTÇE: AYLIK TAKVİM (mobildeki budget_calendar_screen.dart karşılığı)
+   ============================================================ */
+.budget-calendar-weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px;
+  font-size: 10.5px; font-weight: 600; color: var(--text-muted); text-align: center;
+}
+.budget-calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 4px; }
+.budget-calendar-cell {
+  aspect-ratio: 1; border-radius: 10px; background: var(--bg-elevated); border: 1px solid var(--border);
+  padding: 4px 5px; display: flex; flex-direction: column; font-size: 10px; overflow: hidden; position: relative;
+}
+.budget-calendar-cell.is-today { border-color: var(--secondary); }
+.budget-calendar-cell.is-empty { background: transparent; border-color: transparent; }
+.budget-calendar-cell .bc-day { font-weight: 700; font-size: 11px; color: var(--text); margin-bottom: 2px; }
+.budget-calendar-cell .bc-amt { font-size: 8.5px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.budget-calendar-cell .bc-amt.pos { color: var(--positive); }
+.budget-calendar-cell .bc-amt.neg { color: var(--negative); }
+.budget-calendar-legend { display: flex; gap: 16px; margin-top: 12px; font-size: 11px; color: var(--text-muted); }
+.budget-calendar-legend-item { display: flex; align-items: center; gap: 5px; }
+.budget-calendar-legend-item .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.budget-calendar-legend-item .dot.pos { background: var(--positive); }
+.budget-calendar-legend-item .dot.neg { background: var(--negative); }
+@media (max-width: 640px) {
+  .budget-calendar-cell .bc-amt { font-size: 7.5px; }
+}
 .movers-list { display: flex; flex-direction: column; gap: 8px; }
 .movers-row {
   display: flex; align-items: center; justify-content: space-between;
