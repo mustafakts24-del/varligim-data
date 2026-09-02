@@ -10,7 +10,7 @@
 />
 <link rel="stylesheet" href="styles.css" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -267,11 +267,6 @@
             <span><span class="msr">account_balance</span> Güncel Banka Mevduat Oranları</span>
             <button class="btn outline small" id="depositBankRefreshBtn" type="button">Yenile</button>
           </div>
-          <p class="page-lead" style="margin-top:0;">
-            teklifimgelsin.com üzerinden anlık çekilir (mobil uygulamayla aynı kaynak). Gösterilen
-            kazanç/vade sonu tutarları <strong>brüttür</strong> (stopaj dahil değildir) — kesin net tutar için
-            yukarıdaki Hesaplayıcı'yı kendi stopaj oranınla kullan.
-          </p>
           <div class="calc-inline-row">
             <label for="depositBankPrincipal">Ana Para (₺)</label>
             <input id="depositBankPrincipal" type="number" step="any" min="0" value="100000" />
@@ -343,12 +338,6 @@
             <span><span class="msr">account_balance</span> Güncel Banka Kredi Oranları</span>
             <button class="btn outline small" id="creditBankRefreshBtn" type="button">Yenile</button>
           </div>
-          <p class="page-lead" style="margin-top:0;">
-            teklifimgelsin.com üzerinden anlık çekilir (mobil uygulamayla aynı kaynak ve hesap yöntemi).
-            Yalnızca <strong>İhtiyaç / Taşıt / Konut</strong> kredisi türleri desteklenir — mobil
-            uygulamada ve kaynak sitede "Ticari Kredi" türü bulunmadığından bu web sürümüne de
-            uydurma bir veri kaynağıyla eklenmedi.
-          </p>
           <div class="calc-inline-row">
             <label for="creditBankAmount">Kredi tutarı (₺)</label>
             <input id="creditBankAmount" type="number" step="any" min="0" value="500000" />

@@ -38,6 +38,131 @@ const BIST_SECTORS = [
   { code: 'XGMYO', name: 'GYO' }
 ];
 
+/* ------------------------------------------------------------------
+ * ENDEKS BİLEŞENLERİ (gerçek, uydurulmamış — mobil uygulamanın kendi
+ * `bist_market_screen.dart` / `markets_overview_screen.dart` dosyalarından
+ * BİREBİR taşındı; mobilde de aynı sabit listeler kullanılıyor, BIST'in
+ * kendisi anlık bileşen API'si sunmadığı için hem web hem mobil bu
+ * "dönemsel güncellenen sabit liste" yaklaşımını paylaşıyor). Kullanıcı
+ * talebi (2026-09 hata raporu #6): her endeks/sektör kutusunda "Teknik
+ * Analiz" yanına "[Endeks Adı] Hisseleri" butonu — sadece o an o endekste
+ * bulunan güncel hisseleri, canlı fiyatlarıyla listeler.
+ * XU500 (BIST 500) için ayrı bir sabit liste yok — mobil tarafta da bu
+ * endeks, o an yüklü TÜM hisse kataloğu olarak ele alınıyor (bkz.
+ * `_bist500Symbols()` → `BistStockListService().getCachedStocks()`);
+ * web tarafında da aynı mantıkla `hisseCatalog`/`BIST_STOCKS_475`
+ * kullanılır (özel bir 'ALL' işaretiyle).
+ * ------------------------------------------------------------------ */
+const BIST_INDEX_CONSTITUENTS = {
+  XU030: ['AEFES', 'AKBNK', 'ASELS', 'ASTOR', 'BIMAS', 'DSTKF', 'EKGYO',
+    'ENKAI', 'EREGL', 'FROTO', 'GARAN', 'GUBRF', 'ISCTR', 'KCHOL',
+    'KRDMD', 'MGROS', 'PETKM', 'PGSUS', 'SAHOL', 'SASA', 'SISE',
+    'TAVHL', 'TCELL', 'THYAO', 'TOASO', 'TRALT', 'TTKOM', 'TUPRS',
+    'VAKBN', 'YKBNK'],
+  XU050: ['AEFES', 'AKBNK', 'AKSEN', 'ALARK', 'ASELS', 'ASTOR', 'BIMAS',
+    'BRSAN', 'BTCIM', 'CANTE', 'CCOLA', 'CIMSA', 'DSTKF', 'ECILC', 'EFOR',
+    'EKGYO', 'ENKAI', 'EREGL', 'FROTO', 'GARAN', 'GLRMK', 'GUBRF', 'HALKB',
+    'HEKTS', 'ISCTR', 'KCHOL', 'KRDMD', 'KTLEV', 'KUYAS', 'MGROS', 'MIATK',
+    'OYAKC', 'PASEU', 'PETKM', 'PGSUS', 'SAHOL', 'SASA', 'SISE', 'TAVHL',
+    'TCELL', 'THYAO', 'TOASO', 'TRALT', 'TRMET', 'TTKOM', 'TUPRS', 'TURSG',
+    'ULKER', 'VAKBN', 'YKBNK'],
+  XU100: ['AEFES', 'AKBNK', 'AKSA', 'AKSEN', 'ALARK', 'ALTNY', 'ANSGR',
+    'ARCLK', 'ASELS', 'ASTOR', 'BALSU', 'BERA', 'BIMAS', 'BRSAN', 'BRYAT',
+    'BSOKE', 'BTCIM', 'CANTE', 'CCOLA', 'CIMSA', 'CVKMD', 'CWENE', 'DAPGM',
+    'DOAS', 'DOHOL', 'DSTKF', 'ECILC', 'EFOR', 'EKGYO', 'ENERY', 'ENJSA',
+    'ENKAI', 'EREGL', 'ESEN', 'EUPWR', 'EUREN', 'FENER', 'FROTO', 'GARAN',
+    'GENIL', 'GESAN', 'GLRMK', 'GRSEL', 'GRTHO', 'GSRAY', 'GUBRF', 'HALKB',
+    'HEKTS', 'IEYHO', 'ISCTR', 'ISMEN', 'IZENR', 'KCHOL', 'KLRHO', 'KRDMD',
+    'KTLEV', 'KUYAS', 'MAGEN', 'MAVI', 'MGROS', 'MIATK', 'MPARK', 'OBAMS',
+    'ODAS', 'ODINE', 'OTKAR', 'OYAKC', 'PAHOL', 'PASEU', 'PATEK', 'PETKM',
+    'PGSUS', 'PSGYO', 'QUAGR', 'RALYH', 'REEDR', 'SAHOL', 'SARKY', 'SASA',
+    'SISE', 'SKBNK', 'SOKM', 'TAVHL', 'TCELL', 'THYAO', 'TKFEN', 'TOASO',
+    'TRALT', 'TRENJ', 'TRMET', 'TSKB', 'TTKOM', 'TUKAS', 'TUPRS', 'TURSG',
+    'ULKER', 'VAKBN', 'VESTL', 'YKBNK', 'ZOREN'],
+  XU500: 'ALL',
+  XBANK: ['AKBNK', 'YKBNK', 'ISCTR', 'GARAN', 'HALKB', 'VAKBN', 'SKBNK', 'TSKB', 'ALBRK'],
+  XHOLD: ['KCHOL', 'SAHOL', 'ALARK', 'DOHOL', 'AGHOL', 'GLYHO', 'IEYHO', 'KLRHO', 'PAHOL', 'RALYH'],
+  XUTEK: ['ASELS', 'ODINE', 'MIATK', 'LOGO', 'ARDYZ', 'PATEK', 'ALTNY', 'REEDR', 'FORTE', 'KAREL'],
+  XUSIN: ['TUPRS', 'EREGL', 'ASTOR', 'SASA', 'FROTO', 'CCOLA', 'TRALT', 'TOASO', 'AEFES', 'GUBRF',
+    'KRDMD', 'CIMSA', 'ARCLK', 'ULKER', 'BRYAT'],
+  XUMAL: ['AKBNK', 'YKBNK', 'ISCTR', 'KCHOL', 'SAHOL', 'GARAN', 'SISE', 'TAVHL', 'EKGYO', 'VAKBN',
+    'HALKB', 'TSKB', 'ISMEN'],
+  XUHIZ: ['THYAO', 'TCELL', 'TTKOM', 'PGSUS', 'TAVHL', 'BIMAS', 'MGROS', 'SOKM', 'MPARK', 'GRSEL', 'PASEU'],
+  XULAS: ['THYAO', 'PGSUS', 'TAVHL', 'CLEBI', 'RYSAS', 'TUREX', 'GRSEL', 'PASEU', 'PLTUR', 'LIDER'],
+  XELKT: ['ENJSA', 'AKSEN', 'ENERY', 'AHGAZ', 'MAGEN', 'CWENE', 'CANTE', 'ODAS', 'IZENR', 'ZOREN',
+    'AKENR', 'GWIND', 'BIOEN', 'AYDEM'],
+  XBLSM: ['ODINE', 'MIATK', 'LOGO', 'ARDYZ', 'PATEK', 'FORTE', 'KFEIN', 'LINK', 'PAPIL', 'SMART', 'FONET'],
+  XGIDA: ['AEFES', 'CCOLA', 'ULKER', 'TUKAS', 'OBAMS', 'BALSU', 'BANVT', 'KERVT', 'PENGD', 'TATGD'],
+  XMADN: ['TRALT', 'CVKMD', 'KOZAL', 'KOZAA', 'IPEKE', 'PRKME', 'SARKY'],
+  XGMYO: ['EKGYO', 'PSGYO', 'ISGYO', 'AKFGY', 'ALGYO', 'HLGYO', 'KLGYO', 'OZKGY', 'RYGYO', 'TRGYO', 'VKGYO']
+};
+
+const INDEX_CONSTITUENTS_PAGE_SIZE = 40;
+let indexConstituentsState = { symbols: [], visibleCount: INDEX_CONSTITUENTS_PAGE_SIZE };
+
+function resolveIndexConstituentSymbols(code) {
+  const list = BIST_INDEX_CONSTITUENTS[code];
+  if (list === 'ALL') {
+    const source = hisseCatalog.length > 0 ? hisseCatalog : ((typeof BIST_STOCKS_475 !== 'undefined') ? BIST_STOCKS_475 : []);
+    return source.map(s => s.symbol);
+  }
+  return Array.isArray(list) ? list : [];
+}
+
+async function renderIndexConstituentsList(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const { symbols, visibleCount } = indexConstituentsState;
+  if (symbols.length === 0) {
+    container.innerHTML = `<div class="empty" style="padding:10px 0;">Bu endeks için bileşen listesi bulunamadı.</div>`;
+    return;
+  }
+  const visible = symbols.slice(0, visibleCount);
+  container.innerHTML = `
+    <table class="kv-table market-table">
+      <tbody id="${containerId}Body">
+        ${visible.map(sym => {
+          const meta = hisseCatalog.find(s => s.symbol === sym) || (typeof BIST_STOCKS_475 !== 'undefined' ? BIST_STOCKS_475.find(s => s.symbol === sym) : null) || { symbol: sym, name: '' };
+          return `
+          <tr>
+            <td>${favoriteStarHtml('hisse', sym, { name: meta.name })}</td>
+            <td class="market-row-logo">${stockLogoImg(sym, 22)}</td>
+            <td><div class="sym">${escapeHtml(sym)}</div><div class="name">${escapeHtml(meta.name || '')}</div></td>
+            <td class="num" id="idxc-price-${sym}">…</td>
+            <td class="num" id="idxc-chg-${sym}">…</td>
+            <td class="num"><button type="button" class="detail-btn" data-open-stock="${escapeHtml(sym)}">Detay</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    ${symbols.length > visibleCount ? `<button type="button" class="btn outline small" id="${containerId}LoadMoreBtn" style="margin-top:8px;">Daha Fazla Göster</button>` : ''}
+  `;
+  container.querySelectorAll('[data-open-stock]').forEach(btn => {
+    btn.addEventListener('click', () => openStockDetail(btn.dataset.openStock));
+  });
+  const loadMoreBtn = document.getElementById(`${containerId}LoadMoreBtn`);
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', () => {
+      indexConstituentsState.visibleCount += INDEX_CONSTITUENTS_PAGE_SIZE;
+      renderIndexConstituentsList(containerId);
+    });
+  }
+  await Promise.all(visible.map(async (sym) => {
+    const priceEl = document.getElementById(`idxc-price-${sym}`);
+    const chgEl = document.getElementById(`idxc-chg-${sym}`);
+    if (!priceEl || !chgEl) return;
+    try {
+      const quote = await cachedFetch(`stock:${sym}`, 30000, () =>
+        fetchPriceProxy(`type=stock&symbol=${encodeURIComponent(sym)}`));
+      priceEl.textContent = fmtTL(quote.price);
+      chgEl.innerHTML = changeChipHtml(quote.changePercent);
+    } catch (e) {
+      priceEl.textContent = '—';
+      chgEl.innerHTML = `<span class="chip neu">—</span>`;
+    }
+  }));
+}
+
 const ANALYST_RECOMMENDATIONS_URL = 'https://mustafakts24-del.github.io/varligim-data/analyst-recommendations.json';
 
 let hisseCatalog = [];
@@ -189,12 +314,31 @@ async function openIndexDetail(code, items) {
     </div>
     <div class="chart-wrap"><canvas id="detailChartIndex"></canvas></div>
     <div class="stat-mini-grid" id="indexPeriodStats"></div>
-    ${technicalAnalysisButtonHtml('indexTaBtn')}
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      ${technicalAnalysisButtonHtml('indexTaBtn')}
+      <button type="button" class="btn outline small" id="indexConstituentsBtn" style="margin-top:8px;">
+        <span class="msr" style="font-size:15px; vertical-align:-3px;">list_alt</span> ${escapeHtml(meta.name)} Hisseleri
+      </button>
+    </div>
+    <div id="indexConstituentsBlock" style="display:none; margin-top:10px;"></div>
     `
   );
   bindTechnicalAnalysisButton('indexTaBtn', {
     title: meta.name, assetType: 'index', yahooSymbol: `${code}.IS`,
   });
+  const constituentsBtn = document.getElementById('indexConstituentsBtn');
+  const constituentsBlock = document.getElementById('indexConstituentsBlock');
+  if (constituentsBtn && constituentsBlock) {
+    constituentsBtn.addEventListener('click', async () => {
+      const opening = constituentsBlock.style.display === 'none';
+      constituentsBlock.style.display = opening ? '' : 'none';
+      if (!opening) return;
+      if (hisseCatalog.length === 0) await ensureHisseCatalog();
+      indexConstituentsState = { symbols: resolveIndexConstituentSymbols(code), visibleCount: INDEX_CONSTITUENTS_PAGE_SIZE };
+      constituentsBlock.innerHTML = `<div class="empty" style="padding:10px 0;">Yükleniyor…</div>`;
+      await renderIndexConstituentsList('indexConstituentsBlock');
+    });
+  }
   try {
     const quote = await fetchPriceProxy(`type=stock&symbol=${encodeURIComponent(code)}`);
     document.getElementById('idxDetailPrice').textContent = fmtNumber(quote.price);
@@ -321,20 +465,20 @@ async function openStockDetail(symbol) {
   try {
     const fx = await cachedFetch(`fund:${symbol}`, 6 * 3600 * 1000, () =>
       fetchPriceProxy(`type=stock-fundamentals&symbol=${encodeURIComponent(symbol)}`));
-    const pct = v => v == null ? '—' : `%${(v * 100).toFixed(2)}`;
+    const pct = v => v == null ? '—' : `%${fmtPercent(v * 100, 2)}`;
     document.getElementById('stockFundamentalsTable').innerHTML = `
-      <tr><td>F/K (Fiyat/Kazanç)</td><td>${naIfMissing(fx.trailingPE, v => v.toFixed(2))}</td></tr>
-      <tr><td>PD/DD (Piyasa Değeri/Defter Değeri)</td><td>${naIfMissing(fx.priceToBook, v => v.toFixed(2))}</td></tr>
+      <tr><td>F/K (Fiyat/Kazanç)</td><td>${naIfMissing(fx.trailingPE, v => fmtDecimal(v, 2))}</td></tr>
+      <tr><td>PD/DD (Piyasa Değeri/Defter Değeri)</td><td>${naIfMissing(fx.priceToBook, v => fmtDecimal(v, 2))}</td></tr>
       <tr><td>Piyasa Değeri</td><td>${naIfMissing(fx.marketCap, v => fmtTL(v))}</td></tr>
       <tr><td>Temettü Verimi</td><td>${pct(fx.dividendYield)}</td></tr>
-      <tr><td>52 Hafta Aralığı</td><td>${naIfMissing(fx.fiftyTwoWeekLow, v => v.toFixed(2))} / ${naIfMissing(fx.fiftyTwoWeekHigh, v => v.toFixed(2))}</td></tr>
+      <tr><td>52 Hafta Aralığı</td><td>${naIfMissing(fx.fiftyTwoWeekLow, fmtNumber)} / ${naIfMissing(fx.fiftyTwoWeekHigh, fmtNumber)}</td></tr>
       <tr><td>Özkaynak Kârlılığı (ROE)</td><td>${pct(fx.returnOnEquity)}</td></tr>
       <tr><td>Net Kâr Marjı</td><td>${pct(fx.profitMargins)}</td></tr>
-      <tr><td>Hisse Başı Kazanç (EPS, TTM)</td><td>${naIfMissing(fx.epsTrailingTwelveMonths, v => v.toFixed(2))}</td></tr>
-      <tr><td>Beta</td><td>${naIfMissing(fx.beta, v => v.toFixed(2))}</td></tr>
+      <tr><td>Hisse Başı Kazanç (EPS, TTM)</td><td>${naIfMissing(fx.epsTrailingTwelveMonths, fmtNumber)}</td></tr>
+      <tr><td>Beta</td><td>${naIfMissing(fx.beta, v => fmtDecimal(v, 2))}</td></tr>
       <tr><td>Net Borç</td><td>${naIfMissing(fx.netDebt, v => fmtTL(v))}</td></tr>
-      <tr><td>Borç/Özkaynak (D/E)</td><td>${naIfMissing(fx.debtToEquity, v => v.toFixed(2))}</td></tr>
-      <tr><td>Cari Oran</td><td>${naIfMissing(fx.currentRatio, v => v.toFixed(2))}</td></tr>
+      <tr><td>Borç/Özkaynak (D/E)</td><td>${naIfMissing(fx.debtToEquity, v => fmtDecimal(v, 2))}</td></tr>
+      <tr><td>Cari Oran</td><td>${naIfMissing(fx.currentRatio, v => fmtDecimal(v, 2))}</td></tr>
       <tr><td>Son Bilanço Tarihi</td><td>${naIfMissing(fx.mostRecentQuarter, v => new Date(v * 1000).toLocaleDateString('tr-TR'))}</td></tr>
     `;
     document.getElementById('stockCompanyInfoTable').innerHTML = `

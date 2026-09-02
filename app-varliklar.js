@@ -269,7 +269,7 @@ document.getElementById('calcLoanBtn').addEventListener('click', () => {
     <div class="calc-result-row"><span class="lbl">Toplam geri ödeme</span><span class="val">${fmtTL(totalRepayment)}</span></div>
     <div class="calc-result-row"><span class="lbl">Toplam faiz + vergi</span><span class="val pl-neg">${fmtTL(totalInterestTax)}</span></div>
     <div class="calc-result-row"><span class="lbl">Tahsis ücreti (yaklaşık)</span><span class="val">${fmtTL(allocationFee)}</span></div>
-    <div class="calc-result-row"><span class="lbl">Yıllık Maliyet Oranı (YMO)</span><span class="val">%${annualCostRate.toFixed(2)}</span></div>
+    <div class="calc-result-row"><span class="lbl">Yıllık Maliyet Oranı (YMO)</span><span class="val">%${fmtPercent(annualCostRate, 2)}</span></div>
   `;
   scheduleCard.style.display = '';
   renderLoanSchedule();

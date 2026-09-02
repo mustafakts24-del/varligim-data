@@ -81,8 +81,8 @@ function bankAverageRate(offer) {
 
 function bankRateRangeText(offer) {
   const min = offer.minRate, max = offer.maxRate;
-  if (Math.abs(min - max) < 0.005) return `%${min.toFixed(2)}`;
-  return `%${min.toFixed(1)}–${max.toFixed(1)}`;
+  if (Math.abs(min - max) < 0.005) return `%${fmtPercent(min, 2)}`;
+  return `%${fmtPercent(min, 1)}–${fmtPercent(max, 1)}`;
 }
 
 function bankAmountRangeText(offer) {
@@ -92,8 +92,25 @@ function bankAmountRangeText(offer) {
   return `Tutar: ${min} – ${max}`;
 }
 
+// DÜZELTME (2026-09, hata raporu #11: "Ödeme Planını Göster çalışmıyor"):
+// Canlı testte hesaplama mantığının kendisi (alanları doldurup
+// #calcLoanBtn/#calcDepositBtn'i tetiklemesi) DOĞRU çalıştığı doğrulandı
+// — sonuç her zaman hesaplanıyor. Kullanıcının "çalışmıyor" izlenimi,
+// büyük olasılıkla sonuç kartının (Sonuç bölümü) ekranın altında,
+// görünür alanın dışında kalması ve herhangi bir görsel geri bildirim
+// olmamasıydı (özellikle mobilde). Bu yüzden: (1) kaydırma 'center'a
+// çevrildi (kart tam ortalanır, sadece üstü değil), (2) kısa bir
+// vurgulama (highlight) animasyonu eklendi, (3) kullanıcıya açık bir
+// onay mesajı gösterilir — böylece işlemin gerçekleştiği ASLA gözden
+// kaçmaz.
 function scrollToCard(el) {
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.remove('flash-highlight');
+  // reflow zorlayarak animasyonun tekrar tetiklenmesini sağla
+  void el.offsetWidth;
+  el.classList.add('flash-highlight');
+  setTimeout(() => el.classList.remove('flash-highlight'), 1600);
 }
 
 /* ------------------------------------------------------------------
@@ -182,6 +199,7 @@ function renderDepositBankList() {
       document.getElementById('calcDepositMaturity').value = toInputDate(maturity);
       document.getElementById('calcDepositBtn').click();
       scrollToCard(document.getElementById('calcDepositResults'));
+      showMsg('Hesaplayıcıya aktarıldı — sonuç aşağıda görüntüleniyor.', 'success');
     });
   });
 }
@@ -321,6 +339,7 @@ function renderCreditBankList() {
       document.getElementById('loanType').value = creditBankLoanType();
       document.getElementById('calcLoanBtn').click();
       scrollToCard(document.getElementById('loanResults'));
+      showMsg('Ödeme planı hesaplandı — sonuç aşağıda görüntüleniyor.', 'success');
     });
   });
 }

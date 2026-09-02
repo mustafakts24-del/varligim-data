@@ -48,6 +48,26 @@ function fmtTLPrecise(n) {
 function fmtNumber(n) {
   return new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 8 }).format(Number(n) || 0);
 }
+// DÜZELTME (2026-09, hata raporu #11): app genelinde bazı ekranlar
+// (değişim yüzdesi rozetleri, F/K/PD/DD gibi oranlar, banka faiz
+// aralıkları, YMO) doğrudan JS'in yerleşik `.toFixed()` fonksiyonunu
+// kullanıyordu — bu HER ZAMAN nokta ondalık ayracı üretir (ör. "3.50"),
+// Türkçe biçimde olması gereken virgül yerine ("3,50"). `fmtTL`/
+// `fmtNumber` zaten `Intl.NumberFormat('tr-TR', ...)` kullanıyordu
+// (doğruydu); bu iki yardımcı da AYNI yaklaşımı yüzde/ondalık
+// göstergelere de yayar — böylece uygulamadaki TÜM sayısal görüntüleme
+// tutarlı biçimde binlik ayracı nokta, ondalık ayracı virgül olur.
+// NOT: <input type="number"> alanlarına YAZILAN değerler bu kapsamın
+// DIŞINDA bırakıldı — tarayıcı sayı girişleri yalnızca nokta ondalık
+// kabul eder, virgül yazılırsa değer sessizce boşalır/geçersiz olur.
+function fmtPercent(n, decimals) {
+  const d = decimals == null ? 2 : decimals;
+  return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d }).format(Number(n) || 0);
+}
+function fmtDecimal(n, decimals) {
+  const d = decimals == null ? 2 : decimals;
+  return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d }).format(Number(n) || 0);
+}
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -101,7 +121,7 @@ function profitLossHtml(invested, currentValue, fmt) {
   const pct = invested > 0 ? (diff / invested) * 100 : 0;
   const cls = diff > 0 ? 'pl-pos' : (diff < 0 ? 'pl-neg' : 'pl-zero');
   const sign = diff > 0 ? '+' : '';
-  return `<span class="${cls}">${sign}${formatter(diff)} (${sign}${pct.toFixed(2)}%)</span>`;
+  return `<span class="${cls}">${sign}${formatter(diff)} (${sign}${fmtPercent(pct)}%)</span>`;
 }
 
 /**
@@ -113,7 +133,7 @@ function changeChipHtml(pct) {
   }
   const cls = pct > 0 ? 'pos' : (pct < 0 ? 'neg' : 'neu');
   const sign = pct > 0 ? '+' : '';
-  return `<span class="chip ${cls}">${sign}${pct.toFixed(2)}%</span>`;
+  return `<span class="chip ${cls}">${sign}${fmtPercent(pct)}%</span>`;
 }
 
 /**

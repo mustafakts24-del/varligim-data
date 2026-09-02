@@ -66,7 +66,7 @@ function renderKriptoList() {
   tbody.innerHTML = filtered.map(c => `
     <tr>
       <td>${favoriteStarHtml('kripto', c.id, { name: c.name, price: c.current_price, changePercent: c.price_change_percentage_24h })}</td>
-      <td class="market-row-logo">${c.image ? `<span class="logo-slot" style="width:26px;height:26px;"><img class="logo-img" src="${escapeHtml(c.image)}" alt="" width="26" height="26" loading="lazy" onerror="this.parentElement.outerHTML='${letterAvatarHtml((c.symbol || '?'), 26).replace(/'/g, "\\'")}';" /></span>` : letterAvatarHtml((c.symbol || '?'), 26)}</td>
+      <td class="market-row-logo">${c.image ? `<span class="logo-slot" style="width:26px;height:26px;"><img class="logo-img" src="${escapeHtml(c.image)}" alt="" width="26" height="26" loading="lazy" onerror="this.parentElement.outerHTML='${letterAvatarHtml((c.symbol || '?'), 26).replace(/"/g, '&quot;')}';" /></span>` : letterAvatarHtml((c.symbol || '?'), 26)}</td>
       <td>
         <div class="sym">${escapeHtml((c.symbol || '').toUpperCase())}</div>
         <div class="name">${escapeHtml(c.name || '')}</div>

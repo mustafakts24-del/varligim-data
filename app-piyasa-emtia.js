@@ -126,8 +126,8 @@ async function openCommodityDetail(key) {
       const stats = periodStatsFromPoints(points);
       if (stats) {
         statsEl.innerHTML = `
-          <div class="stat-mini"><div class="lbl">Dönem Düşük</div><div class="val">${naIfMissing(stats.low, v => v.toFixed(2))}</div></div>
-          <div class="stat-mini"><div class="lbl">Dönem Yüksek</div><div class="val">${naIfMissing(stats.high, v => v.toFixed(2))}</div></div>
+          <div class="stat-mini"><div class="lbl">Dönem Düşük</div><div class="val">${naIfMissing(stats.low, fmtNumber)}</div></div>
+          <div class="stat-mini"><div class="lbl">Dönem Yüksek</div><div class="val">${naIfMissing(stats.high, fmtNumber)}</div></div>
           <div class="stat-mini"><div class="lbl">Dönem Değişimi</div><div class="val">${changeChipHtml(stats.changePercent)}</div></div>
         `;
       } else {

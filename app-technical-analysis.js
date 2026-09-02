@@ -175,10 +175,16 @@ async function taFetchBars(config) {
   if (config.assetType === 'crypto') {
     // CoinGecko /coins/{id}/ohlc, mobildeki CryptoService.getOhlcHistory
     // ile aynı gerçek OHLC kaynağı (hacim bu uç noktada yok — uydurulmaz).
-    return await fetchCryptoOhlcSeries(config.cryptoId, 90);
+    // CoinGecko'nun ücretsiz katmanı güvenilir biçimde en fazla 365 gün
+    // (1Y) destekliyor (bkz. app-piyasa-kripto.js KRIPTO_RANGE_DAYS) —
+    // diğer varlık sınıflarının 5Y'sine kıyasla bu, kaynağın kendi
+    // sınırı; uydurma veriyle 5Y'ye tamamlanmadı (kural 11: dürüstlük).
+    return await fetchCryptoOhlcSeries(config.cryptoId, 365);
   }
   // stock / commodity / index — hepsi Yahoo sembolü ile aynı OHLC kaynağı.
-  const points = await fetchYahooRangeSeries(config.yahooSymbol, '1Y');
+  // Kullanıcı talebiyle (2026-09 hata raporu #4) varsayılan aralık 5
+  // yıla çıkarıldı (Yahoo haftalık mum verisiyle, bkz. YAHOO_CHART_RANGES['5Y']).
+  const points = await fetchYahooRangeSeries(config.yahooSymbol, '5Y');
   return points;
 }
 

@@ -104,16 +104,27 @@ function renderHomeQuickGrid() {
   });
 }
 
+// DÜZELTME (2026-09, hata raporu #12): önceden bu fonksiyon HER
+// çağrıldığında (kullanıcı Ana Sayfa'ya her dönüşünde) grid'in tüm
+// içeriğini "…" iskeletiyle SIFIRDAN kuruyordu — bu da önceden gösterilen
+// gerçek değerlerin bir an için kaybolup yeniden "…" göstermesine (ekran
+// titremesi/kaybolma hissi) neden oluyordu. Artık iskelet yalnızca İLK
+// kurulumda (grid'in `data-built` işareti yoksa) oluşturuluyor; sonraki
+// her çağrıda MEVCUT değerler ekranda kalmaya devam eder, yalnızca arka
+// planda taze veri gelince o hücreler güncellenir (stale-while-revalidate).
 async function loadExtraTickerGrid(containerId, tickers) {
   const grid = document.getElementById(containerId);
   if (!grid) return;
-  grid.innerHTML = tickers.map(t => `
-    <div class="ticker-box">
-      <div class="ticker-name">${escapeHtml(t.name)}</div>
-      <div class="ticker-value" id="ticker2-value-${t.id}">…</div>
-      <div id="ticker2-chip-${t.id}"><span class="chip neu">…</span></div>
-    </div>
-  `).join('');
+  if (grid.dataset.built !== '1') {
+    grid.innerHTML = tickers.map(t => `
+      <div class="ticker-box">
+        <div class="ticker-name">${escapeHtml(t.name)}</div>
+        <div class="ticker-value" id="ticker2-value-${t.id}">…</div>
+        <div id="ticker2-chip-${t.id}"><span class="chip neu">…</span></div>
+      </div>
+    `).join('');
+    grid.dataset.built = '1';
+  }
   await Promise.all(tickers.map(async t => {
     const valueEl = document.getElementById(`ticker2-value-${t.id}`);
     const chipEl = document.getElementById(`ticker2-chip-${t.id}`);
@@ -258,7 +269,7 @@ function renderAssetDistributionChart(cards) {
             label: (item) => {
               const c = dist[item.dataIndex];
               const pct = total > 0 ? (c.value / total) * 100 : 0;
-              return `${CATEGORY_META[c.key].label}: ${fmtTL(c.value)} (%${pct.toFixed(1)})`;
+              return `${CATEGORY_META[c.key].label}: ${fmtTL(c.value)} (%${fmtPercent(pct, 1)})`;
             }
           }
         }
@@ -276,22 +287,38 @@ function renderAssetDistributionChart(cards) {
         <span style="width:10px; height:10px; border-radius:50%; background:${ASSET_DISTRIBUTION_COLORS[c.key]}; flex-shrink:0;"></span>
         <span style="flex:1;">${escapeHtml(CATEGORY_META[c.key].label)}</span>
         <span style="color:var(--text-muted); font-weight:600; margin-right:6px;">${fmtTL(c.value)}</span>
-        <span style="color:var(--text-muted); min-width:42px; text-align:right;">%${pct.toFixed(1)}</span>
+        <span style="color:var(--text-muted); min-width:42px; text-align:right;">%${fmtPercent(pct, 1)}</span>
       </div>`;
     }).join('');
 }
+
+// DÜZELTME (2026-09, hata raporu #12): "ana sayfa menüler arasında
+// gezinirken sürekli kayboluyor" — kök neden, showPage()'in HER Ana
+// Sayfa ziyaretinde loadHomePage()'i yeniden çağırması VE bu fonksiyonun
+// en başta hero toplamı/kartları/ticker'ları "…"/boş içeriğe sıfırlayıp
+// SONRA veriyi yeniden çekmesiydi — bu da her dönüşte kısa bir an için
+// tüm Ana Sayfa'nın kaybolup yeniden belirmesine (titreme) neden
+// oluyordu. Düzeltme: ilk yüklemeden SONRA bu sıfırlama adımı atlanır;
+// önceki gerçek değerler ekranda kalmaya devam eder, veri arka planda
+// sessizce tazelenir ve hazır olunca YERİNDE güncellenir. Kullanıcı bir
+// yenilemenin gerçekten olduğunu görebilsin diye "CANLI" göstergesi
+// yenileme sürerken kısa bir süre vurgulanır (bkz. heroUpdated/#liveDot).
+let homePageEverLoaded = false;
 
 async function loadHomePage() {
   const totalEl = document.getElementById('heroTotal');
   const updatedEl = document.getElementById('heroUpdated');
   const statGrid = document.getElementById('statGrid');
   const tickerGrid = document.getElementById('tickerGrid');
+  const liveDot = document.getElementById('homeLiveIndicator');
   if (!totalEl || !statGrid) return;
 
-  totalEl.textContent = '…';
-  updatedEl.textContent = '';
-  statGrid.innerHTML = '';
-  tickerGrid.innerHTML = '';
+  if (!homePageEverLoaded) {
+    totalEl.textContent = '…';
+    statGrid.innerHTML = '';
+    tickerGrid.innerHTML = '';
+  }
+  if (liveDot) liveDot.classList.add('refreshing');
   renderHomeQuickGrid();
 
   const [
@@ -460,7 +487,12 @@ async function loadHomePage() {
     .reduce((a, b) => a + b, 0);
 
   totalEl.textContent = fmtTL(grandTotal);
-  updatedEl.textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
+  if (updatedEl) {
+    updatedEl.innerHTML = `
+      <span class="live-indicator" id="homeLiveIndicator"><span class="dot"></span>CANLI</span>
+      · Son güncelleme: ${new Date().toLocaleTimeString('tr-TR')}
+    `;
+  }
 
   statGrid.innerHTML = cards.map(c => {
     const pl = (c.invested != null && c.invested > 0) ? { invested: c.invested, value: c.valueKnown } : null;
@@ -475,6 +507,8 @@ async function loadHomePage() {
     loadHomeMarketSections(),
     loadHomeMovers()
   ]);
+
+  homePageEverLoaded = true;
 }
 
 registerPageLoader('home', loadHomePage);
