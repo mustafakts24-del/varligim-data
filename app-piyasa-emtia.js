@@ -135,14 +135,10 @@ async function openCommodityDetail(key) {
     showMsg(`${item.name} varlığına eklendi.`, 'success');
   });
 
-  try {
-    const quote = await fetchPriceProxy(`type=commodity&key=${encodeURIComponent(key)}`);
-    document.getElementById('cdPrice').textContent = fmt(quote.price);
-    document.getElementById('cdChange').innerHTML = changeChipHtml(quote.changePercent);
-  } catch (e) {
-    document.getElementById('cdPrice').textContent = '—';
-    document.getElementById('cdChange').textContent = '—';
-  }
+  // PERFORMANS DÜZELTMESİ (2026-09, kullanıcı raporu: "sayfalar geç
+  // açılıyor"): fiyat ve grafik birbirinden bağımsızdır — grafik isteği
+  // artık fiyat isteğinin bitmesini beklemeden aynı anda başlatılıyor.
+  const quotePromise = fetchPriceProxy(`type=commodity&key=${encodeURIComponent(key)}`).catch(() => null);
 
   bindChartRangeChips(document.getElementById('commodityRangeChips'), '1A', async (rangeKey) => {
     const statsEl = document.getElementById('commodityPeriodStats');
@@ -164,6 +160,15 @@ async function openCommodityDetail(key) {
       statsEl.innerHTML = `<div class="stat-mini"><div class="lbl">Veri alınamadı</div><div class="val">—</div></div>`;
     }
   });
+
+  const quote = await quotePromise;
+  if (quote) {
+    document.getElementById('cdPrice').textContent = fmt(quote.price);
+    document.getElementById('cdChange').innerHTML = changeChipHtml(quote.changePercent);
+  } else {
+    document.getElementById('cdPrice').textContent = '—';
+    document.getElementById('cdChange').textContent = '—';
+  }
 }
 
 registerPageLoader('emtia', loadEmtiaMarketPage);
