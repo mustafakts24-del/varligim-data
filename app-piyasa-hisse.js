@@ -97,6 +97,23 @@ const BIST_INDEX_CONSTITUENTS = {
   XGMYO: ['EKGYO', 'PSGYO', 'ISGYO', 'AKFGY', 'ALGYO', 'HLGYO', 'KLGYO', 'OZKGY', 'RYGYO', 'TRGYO', 'VKGYO']
 };
 
+// DÜZELTME (2026-09, kullanıcı raporu: hisse detayında "Sektör" hep
+// "—" gösteriyordu — bkz. openStockDetail): Yahoo'nun sektör/endüstri
+// bilgisini veren tek ucu (v10/quoteSummary/assetProfile) bu ortamdan
+// engellendiği için, GERÇEK bir alternatif olarak hissenin zaten var
+// olan BIST_INDEX_CONSTITUENTS listesindeki resmi BIST sektör endeksi
+// üyeliğinden (Borsa İstanbul'un kendi sınıflandırması) sektör adı
+// türetilir. Uydurma değildir — hisse gerçekten o sektör endeksinin
+// bileşenidir; yalnızca Yahoo'nun serbest metin "industry" alanı kadar
+// ayrıntılı değildir (bu yüzden "Alt Sektör/Endüstri" ayrı bırakılır).
+function deriveSectorForSymbol(symbol) {
+  for (const sector of BIST_SECTORS) {
+    const list = BIST_INDEX_CONSTITUENTS[sector.code];
+    if (Array.isArray(list) && list.includes(symbol)) return sector.name;
+  }
+  return null;
+}
+
 const INDEX_CONSTITUENTS_PAGE_SIZE = 40;
 let indexConstituentsState = { symbols: [], visibleCount: INDEX_CONSTITUENTS_PAGE_SIZE };
 
@@ -382,6 +399,7 @@ async function openIndexDetail(code, items) {
     </div>
     <div class="chart-wrap"><canvas id="detailChartIndex"></canvas></div>
     <div class="stat-mini-grid" id="indexPeriodStats"></div>
+    <div id="indexApproxNote" style="font-size:11.5px; color:var(--text-faint); margin:2px 0 8px;"></div>
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
       ${technicalAnalysisButtonHtml('indexTaBtn')}
     </div>
@@ -430,18 +448,29 @@ async function openIndexDetail(code, items) {
       await renderIndexConstituentsList('indexConstituentsBlock');
     });
   }
-  try {
-    const quote = await fetchPriceProxy(`type=stock&symbol=${encodeURIComponent(code)}`);
-    document.getElementById('idxDetailPrice').textContent = fmtNumber(quote.price);
-    document.getElementById('idxDetailChange').innerHTML = changeChipHtml(quote.changePercent);
-  } catch (e) {
-    document.getElementById('idxDetailPrice').textContent = '—';
-    document.getElementById('idxDetailChange').textContent = '—';
-  }
+  // PERFORMANS DÜZELTMESİ (2026-09, kullanıcı raporu: "veri akışı çok
+  // yavaş, sayfalar geç açılıyor"): fiyat/değişim, grafik ve piyasa
+  // haritası/hacim birbirinden BAĞIMSIZ veri kaynaklarıdır — önceden
+  // fiyat isteği bitmeden grafik isteği hiç başlamıyordu (sıralı bekleme,
+  // toplam süre ikisinin TOPLAMI kadardı). Artık üçü de AYNI ANDA
+  // başlatılıyor; hiçbir veri/davranış değişmedi, yalnızca ZAMANLAMA
+  // paralelleşti.
+  const quotePromise = fetchPriceProxy(`type=stock&symbol=${encodeURIComponent(code)}`).catch(() => null);
+  loadIndexHeatmapAndVolume(code);
+
+  // DÜZELTME (2026-09, kullanıcı raporu: "BIST 50 ve sektör endekslerinde
+  // grafik görünmüyor"): Yahoo'nun endeks/sektör "sembolleri" için genelde
+  // yalnızca tek bir güncel bar döndürdüğü doğrulandı (bkz. price-proxy
+  // yorumu). Endeksin GERÇEK bileşen hisselerinden (ilk 8, zaten var olan
+  // BIST_INDEX_CONSTITUENTS listesinden) yaklaşık bir seri hesaplanabilmesi
+  // için bunlar `fallbackSymbols` olarak gönderiliyor — doğrudan veri
+  // yeterliyse bu hiç kullanılmaz.
+  const fallbackSymbols = resolveIndexConstituentSymbols(code).slice(0, 8).map(s => `${s}.IS`);
   bindChartRangeChips(document.getElementById('indexRangeChips'), '1A', async (rangeKey) => {
     const statsEl = document.getElementById('indexPeriodStats');
+    const noteEl = document.getElementById('indexApproxNote');
     try {
-      const points = await fetchYahooRangeSeries(`${code}.IS`, rangeKey);
+      const points = await fetchYahooRangeSeries(`${code}.IS`, rangeKey, fallbackSymbols);
       renderPriceChart('detailChartIndex', points);
       const stats = periodStatsFromPoints(points);
       statsEl.innerHTML = stats ? `
@@ -449,11 +478,25 @@ async function openIndexDetail(code, items) {
         <div class="stat-mini"><div class="lbl">Dönem Yüksek</div><div class="val">${fmtNumber(stats.high)}</div></div>
         <div class="stat-mini"><div class="lbl">Dönem Değişimi</div><div class="val">${changeChipHtml(stats.changePercent)}</div></div>
       ` : `<div class="stat-mini"><div class="lbl">Veri yok</div><div class="val">—</div></div>`;
+      if (noteEl) {
+        noteEl.textContent = points.approximate
+          ? 'Not: Bu endeks için Yahoo Finance\'te doğrudan geçmiş grafik verisi bulunmuyor; grafik, endeksin bileşen hisselerinin ortalama değişiminden yaklaşık olarak hesaplanmıştır (uydurulmuş veri değildir, gerçek hisse fiyatlarından türetilmiştir).'
+          : '';
+      }
     } catch (e) {
       statsEl.innerHTML = `<div class="stat-mini"><div class="lbl">Veri alınamadı</div><div class="val">—</div></div>`;
+      if (noteEl) noteEl.textContent = '';
     }
   });
-  loadIndexHeatmapAndVolume(code);
+
+  const quote = await quotePromise;
+  if (quote) {
+    document.getElementById('idxDetailPrice').textContent = fmtNumber(quote.price);
+    document.getElementById('idxDetailChange').innerHTML = changeChipHtml(quote.changePercent);
+  } else {
+    document.getElementById('idxDetailPrice').textContent = '—';
+    document.getElementById('idxDetailChange').textContent = '—';
+  }
 }
 
 /* ------------------------------------------------------------------
@@ -603,13 +646,45 @@ async function loadIndexHeatmapAndVolume(code) {
 }
 
 let analystRecommendationsCache = null;
+let analystRecommendationsCacheTime = 0;
+const ANALYST_RECOMMENDATIONS_TTL = 15 * 60 * 1000; // mobil ile AYNI (AnalystRecommendationsService._cacheTtl)
+
+// DÜZELTME (2026-09, kullanıcı raporu: "analist tavsiyesi sayısı çok az" /
+// "bazı hisselerde hiç tavsiye yok"): mobil uygulama (bkz.
+// analyst_recommendations_service.dart) bu JSON'u her istekte zaman
+// damgalı cache-busting ile çekiyor ki CDN/tarayıcı önbelleği ESKİ (daha
+// az sayıda kayıt içeren) bir sürümü döndürmesin — web tarafı bunu
+// yapmıyordu ve süre sınırı olmadan TÜM oturum boyunca ilk çekilen
+// sürümü kullanıyordu. Artık mobille AYNI yöntem (cache-busting + 15
+// dakikalık yenileme) kullanılıyor.
+//
+// DÜRÜSTLÜK NOTU: bu dosyanın kaynağı (mobil kodundaki kendi yorumunda
+// da açıkça belirtildiği gibi) ücretsiz/otomatik bir analist verisi API'si
+// DEĞİLDİR — aracı kurum raporları takip edilerek ELLE girilen tek bir
+// JSON dosyasıdır (fintables.com ve benzeri siteler bu veriyi ücretsiz
+// sunmuyor). Bu nedenle bazı hisselerde hiç tavsiye bulunmaması, veri
+// kaynağının kendisinin doğal bir sınırlamasıdır — mobil uygulama da
+// AYNI dosyayı kullandığından aynı sınırlamaya tabidir. Kapsamı
+// genişletmek (yeni "kaynaklar" eklemek) veri uydurmak ya da ücretli bir
+// servisi izinsiz kazımak anlamına geleceğinden yapılmamıştır; bkz.
+// teslim raporu.
 async function fetchAnalystRecommendations(symbol) {
-  if (analystRecommendationsCache === null) {
+  const isStale = analystRecommendationsCache === null ||
+    (Date.now() - analystRecommendationsCacheTime) > ANALYST_RECOMMENDATIONS_TTL;
+  if (isStale) {
     try {
-      const res = await fetch(ANALYST_RECOMMENDATIONS_URL);
-      analystRecommendationsCache = res.ok ? await res.json() : {};
+      const res = await fetch(`${ANALYST_RECOMMENDATIONS_URL}?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+      });
+      if (res.ok) {
+        analystRecommendationsCache = await res.json();
+        analystRecommendationsCacheTime = Date.now();
+      } else if (analystRecommendationsCache === null) {
+        analystRecommendationsCache = {};
+      }
     } catch (e) {
-      analystRecommendationsCache = {};
+      if (analystRecommendationsCache === null) analystRecommendationsCache = {};
     }
   }
   return analystRecommendationsCache[symbol] || analystRecommendationsCache[symbol?.toUpperCase()] || null;
@@ -643,8 +718,9 @@ async function openStockDetail(symbol) {
       <tr><td>F/K (Fiyat/Kazanç)</td><td>…</td></tr>
     </table>
     <p style="font-size:11.5px; color:var(--text-faint); margin-top:6px;">
-      Kaynak: Yahoo Finance. Bir alan görünmüyorsa o veri kaynakta mevcut değildir
-      (uydurulmamıştır). Tam KAP/İş Yatırım finansal tablo (gelir tablosu/bilanço)
+      Kaynak: Yahoo Finance, İş Yatırım şirket kartı ve BIST sektör endeksi üyeliği.
+      Bir alan görünmüyorsa o veri hiçbir kaynakta mevcut değildir (uydurulmamıştır).
+      Tam KAP/İş Yatırım finansal tablo (gelir tablosu/bilanço)
       bu sürüme dahil değildir — bkz. teslim raporu, bilinen sınırlamalar.
     </p>
 
@@ -656,33 +732,21 @@ async function openStockDetail(symbol) {
     title: symbol, assetType: 'stock', yahooSymbol: `${symbol}.IS`,
   });
 
-  try {
-    const quote = await fetchPriceProxy(`type=stock&symbol=${encodeURIComponent(symbol)}`);
-    document.getElementById('sdPrice').textContent = fmtTL(quote.price);
-    document.getElementById('sdChange').innerHTML = changeChipHtml(quote.changePercent);
-    document.getElementById('sdPrevClose').textContent = naIfMissing(quote.previousClose, fmtTL);
-  } catch (e) {
-    document.getElementById('sdPrice').textContent = '—';
-    document.getElementById('sdChange').textContent = '—';
-    document.getElementById('sdPrevClose').textContent = '—';
-  }
-
-  // Gün içi düşük/yüksek: bugünkü 5 dakikalık mumlardan türetilir
-  // (gerçek veri; taban/tavan bant bilgisi hisseye göre değişebildiği
-  // için burada uydurulmaz, gösterilmez).
-  try {
-    const todayPoints = await fetchYahooRangeSeries(`${symbol}.IS`, '1G');
-    const highs = todayPoints.map(p => p.h).filter(Number.isFinite);
-    const lows = todayPoints.map(p => p.l).filter(Number.isFinite);
-    if (highs.length && lows.length) {
-      document.getElementById('sdDayRange').textContent =
-        `${fmtNumber(Math.min(...lows))} / ${fmtNumber(Math.max(...highs))}`;
-    } else {
-      document.getElementById('sdDayRange').textContent = '—';
-    }
-  } catch (e) {
-    document.getElementById('sdDayRange').textContent = '—';
-  }
+  // PERFORMANS DÜZELTMESİ (2026-09, kullanıcı raporu: "veri akışı çok
+  // yavaş, sayfalar geç açılıyor"): fiyat, gün içi mumlar, temel oranlar
+  // ve analist tavsiyeleri birbirinden BAĞIMSIZ 4 ayrı veri kaynağıdır —
+  // önceden dördü de SIRAYLA (biri bitmeden diğeri başlamadan) çekiliyordu,
+  // bu da modalın tam dolmasını (özellikle stock-fundamentals'ın kendi
+  // içinde birden fazla dış kaynağı sırayla deneyebildiği durumlarda)
+  // gereksiz yere saniyelerce geciktiriyordu. Artık dördü de AYNI ANDA
+  // başlatılıyor; hiçbir veri/davranış değişmedi, yalnızca ZAMANLAMA
+  // paralelleşti (toplam bekleme artık sürelerin TOPLAMI değil, en YAVAŞ
+  // olanı kadar).
+  const quotePromise = fetchPriceProxy(`type=stock&symbol=${encodeURIComponent(symbol)}`).catch(() => null);
+  const todayPointsPromise = fetchYahooRangeSeries(`${symbol}.IS`, '1G').catch(() => []);
+  const fxPromise = cachedFetch(`fund:${symbol}`, 6 * 3600 * 1000, () =>
+    fetchPriceProxy(`type=stock-fundamentals&symbol=${encodeURIComponent(symbol)}`)).catch(() => null);
+  const recPromise = fetchAnalystRecommendations(symbol).catch(() => null);
 
   bindChartRangeChips(document.getElementById('stockRangeChips'), '1A', async (rangeKey) => {
     const statsEl = document.getElementById('stockPeriodStats');
@@ -700,9 +764,32 @@ async function openStockDetail(symbol) {
     }
   });
 
-  try {
-    const fx = await cachedFetch(`fund:${symbol}`, 6 * 3600 * 1000, () =>
-      fetchPriceProxy(`type=stock-fundamentals&symbol=${encodeURIComponent(symbol)}`));
+  const quote = await quotePromise;
+  if (quote) {
+    document.getElementById('sdPrice').textContent = fmtTL(quote.price);
+    document.getElementById('sdChange').innerHTML = changeChipHtml(quote.changePercent);
+    document.getElementById('sdPrevClose').textContent = naIfMissing(quote.previousClose, fmtTL);
+  } else {
+    document.getElementById('sdPrice').textContent = '—';
+    document.getElementById('sdChange').textContent = '—';
+    document.getElementById('sdPrevClose').textContent = '—';
+  }
+
+  // Gün içi düşük/yüksek: bugünkü 5 dakikalık mumlardan türetilir
+  // (gerçek veri; taban/tavan bant bilgisi hisseye göre değişebildiği
+  // için burada uydurulmaz, gösterilmez).
+  const todayPoints = await todayPointsPromise;
+  const highs = todayPoints.map(p => p.h).filter(Number.isFinite);
+  const lows = todayPoints.map(p => p.l).filter(Number.isFinite);
+  if (highs.length && lows.length) {
+    document.getElementById('sdDayRange').textContent =
+      `${fmtNumber(Math.min(...lows))} / ${fmtNumber(Math.max(...highs))}`;
+  } else {
+    document.getElementById('sdDayRange').textContent = '—';
+  }
+
+  const fx = await fxPromise;
+  if (fx) {
     const pct = v => v == null ? '—' : `%${fmtPercent(v * 100, 2)}`;
     document.getElementById('stockFundamentalsTable').innerHTML = `
       <tr><td>F/K (Fiyat/Kazanç)</td><td>${naIfMissing(fx.trailingPE, v => fmtDecimal(v, 2))}</td></tr>
@@ -719,52 +806,66 @@ async function openStockDetail(symbol) {
       <tr><td>Cari Oran</td><td>${naIfMissing(fx.currentRatio, v => fmtDecimal(v, 2))}</td></tr>
       <tr><td>Son Bilanço Tarihi</td><td>${naIfMissing(fx.mostRecentQuarter, v => new Date(v * 1000).toLocaleDateString('tr-TR'))}</td></tr>
     `;
+    // DÜZELTME (2026-09, kullanıcı raporu: "Şirket Bilgisi'nde eksik
+    // alanlar var"): Yahoo'nun v7/v10 uçları bu ortamdan engellendiği
+    // için Şirket Adı ve Sektör her zaman "—" kalıyordu — oysa ikisi de
+    // uygulamanın ZATEN sahip olduğu, uydurulmamış gerçek verilerden
+    // doldurulabilir: Şirket Adı için hisse kataloğundaki (hisseCatalog/
+    // BIST_STOCKS_475 — tüm uygulamada zaten aynı isim gösteriliyor)
+    // kayıtlı ünvan; Sektör için BIST'in kendi resmi sektör endeksi
+    // üyeliği (BIST_INDEX_CONSTITUENTS — Borsa İstanbul'un gerçek sektör
+    // sınıflandırması, bu uygulamanın "Sektör Endeksleri" bölümünde zaten
+    // kullanılıyor). Alt Sektör/Endüstri, Temettü Verimi, Beta, Borç/
+    // Özkaynak, Cari Oran ve Son Bilanço Tarihi için GERÇEK bir alternatif
+    // kaynak bulunamadı (bu alanlar yalnızca Yahoo'nun engellenen v10/
+    // quoteSummary'sinden gelir) — bunlar dürüstçe "—" bırakılır, bkz.
+    // teslim raporu.
     document.getElementById('stockCompanyInfoTable').innerHTML = `
-      <tr><td>Şirket Adı</td><td>${naIfMissing(fx.longName, v => escapeHtml(v))}</td></tr>
+      <tr><td>Şirket Adı</td><td>${escapeHtml(fx.longName || stockMeta.name || '—')}</td></tr>
       <tr><td>Kod</td><td>${escapeHtml(symbol)}</td></tr>
-      <tr><td>Sektör</td><td>${naIfMissing(fx.sector, v => escapeHtml(v))}</td></tr>
+      <tr><td>Sektör</td><td>${escapeHtml(fx.sector || deriveSectorForSymbol(symbol) || '—')}</td></tr>
       <tr><td>Alt Sektör / Endüstri</td><td>${naIfMissing(fx.industry, v => escapeHtml(v))}</td></tr>
       <tr><td>Açılış</td><td>${naIfMissing(fx.open, v => fmtTL(v))}</td></tr>
       <tr><td>Önceki Kapanış</td><td>${naIfMissing(fx.previousClose, v => fmtTL(v))}</td></tr>
       <tr><td>Gün İçi Düşük/Yüksek</td><td>${naIfMissing(fx.dayLow, v => fmtNumber(v))} / ${naIfMissing(fx.dayHigh, v => fmtNumber(v))}</td></tr>
       <tr><td>Hacim</td><td>${naIfMissing(fx.volume, v => fmtNumber(v))}</td></tr>
     `;
-  } catch (e) {
+  } else {
     document.getElementById('stockFundamentalsTable').innerHTML = `<tr><td colspan="2">Veri alınamadı.</td></tr>`;
-    document.getElementById('stockCompanyInfoTable').innerHTML = `<tr><td colspan="2">Veri alınamadı.</td></tr>`;
+    document.getElementById('stockCompanyInfoTable').innerHTML = `
+      <tr><td>Şirket Adı</td><td>${escapeHtml(stockMeta.name || '—')}</td></tr>
+      <tr><td>Kod</td><td>${escapeHtml(symbol)}</td></tr>
+      <tr><td>Sektör</td><td>${escapeHtml(deriveSectorForSymbol(symbol) || '—')}</td></tr>
+    `;
   }
 
-  try {
-    const rec = await fetchAnalystRecommendations(symbol);
-    const block = document.getElementById('stockAnalystBlock');
-    if (!rec || (Array.isArray(rec) && rec.length === 0)) {
-      block.innerHTML = `<div class="empty" style="padding:14px 0;">Bu hisse için analist tavsiyesi bulunamadı.</div>`;
-    } else {
-      // DÜZELTME (2026-09, tam parite denetimi): mobildeki AnalystRecommendation
-      // modelinde olan `date` (tavsiye tarihi) ve `modelPortfolio` (model
-      // portföyde mi) alanları çekiliyordu ama tabloda hiç GÖSTERİLMİYORDU;
-      // ayrıca mobildeki gibi bir üst özet (ortalama hedef fiyat, min/maks)
-      // yoktu. İkisi de mobilin AynıŞema'sına göre eklendi (bkz.
-      // analyst_recommendation.dart: bank/recommendation/targetPrice/date/
-      // modelPortfolio).
-      const RECO_LABELS = { al: 'AL', sat: 'SAT', tut: 'TUT', endeks_ustu: 'Endeks Üstü', endekse_paralel: 'Endekse Paralel' };
-      const list = Array.isArray(rec) ? rec : (rec.recommendations || []);
-      const targets = list.map(r => Number(r.targetPrice)).filter(Number.isFinite);
-      const summaryHtml = targets.length > 0 ? `
-        <div class="stat-mini-grid" style="margin-bottom:8px;">
-          <div class="stat-mini"><div class="lbl">Ortalama Hedef</div><div class="val">${fmtTL(targets.reduce((a, b) => a + b, 0) / targets.length)}</div></div>
-          <div class="stat-mini"><div class="lbl">En Düşük / En Yüksek Hedef</div><div class="val">${fmtTL(Math.min(...targets))} / ${fmtTL(Math.max(...targets))}</div></div>
-          <div class="stat-mini"><div class="lbl">Tavsiye Sayısı</div><div class="val">${list.length}</div></div>
-        </div>` : '';
-      block.innerHTML = summaryHtml + `<table class="kv-table">${list.map(r => {
-        const label = RECO_LABELS[(r.recommendation || r.tavsiye || '').toLowerCase()] || (r.recommendation || r.tavsiye || '');
-        const dateText = r.date ? new Date(r.date).toLocaleDateString('tr-TR') : '';
-        const modelBadge = r.modelPortfolio ? ' <span class="chip pos" style="font-size:10.5px;">Model Portföyde</span>' : '';
-        return `<tr><td>${escapeHtml(r.bank || r.brokerage || r.kurum || '')}${dateText ? `<div class="name">${escapeHtml(dateText)}</div>` : ''}</td><td>${escapeHtml(label)}${r.targetPrice || r.hedef_fiyat ? ' · Hedef: ' + fmtTL(r.targetPrice || r.hedef_fiyat) : ''}${modelBadge}</td></tr>`;
-      }).join('')}</table>`;
-    }
-  } catch (e) {
-    document.getElementById('stockAnalystBlock').innerHTML = `<div class="empty" style="padding:14px 0;">Analist verisi alınamadı.</div>`;
+  const rec = await recPromise;
+  const block = document.getElementById('stockAnalystBlock');
+  if (!rec || (Array.isArray(rec) && rec.length === 0)) {
+    block.innerHTML = `<div class="empty" style="padding:14px 0;">Bu hisse için analist tavsiyesi bulunamadı.</div>`;
+  } else {
+    // DÜZELTME (2026-09, tam parite denetimi): mobildeki AnalystRecommendation
+    // modelinde olan `date` (tavsiye tarihi) ve `modelPortfolio` (model
+    // portföyde mi) alanları çekiliyordu ama tabloda hiç GÖSTERİLMİYORDU;
+    // ayrıca mobildeki gibi bir üst özet (ortalama hedef fiyat, min/maks)
+    // yoktu. İkisi de mobilin AynıŞema'sına göre eklendi (bkz.
+    // analyst_recommendation.dart: bank/recommendation/targetPrice/date/
+    // modelPortfolio).
+    const RECO_LABELS = { al: 'AL', sat: 'SAT', tut: 'TUT', endeks_ustu: 'Endeks Üstü', endekse_paralel: 'Endekse Paralel' };
+    const list = Array.isArray(rec) ? rec : (rec.recommendations || []);
+    const targets = list.map(r => Number(r.targetPrice)).filter(Number.isFinite);
+    const summaryHtml = targets.length > 0 ? `
+      <div class="stat-mini-grid" style="margin-bottom:8px;">
+        <div class="stat-mini"><div class="lbl">Ortalama Hedef</div><div class="val">${fmtTL(targets.reduce((a, b) => a + b, 0) / targets.length)}</div></div>
+        <div class="stat-mini"><div class="lbl">En Düşük / En Yüksek Hedef</div><div class="val">${fmtTL(Math.min(...targets))} / ${fmtTL(Math.max(...targets))}</div></div>
+        <div class="stat-mini"><div class="lbl">Tavsiye Sayısı</div><div class="val">${list.length}</div></div>
+      </div>` : '';
+    block.innerHTML = summaryHtml + `<table class="kv-table">${list.map(r => {
+      const label = RECO_LABELS[(r.recommendation || r.tavsiye || '').toLowerCase()] || (r.recommendation || r.tavsiye || '');
+      const dateText = r.date ? new Date(r.date).toLocaleDateString('tr-TR') : '';
+      const modelBadge = r.modelPortfolio ? ' <span class="chip pos" style="font-size:10.5px;">Model Portföyde</span>' : '';
+      return `<tr><td>${escapeHtml(r.bank || r.brokerage || r.kurum || '')}${dateText ? `<div class="name">${escapeHtml(dateText)}</div>` : ''}</td><td>${escapeHtml(label)}${r.targetPrice || r.hedef_fiyat ? ' · Hedef: ' + fmtTL(r.targetPrice || r.hedef_fiyat) : ''}${modelBadge}</td></tr>`;
+    }).join('')}</table>`;
   }
 }
 
