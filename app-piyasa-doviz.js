@@ -127,16 +127,10 @@ async function openDovizDetail(code) {
     if (typeof goToVarligimSubtab === 'function') goToVarligimSubtab('nakit-doviz');
   });
 
-  try {
-    const quote = await fetchPriceProxy(`type=currency&code=${encodeURIComponent(code)}`);
-    document.getElementById('ddPrice').textContent = fmtTLPrecise(quote.price);
-    document.getElementById('ddChange').innerHTML = changeChipHtml(quote.changePercent);
-    document.getElementById('ddPrevClose').textContent = naIfMissing(quote.previousClose, fmtTLPrecise);
-  } catch (e) {
-    document.getElementById('ddPrice').textContent = '—';
-    document.getElementById('ddChange').textContent = '—';
-    document.getElementById('ddPrevClose').textContent = '—';
-  }
+  // PERFORMANS DÜZELTMESİ (2026-09, kullanıcı raporu: "sayfalar geç
+  // açılıyor"): güncel kur ve grafik birbirinden bağımsızdır — grafik
+  // artık kur isteğinin bitmesini beklemeden aynı anda başlatılıyor.
+  const quotePromise = fetchPriceProxy(`type=currency&code=${encodeURIComponent(code)}`).catch(() => null);
 
   if (item.chartable) {
     bindChartRangeChips(document.getElementById('dovizRangeChips'), '1A', async (rangeKey) => {
@@ -154,6 +148,17 @@ async function openDovizDetail(code) {
         statsEl.innerHTML = `<div class="stat-mini"><div class="lbl">Veri alınamadı</div><div class="val">—</div></div>`;
       }
     });
+  }
+
+  const quote = await quotePromise;
+  if (quote) {
+    document.getElementById('ddPrice').textContent = fmtTLPrecise(quote.price);
+    document.getElementById('ddChange').innerHTML = changeChipHtml(quote.changePercent);
+    document.getElementById('ddPrevClose').textContent = naIfMissing(quote.previousClose, fmtTLPrecise);
+  } else {
+    document.getElementById('ddPrice').textContent = '—';
+    document.getElementById('ddChange').textContent = '—';
+    document.getElementById('ddPrevClose').textContent = '—';
   }
 }
 
