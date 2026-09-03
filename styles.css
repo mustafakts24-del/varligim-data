@@ -539,6 +539,19 @@ tbody tr:hover { background: var(--bg-elevated); }
 
 .empty { text-align: center; padding: 30px 10px; color: var(--text-faint); font-size: 13.5px; }
 
+/* DÜZELTME (2026-09, tam parite denetimi): yaklaşan mevduat vadesi /
+ * bütçe uyarı bandı vb. için ortak, dikkat çekici ama alarm-kırmızısı
+ * olmayan bir "uyarı" bandı — mobildeki bildirim rengiyle uyumlu. */
+.banner-warning {
+  background: color-mix(in srgb, var(--warning, #f0a020) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning, #f0a020) 40%, transparent);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
 .table-wrap { overflow-x: auto; }
 
 /* ============================================================

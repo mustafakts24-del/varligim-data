@@ -80,6 +80,7 @@ function startEditBudget(row) {
 document.getElementById('cancelBudgetEditBtn').addEventListener('click', resetBudgetForm);
 
 async function deleteBudgetTransaction(id) {
+  if (!confirmDelete('Bu işlemi silmek istediğine emin misin?')) return;
   const { data: { user } } = await supa.auth.getUser();
   if (!user || !id) return;
   const { error } = await supa
@@ -128,6 +129,42 @@ document.getElementById('addBudgetBtn').addEventListener('click', async () => {
   resetBudgetForm();
   await refreshBudgetView();
 });
+
+/* DÜZELTME (2026-09, tam parite denetimi): mobildeki budget_screen.dart
+ * gelir/gider oranı %80'i geçtiğinde sarı, %100'ü geçtiğinde kırmızı bir
+ * uyarı bandı gösterir (bütçe aşımı uyarısı) — bu web'de hiç yoktu.
+ * Tasarruf oranı (%) da mobilde özet kartının altında gösterilir. */
+function renderBudgetWarningBanner(income, expense) {
+  let banner = document.getElementById('budgetWarningBanner');
+  const summaryGrid = document.getElementById('budgetSummaryGrid');
+  if (!banner && summaryGrid) {
+    banner = document.createElement('div');
+    banner.id = 'budgetWarningBanner';
+    banner.className = 'banner-warning';
+    summaryGrid.before(banner);
+  }
+  if (!banner) return;
+  const ratio = income > 0 ? (expense / income) * 100 : (expense > 0 ? Infinity : 0);
+  const savingsRate = income > 0 ? ((income - expense) / income) * 100 : null;
+  if (ratio >= 100) {
+    banner.style.display = '';
+    banner.style.background = 'color-mix(in srgb, var(--negative) 18%, transparent)';
+    banner.style.borderColor = 'color-mix(in srgb, var(--negative) 45%, transparent)';
+    banner.innerHTML = `<span class="msr" style="vertical-align:middle;">warning</span> Bu ay giderlerin gelirini aştı (giderlerin gelirinin %${fmtNumber(ratio)}'i).`;
+  } else if (ratio >= 80) {
+    banner.style.display = '';
+    banner.style.background = '';
+    banner.style.borderColor = '';
+    banner.innerHTML = `<span class="msr" style="vertical-align:middle;">info</span> Bu ay giderlerin gelirinin %${fmtNumber(ratio)}'ine ulaştı — dikkat.${savingsRate != null ? ` Tasarruf oranın: %${fmtNumber(savingsRate)}.` : ''}`;
+  } else if (savingsRate != null && income > 0) {
+    banner.style.display = '';
+    banner.style.background = 'color-mix(in srgb, var(--secondary) 14%, transparent)';
+    banner.style.borderColor = 'color-mix(in srgb, var(--secondary) 35%, transparent)';
+    banner.innerHTML = `<span class="msr" style="vertical-align:middle;">savings</span> Bu ay tasarruf oranın: %${fmtNumber(savingsRate)}.`;
+  } else {
+    banner.style.display = 'none';
+  }
+}
 
 function budgetStatCardHtml(label, icon, color, value) {
   return `
@@ -181,6 +218,7 @@ async function refreshBudgetView() {
     budgetStatCardHtml('Tasarruf', 'savings', 'var(--secondary)', income - expense)
   ].join('');
 
+  renderBudgetWarningBanner(income, expense);
   renderBudgetCalendar(start, applicable);
 
   tbody.innerHTML = '';
@@ -235,11 +273,12 @@ function renderBudgetCalendar(monthStart, applicableRows) {
   const byDay = new Map();
   for (const row of applicableRows) {
     const day = new Date(row.transaction_date).getDate();
-    if (!byDay.has(day)) byDay.set(day, { income: 0, expense: 0 });
+    if (!byDay.has(day)) byDay.set(day, { income: 0, expense: 0, rows: [] });
     const bucket = byDay.get(day);
     const amount = Number(row.amount) || 0;
     if (row.type === 'Gelir') bucket.income += amount;
     else bucket.expense += amount;
+    bucket.rows.push(row);
   }
 
   const today = new Date();
@@ -252,14 +291,35 @@ function renderBudgetCalendar(monthStart, applicableRows) {
   for (let day = 1; day <= daysInMonth; day++) {
     const bucket = byDay.get(day);
     const isToday = isCurrentMonth && today.getDate() === day;
+    const hasRows = bucket && bucket.rows.length > 0;
     cells += `
-      <div class="budget-calendar-cell${isToday ? ' is-today' : ''}">
+      <div class="budget-calendar-cell${isToday ? ' is-today' : ''}" data-day="${day}" style="${hasRows ? 'cursor:pointer;' : ''}">
         <div class="bc-day">${day}</div>
         ${bucket && bucket.income > 0 ? `<div class="bc-amt pos">+${fmtTL(bucket.income)}</div>` : ''}
         ${bucket && bucket.expense > 0 ? `<div class="bc-amt neg">-${fmtTL(bucket.expense)}</div>` : ''}
       </div>`;
   }
   grid.innerHTML = cells;
+
+  // DÜZELTME (2026-09, tam parite denetimi): mobildeki budget_calendar_
+  // screen.dart'ta bir güne dokununca o günün işlem listesi açılır —
+  // web'deki takvim hücreleri tıklanamıyordu, sadece toplamı gösteriyordu.
+  grid.querySelectorAll('.budget-calendar-cell[data-day]').forEach(cell => {
+    const day = Number(cell.dataset.day);
+    const bucket = byDay.get(day);
+    if (!bucket || bucket.rows.length === 0) return;
+    cell.addEventListener('click', () => {
+      const dateLabel = new Date(year, month, day).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+      const rowsHtml = bucket.rows.map(r => `
+        <tr>
+          <td>${r.type === 'Gelir' ? '<span class="chip pos">Gelir</span>' : '<span class="chip neg">Gider</span>'}</td>
+          <td>${escapeHtml(r.category || '')}</td>
+          <td>${escapeHtml(r.title || '')}</td>
+          <td class="num">${r.type === 'Gelir' ? '+' : '-'}${fmtTL(r.amount)}</td>
+        </tr>`).join('');
+      openDetailModal(dateLabel, `<table class="kv-table"><tbody>${rowsHtml}</tbody></table>`);
+    });
+  });
 }
 
 document.getElementById('budgetMonthInput').addEventListener('change', refreshBudgetView);

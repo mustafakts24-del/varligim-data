@@ -30,7 +30,16 @@ const FON_CATEGORY_KEYWORDS = {
   'Fon Sepeti': ['FON SEPETİ', 'FON SEPETI'],
   'Katılım': ['KATILIM'],
   'Emeklilik': ['EMEKLİLİK', 'EMEKLILIK'],
-  'Serbest': ['SERBEST']
+  'Serbest': ['SERBEST'],
+  // DÜZELTME (2026-09, tam parite denetimi): mobildeki 13 fon türü
+  // kategorisinden 5 tanesi burada eksikti (Garantili/Karma/Gayrimenkul/
+  // Girişim Sermayesi/Kira Sertifikaları) — funds_screen.dart'taki tam
+  // liste ile eşleşsin diye eklendi.
+  'Garantili': ['GARANTİLİ', 'GARANTILI'],
+  'Karma': ['KARMA'],
+  'Gayrimenkul': ['GAYRİMENKUL', 'GAYRIMENKUL'],
+  'Girişim Sermayesi': ['GİRİŞİM SERMAYESİ', 'GIRISIM SERMAYESI'],
+  'Kira Sertifikaları': ['KİRA SERTİFİKA', 'KIRA SERTIFIKA']
 };
 
 function fundMatchesCategory(fund, catLabel) {
@@ -46,6 +55,7 @@ let fonVisibleCount = 40;
 const FON_PAGE_SIZE = 40;
 let fonFilterText = '';
 let fonActiveCategory = 'all';
+let fonFavoritesOnly = false;
 
 async function ensureFonCatalog() {
   if (fonCatalog.length > 0) return;
@@ -62,6 +72,7 @@ function filteredFonCatalog() {
   const q = fonFilterText.trim().toLocaleUpperCase('tr-TR');
   return fonCatalog.filter(f => {
     if (!fundMatchesCategory(f, fonActiveCategory)) return false;
+    if (fonFavoritesOnly && !isFavorite('fon', f.code)) return false;
     if (!q) return true;
     return (f.code || '').toLocaleUpperCase('tr-TR').includes(q) ||
       (f.name || '').toLocaleUpperCase('tr-TR').includes(q) ||
@@ -125,9 +136,16 @@ document.getElementById('fonLoadMoreBtn').addEventListener('click', () => {
   renderFonList();
 });
 
-document.querySelectorAll('#fonCategoryChips .filter-chip').forEach(chip => {
+document.getElementById('fonFavoritesOnlyChip')?.addEventListener('click', (e) => {
+  fonFavoritesOnly = !fonFavoritesOnly;
+  e.currentTarget.classList.toggle('active', fonFavoritesOnly);
+  fonVisibleCount = FON_PAGE_SIZE;
+  renderFonList();
+});
+
+document.querySelectorAll('#fonCategoryChips .filter-chip[data-cat]').forEach(chip => {
   chip.addEventListener('click', () => {
-    document.querySelectorAll('#fonCategoryChips .filter-chip').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#fonCategoryChips .filter-chip[data-cat]').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
     fonActiveCategory = chip.dataset.cat;
     fonVisibleCount = FON_PAGE_SIZE;
@@ -173,6 +191,8 @@ async function openFundDetail(code) {
       <div class="stat-mini"><div class="lbl">Yönetim Ücreti</div><div class="val" id="fundDetailFee">Yükleniyor…</div></div>
       <div class="stat-mini"><div class="lbl">Fon Büyüklüğü</div><div class="val" style="font-size:12.5px;">${fmtFundSizeTl(meta.fundSize)}</div></div>
       <div class="stat-mini"><div class="lbl">Yatırımcı Sayısı</div><div class="val" style="font-size:12.5px;">${fmtInvestorCount(meta.investorCount)}</div></div>
+      <div class="stat-mini"><div class="lbl">Halka Arz Tarihi</div><div class="val" id="fundDetailOfferingDate" style="font-size:12.5px;">Yükleniyor…</div></div>
+      <div class="stat-mini"><div class="lbl">Alım Satım Saatleri</div><div class="val" id="fundDetailTradingHours" style="font-size:12.5px;">Yükleniyor…</div></div>
     </div>
 
     <div class="chart-range-row" id="fundRangeChips">
@@ -188,6 +208,12 @@ async function openFundDetail(code) {
       </button>
     </div>
     <div id="fundCompetitorBlock" style="display:none; margin-top:10px;"></div>
+    <div class="detail-section-title">Varlığıma Ekle</div>
+    <div class="add-form" style="grid-template-columns: 1fr 1fr;">
+      <input id="fundDetailAddUnits" type="number" step="any" placeholder="Adet" />
+      <input id="fundDetailAddCost" type="number" step="any" placeholder="Birim maliyet (₺)" />
+      <button class="btn primary full" id="fundDetailAddBtn" type="button">Varlığıma Ekle</button>
+    </div>
     `
   );
   bindTechnicalAnalysisButton('fundTaBtn', {
@@ -216,6 +242,8 @@ async function openFundDetail(code) {
   (async () => {
     const feeEl = document.getElementById('fundDetailFee');
     const riskEl = document.getElementById('fundDetailRisk');
+    const offeringEl = document.getElementById('fundDetailOfferingDate');
+    const hoursEl = document.getElementById('fundDetailTradingHours');
     try {
       const result = await cachedFetch(`fund-detail:${code}`, 30 * 60 * 1000, () =>
         fetchPriceProxy(`type=fund-detail&code=${encodeURIComponent(code)}&name=${encodeURIComponent(meta.name || '')}`));
@@ -224,10 +252,33 @@ async function openFundDetail(code) {
       if (riskEl && meta.riskValue == null && kap && kap.riskValue != null) {
         riskEl.textContent = String(kap.riskValue);
       }
+      if (offeringEl) offeringEl.textContent = (kap && kap.publicOfferingDate) || '—';
+      if (hoursEl) hoursEl.textContent = (kap && kap.tradingHours) || '—';
     } catch (e) {
       if (feeEl) feeEl.textContent = '—';
+      if (offeringEl) offeringEl.textContent = '—';
+      if (hoursEl) hoursEl.textContent = '—';
     }
   })();
+
+  document.getElementById('fundDetailAddBtn')?.addEventListener('click', async () => {
+    const units = parseFloat(document.getElementById('fundDetailAddUnits').value);
+    const cost = parseFloat(document.getElementById('fundDetailAddCost').value);
+    if (isNaN(units) || units <= 0 || isNaN(cost) || cost < 0) {
+      showMsg('Lütfen geçerli bir adet ve maliyet gir.', 'error');
+      return;
+    }
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user) return;
+    const { error } = await supa.from('fund_holdings').upsert({
+      user_id: user.id, code, name: meta.name || code, units, cost, deleted_at: null
+    }, { onConflict: 'user_id,code' });
+    if (error) {
+      showMsg('Fon eklenemedi: ' + error.message, 'error');
+      return;
+    }
+    showMsg(`${code} varlığına eklendi.`, 'success');
+  });
 
   const competitorBtn = document.getElementById('fundCompetitorBtn');
   const competitorBlock = document.getElementById('fundCompetitorBlock');

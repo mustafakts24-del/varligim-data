@@ -78,6 +78,7 @@ document.querySelectorAll('#viopCategoryChips .filter-chip').forEach(chip => {
 function openViopDetail(contract) {
   if (!contract) return;
   const sessionPrices = [{ t: Date.now(), c: contract.price }];
+  const categoryToIndex = { equity: 0, index: 1, currency: 2, metal: 3, other: 4 };
 
   openDetailModal(
     `${escapeHtml(contract.symbol)} <span class="sub">${escapeHtml(contract.underlying || '')}</span>`,
@@ -100,9 +101,37 @@ function openViopDetail(contract) {
       Bu sözleşme için geçmiş fiyat veri kaynağı yok; grafik yalnızca bu modal
       açıkken 30 saniyede bir tazelenen anlık fiyatları gösterir.
     </p>
+    <div class="detail-section-title">Varlığıma Ekle</div>
+    <div class="add-form" style="grid-template-columns: 1fr 1fr;">
+      <input id="viopDetailAddLot" type="number" step="any" placeholder="Lot" />
+      <input id="viopDetailAddCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
+      <button class="btn primary full" id="viopDetailAddBtn" type="button">Varlığıma Ekle</button>
+    </div>
     `
   );
   renderSeriesChart('detailChartViop', sessionPrices);
+
+  document.getElementById('viopDetailAddBtn')?.addEventListener('click', async () => {
+    const lot = parseFloat(document.getElementById('viopDetailAddLot').value);
+    const costRaw = document.getElementById('viopDetailAddCost').value.trim();
+    const cost = costRaw === '' ? null : parseFloat(costRaw);
+    if (isNaN(lot) || lot <= 0 || (cost != null && isNaN(cost))) {
+      showMsg('Lütfen geçerli bir lot (ve isteğe bağlı maliyet) gir.', 'error');
+      return;
+    }
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user) return;
+    const { error } = await supa.from('viop_holdings').upsert({
+      user_id: user.id, symbol: contract.symbol, underlying: contract.underlying || null, code: null,
+      is_option: !!contract.isOption, category_index: categoryToIndex[contract.category] ?? 4,
+      lot, cost, deleted_at: null
+    }, { onConflict: 'user_id,symbol' });
+    if (error) {
+      showMsg('VİOP pozisyonu eklenemedi: ' + error.message, 'error');
+      return;
+    }
+    showMsg(`${contract.symbol} varlığına eklendi.`, 'success');
+  });
 
   const pollTimer = setInterval(async () => {
     try {

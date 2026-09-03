@@ -117,10 +117,37 @@ async function openCryptoDetail(id) {
     <div class="chart-wrap"><canvas id="detailChartCrypto"></canvas></div>
     <div class="stat-mini-grid" id="cryptoPeriodStats"></div>
     ${technicalAnalysisButtonHtml('cryptoTaBtn')}
+    <div class="detail-section-title">Varlığıma Ekle</div>
+    <div class="add-form" style="grid-template-columns: 1fr 1fr;">
+      <input id="cryptoDetailAddAmount" type="number" step="any" placeholder="Miktar" />
+      <input id="cryptoDetailAddCost" type="number" step="any" placeholder="Birim maliyet (₺)" />
+      <button class="btn primary full" id="cryptoDetailAddBtn" type="button">Varlığıma Ekle</button>
+    </div>
     `
   );
   bindTechnicalAnalysisButton('cryptoTaBtn', {
     title: `${(meta.symbol || '').toUpperCase()} — ${meta.name || ''}`, assetType: 'crypto', cryptoId: id,
+  });
+
+  document.getElementById('cryptoDetailAddBtn')?.addEventListener('click', async () => {
+    const amount = parseFloat(document.getElementById('cryptoDetailAddAmount').value);
+    const cost = parseFloat(document.getElementById('cryptoDetailAddCost').value);
+    if (isNaN(amount) || amount <= 0 || isNaN(cost) || cost <= 0) {
+      showMsg('Lütfen geçerli bir miktar ve maliyet gir.', 'error');
+      return;
+    }
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user) return;
+    const { error } = await supa.from('crypto_holdings').upsert({
+      user_id: user.id, deleted_at: null, crypto_id: id,
+      symbol: (meta.symbol || '').toUpperCase(), name: meta.name || id, amount, cost,
+      image_url: meta.image || null
+    }, { onConflict: 'user_id,crypto_id' });
+    if (error) {
+      showMsg('Kripto eklenemedi: ' + error.message, 'error');
+      return;
+    }
+    showMsg(`${(meta.symbol || '').toUpperCase()} varlığına eklendi.`, 'success');
   });
 
   bindChartRangeChips(document.getElementById('cryptoRangeChips'), '1A', async (rangeKey) => {

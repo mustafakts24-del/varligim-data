@@ -102,10 +102,37 @@ async function openCommodityDetail(key) {
       kendi geçmiş verisi mevcut olmadığından uydurulmamıştır; yön ve dalgalanma USD seriyle büyük ölçüde
       örtüşür, seviye USD/TRY değişimine göre farklılık gösterebilir.</p>` : ''}
     ${technicalAnalysisButtonHtml('commodityTaBtn')}
+    <div class="detail-section-title">Varlığıma Ekle</div>
+    <div class="add-form" style="grid-template-columns: 1fr 1fr;">
+      <input id="commodityDetailAddAmount" type="number" step="any" placeholder="Miktar (${escapeHtml(item.unit)})" />
+      <input id="commodityDetailAddCost" type="number" step="any" placeholder="Birim maliyet (${item.currency === 'USD' ? '$' : '₺'}) - isteğe bağlı" />
+      <button class="btn primary full" id="commodityDetailAddBtn" type="button">Varlığıma Ekle</button>
+    </div>
     `
   );
   bindTechnicalAnalysisButton('commodityTaBtn', {
     title: item.name, assetType: 'commodity', yahooSymbol: item.yahooSymbol,
+  });
+
+  document.getElementById('commodityDetailAddBtn')?.addEventListener('click', async () => {
+    const amount = parseFloat(document.getElementById('commodityDetailAddAmount').value);
+    const costRaw = document.getElementById('commodityDetailAddCost').value.trim();
+    const cost = costRaw === '' ? null : parseFloat(costRaw);
+    if (isNaN(amount) || amount <= 0 || (cost != null && isNaN(cost))) {
+      showMsg('Lütfen geçerli bir miktar (ve isteğe bağlı maliyet) gir.', 'error');
+      return;
+    }
+    const { data: { user } } = await supa.auth.getUser();
+    if (!user) return;
+    const { error } = await supa.from('commodity_holdings').upsert({
+      user_id: user.id, commodity_key: item.key, symbol: item.key,
+      name: item.name, unit: item.unit, amount, cost, deleted_at: null
+    }, { onConflict: 'user_id,commodity_key' });
+    if (error) {
+      showMsg('Emtia eklenemedi: ' + error.message, 'error');
+      return;
+    }
+    showMsg(`${item.name} varlığına eklendi.`, 'success');
   });
 
   try {

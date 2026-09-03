@@ -229,11 +229,70 @@ function filteredHisseCatalog() {
   );
 }
 
+// DÜZELTME (2026-09, tam parite denetimi): mobildeki bist_market_screen.
+// dart'ta "Yükselenler / Düşenler / Yüksek Hacim" hızlı filtre çipleri var
+// — web'de yalnızca alfabetik + arama vardı. Tüm katalog TEK toplu
+// istekle (stock-batch, ≤150'lik parçalar) çekilip sıralanır; 60 saniye
+// önbelleklenir (kural 12: gereksiz sık istek yapılmaz).
+let hisseMoverFilter = 'all';
+
+async function fetchHisseMoverList(filter) {
+  const quotes = await cachedFetch('hisse-mover-quotes', 60000, () =>
+    fetchStockBatchQuotes(hisseCatalog.map(s => s.symbol)));
+  const bySymbol = new Map(quotes.filter(q => q && q.price != null).map(q => [q.symbol, q]));
+  const merged = hisseCatalog
+    .map(s => ({ ...s, ...(bySymbol.get(s.symbol) || {}) }))
+    .filter(s => s.price != null);
+  if (filter === 'gainers') {
+    return merged.filter(s => s.changePercent != null).sort((a, b) => b.changePercent - a.changePercent).slice(0, 40);
+  }
+  if (filter === 'losers') {
+    return merged.filter(s => s.changePercent != null).sort((a, b) => a.changePercent - b.changePercent).slice(0, 40);
+  }
+  if (filter === 'volume') {
+    return merged.filter(s => s.volume != null).sort((a, b) => (b.price * b.volume) - (a.price * a.volume)).slice(0, 40);
+  }
+  return merged;
+}
+
 async function renderHisseList() {
   const tbody = document.getElementById('hisseMarketBody');
   const emptyState = document.getElementById('hisseMarketEmptyState');
   const loadMoreBtn = document.getElementById('hisseLoadMoreBtn');
   if (!tbody) return;
+
+  if (hisseMoverFilter !== 'all') {
+    loadMoreBtn.style.display = 'none';
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">Yükleniyor…</td></tr>`;
+    let moverList = [];
+    try {
+      moverList = await fetchHisseMoverList(hisseMoverFilter);
+    } catch (e) { moverList = []; }
+    if (moverList.length === 0) {
+      tbody.innerHTML = '';
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
+    tbody.innerHTML = moverList.map(s => `
+      <tr>
+        <td>${favoriteStarHtml('hisse', s.symbol, { name: s.name })}</td>
+        <td class="market-row-logo">${stockLogoImg(s.symbol, 26)}</td>
+        <td>
+          <div class="sym">${escapeHtml(s.symbol)}</div>
+          <div class="name">${escapeHtml(s.name || '')}</div>
+        </td>
+        <td class="num">${fmtTL(s.price)}</td>
+        <td class="num">${changeChipHtml(s.changePercent)}</td>
+        <td class="num"><button type="button" class="detail-btn" data-open-stock="${s.symbol}">Detay</button></td>
+      </tr>
+    `).join('');
+    tbody.querySelectorAll('[data-open-stock]').forEach(btn => {
+      btn.addEventListener('click', () => openStockDetail(btn.dataset.openStock));
+    });
+    return;
+  }
+
   const filtered = filteredHisseCatalog();
   if (filtered.length === 0) {
     tbody.innerHTML = '';
@@ -288,6 +347,15 @@ async function loadHisseMarketPage() {
   document.getElementById('hisseCatalogSource').textContent = `Kaynak: ${hisseCatalogSource} · ${hisseCatalog.length} hisse`;
   await renderHisseList();
 }
+
+document.querySelectorAll('#hisseMoverChips .filter-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#hisseMoverChips .filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    hisseMoverFilter = chip.dataset.mover;
+    renderHisseList();
+  });
+});
 
 document.getElementById('hisseSearchInput').addEventListener('input', debounce((e) => {
   hisseFilterText = e.target.value;
@@ -672,10 +740,28 @@ async function openStockDetail(symbol) {
     if (!rec || (Array.isArray(rec) && rec.length === 0)) {
       block.innerHTML = `<div class="empty" style="padding:14px 0;">Bu hisse için analist tavsiyesi bulunamadı.</div>`;
     } else {
+      // DÜZELTME (2026-09, tam parite denetimi): mobildeki AnalystRecommendation
+      // modelinde olan `date` (tavsiye tarihi) ve `modelPortfolio` (model
+      // portföyde mi) alanları çekiliyordu ama tabloda hiç GÖSTERİLMİYORDU;
+      // ayrıca mobildeki gibi bir üst özet (ortalama hedef fiyat, min/maks)
+      // yoktu. İkisi de mobilin AynıŞema'sına göre eklendi (bkz.
+      // analyst_recommendation.dart: bank/recommendation/targetPrice/date/
+      // modelPortfolio).
+      const RECO_LABELS = { al: 'AL', sat: 'SAT', tut: 'TUT', endeks_ustu: 'Endeks Üstü', endekse_paralel: 'Endekse Paralel' };
       const list = Array.isArray(rec) ? rec : (rec.recommendations || []);
-      block.innerHTML = `<table class="kv-table">${list.map(r => `
-        <tr><td>${escapeHtml(r.bank || r.brokerage || r.kurum || '')}</td><td>${escapeHtml(r.recommendation || r.tavsiye || '')}${r.targetPrice || r.hedef_fiyat ? ' · Hedef: ' + fmtTL(r.targetPrice || r.hedef_fiyat) : ''}</td></tr>
-      `).join('')}</table>`;
+      const targets = list.map(r => Number(r.targetPrice)).filter(Number.isFinite);
+      const summaryHtml = targets.length > 0 ? `
+        <div class="stat-mini-grid" style="margin-bottom:8px;">
+          <div class="stat-mini"><div class="lbl">Ortalama Hedef</div><div class="val">${fmtTL(targets.reduce((a, b) => a + b, 0) / targets.length)}</div></div>
+          <div class="stat-mini"><div class="lbl">En Düşük / En Yüksek Hedef</div><div class="val">${fmtTL(Math.min(...targets))} / ${fmtTL(Math.max(...targets))}</div></div>
+          <div class="stat-mini"><div class="lbl">Tavsiye Sayısı</div><div class="val">${list.length}</div></div>
+        </div>` : '';
+      block.innerHTML = summaryHtml + `<table class="kv-table">${list.map(r => {
+        const label = RECO_LABELS[(r.recommendation || r.tavsiye || '').toLowerCase()] || (r.recommendation || r.tavsiye || '');
+        const dateText = r.date ? new Date(r.date).toLocaleDateString('tr-TR') : '';
+        const modelBadge = r.modelPortfolio ? ' <span class="chip pos" style="font-size:10.5px;">Model Portföyde</span>' : '';
+        return `<tr><td>${escapeHtml(r.bank || r.brokerage || r.kurum || '')}${dateText ? `<div class="name">${escapeHtml(dateText)}</div>` : ''}</td><td>${escapeHtml(label)}${r.targetPrice || r.hedef_fiyat ? ' · Hedef: ' + fmtTL(r.targetPrice || r.hedef_fiyat) : ''}${modelBadge}</td></tr>`;
+      }).join('')}</table>`;
     }
   } catch (e) {
     document.getElementById('stockAnalystBlock').innerHTML = `<div class="empty" style="padding:14px 0;">Analist verisi alınamadı.</div>`;

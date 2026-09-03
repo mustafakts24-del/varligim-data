@@ -8,6 +8,8 @@
 
 let bultenArticles = [];
 let bultenActiveCategory = 'all';
+let bultenSearchText = '';
+let bultenAutoRefreshTimer = null;
 
 async function loadBultenPage() {
   const grid = document.getElementById('bultenGrid');
@@ -20,19 +22,42 @@ async function loadBultenPage() {
   } catch (e) {
     bultenArticles = [];
   }
+  const tsEl = document.getElementById('bultenLastUpdated');
+  if (tsEl) tsEl.textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
   if (bultenArticles.length === 0) {
     emptyState.style.display = 'block';
     return;
   }
   renderBultenGrid();
+  // DÜZELTME (2026-09, tam parite denetimi): mobildeki bulletin_screen.dart
+  // haberleri periyodik olarak (arka planda) tazeler ve son güncelleme
+  // saatini gösterir — web'de bu hiç yoktu, sayfa yalnızca ilk açılışta
+  // yükleniyordu. 15 dakikada bir sessizce yenilenir (kullanıcı akışını
+  // bölmez, yalnızca sayfa hâlâ aktifse listeyi günceller).
+  if (!bultenAutoRefreshTimer) {
+    bultenAutoRefreshTimer = setInterval(async () => {
+      const bultenPage = document.getElementById('page-bulten');
+      if (!bultenPage || !bultenPage.classList.contains('active')) return;
+      try {
+        const result = await fetchPriceProxy('type=news');
+        bultenArticles = result.articles || [];
+        const ts = document.getElementById('bultenLastUpdated');
+        if (ts) ts.textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
+        renderBultenGrid();
+      } catch (e) { /* sessizce atla, mevcut liste ekranda kalır */ }
+    }, 15 * 60 * 1000);
+  }
 }
 
 function renderBultenGrid() {
   const grid = document.getElementById('bultenGrid');
   const emptyState = document.getElementById('bultenEmptyState');
-  const filtered = bultenActiveCategory === 'all'
-    ? bultenArticles
-    : bultenArticles.filter(a => a.category === bultenActiveCategory);
+  const q = bultenSearchText.trim().toLocaleLowerCase('tr-TR');
+  const filtered = bultenArticles.filter(a => {
+    if (bultenActiveCategory !== 'all' && a.category !== bultenActiveCategory) return false;
+    if (q && !(a.title || '').toLocaleLowerCase('tr-TR').includes(q)) return false;
+    return true;
+  });
   if (filtered.length === 0) {
     grid.innerHTML = '';
     emptyState.style.display = 'block';
@@ -54,6 +79,11 @@ function renderBultenGrid() {
     card.addEventListener('click', () => openNewsDetail(filtered[Number(card.dataset.openNews)]));
   });
 }
+
+document.getElementById('bultenSearchInput')?.addEventListener('input', debounce((e) => {
+  bultenSearchText = e.target.value;
+  renderBultenGrid();
+}, 200));
 
 document.querySelectorAll('#bultenCategoryChips .filter-chip').forEach(chip => {
   chip.addEventListener('click', () => {

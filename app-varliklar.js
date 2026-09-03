@@ -16,6 +16,38 @@
 /* ==================================================================
  * FAİZ — Mevduat hesaplayıcı + mevcut mevduat kayıtları
  * ================================================================== */
+let editingFaizDepositId = null;
+
+function resetFaizDepositForm() {
+  editingFaizDepositId = null;
+  const titleEl = document.getElementById('faizDepositFormTitle');
+  if (titleEl) titleEl.textContent = 'Mevduat kaydı ekle';
+  document.getElementById('addDepositBtn').textContent = 'Ekle';
+  const cancelBtn = document.getElementById('cancelFaizDepositEditBtn');
+  if (cancelBtn) cancelBtn.style.display = 'none';
+  ['newDepositBankName', 'newDepositPrincipal', 'newDepositAnnualRate',
+    'newDepositWithholdingRate', 'newDepositStartDate', 'newDepositMaturityDate']
+    .forEach(id => document.getElementById(id).value = '');
+}
+
+function startEditFaizDeposit(row) {
+  editingFaizDepositId = row.id;
+  const titleEl = document.getElementById('faizDepositFormTitle');
+  if (titleEl) titleEl.textContent = 'Mevduat kaydını düzenle';
+  document.getElementById('addDepositBtn').textContent = 'Güncelle';
+  const cancelBtn = document.getElementById('cancelFaizDepositEditBtn');
+  if (cancelBtn) cancelBtn.style.display = '';
+  document.getElementById('newDepositBankName').value = row.bank_name || '';
+  setGroupedInputValue('newDepositPrincipal', row.principal);
+  document.getElementById('newDepositAnnualRate').value = row.annual_rate ?? '';
+  document.getElementById('newDepositWithholdingRate').value = row.withholding_rate ?? '';
+  document.getElementById('newDepositStartDate').value = row.start_date ? new Date(row.start_date).toISOString().slice(0, 10) : '';
+  document.getElementById('newDepositMaturityDate').value = row.maturity_date ? new Date(row.maturity_date).toISOString().slice(0, 10) : '';
+  document.getElementById('newDepositBankName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.getElementById('cancelFaizDepositEditBtn')?.addEventListener('click', resetFaizDepositForm);
+
 async function loadDepositHoldings() {
   const { data, error } = await supa
     .from('deposit_holdings')
@@ -40,21 +72,26 @@ async function loadDepositHoldings() {
     const maturityText = row.maturity_date ? new Date(row.maturity_date).toLocaleDateString('tr-TR') : '—';
     const rateText = row.annual_rate == null ? '—' : `%${fmtNumber(row.annual_rate)}`;
     const currentValue = depositCurrentValue(row);
+    const netInterest = currentValue - (Number(row.principal) || 0);
     tr.innerHTML = `
       <td><div class="sym">${escapeHtml(row.bank_name || 'Mevduat')}</div></td>
       <td class="num">${fmtTL(row.principal)}</td>
       <td class="num">${rateText}</td>
       <td class="num">${escapeHtml(maturityText)}</td>
       <td class="num">${fmtTL(currentValue)}</td>
+      <td class="num">${netInterest > 0 ? '+' + fmtTL(netInterest) : fmtTL(netInterest)}</td>
       <td class="num">
+        <button type="button" class="btn outline small deposit-edit" title="Düzenle" style="margin-right:4px;"><span class="msr" style="font-size:16px;">edit</span></button>
         <button type="button" class="del deposit-delete" data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
       </td>`;
+    tr.querySelector('.deposit-edit').addEventListener('click', () => startEditFaizDeposit(row));
     tr.querySelector('.deposit-delete').addEventListener('click', () => deleteDepositHolding(row.id));
     tbody.appendChild(tr);
   }
 }
 
 async function deleteDepositHolding(id) {
+  if (!confirmDelete('Bu mevduat kaydını silmek istediğine emin misin?')) return;
   const { data: { user } } = await supa.auth.getUser();
   if (!user || !id) return;
   const { error } = await supa
@@ -66,6 +103,7 @@ async function deleteDepositHolding(id) {
     showMsg('Mevduat silinemedi: ' + error.message, 'error');
     return;
   }
+  if (editingFaizDepositId === id) resetFaizDepositForm();
   await loadDepositHoldings();
 }
 
@@ -85,7 +123,7 @@ document.getElementById('addDepositBtn').addEventListener('click', async () => {
     showMsg('Lütfen mevduat bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
     return;
   }
-  const id = `${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+  const id = editingFaizDepositId || `${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
   const startDate = new Date(`${startDateRaw}T12:00:00`).toISOString();
   const maturityDate = new Date(`${maturityDateRaw}T12:00:00`).toISOString();
   const { error } = await supa.from('deposit_holdings').upsert({
@@ -96,9 +134,7 @@ document.getElementById('addDepositBtn').addEventListener('click', async () => {
     showMsg('Mevduat eklenemedi: ' + error.message, 'error');
     return;
   }
-  ['newDepositBankName', 'newDepositPrincipal', 'newDepositAnnualRate',
-    'newDepositWithholdingRate', 'newDepositStartDate', 'newDepositMaturityDate']
-    .forEach(id => document.getElementById(id).value = '');
+  resetFaizDepositForm();
   await loadDepositHoldings();
 });
 

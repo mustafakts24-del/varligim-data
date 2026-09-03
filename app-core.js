@@ -30,6 +30,39 @@ function hideMsg() {
   msgEl.textContent = '';
 }
 
+// DÜZELTME (2026-09, kullanıcı raporu: "tüm sayfaların aktif çalışıp
+// çalışmadığını... kontrol et"): mobil uygulama, bir kaydı silmeden
+// önce HER YERDE bir onay diyaloğu gösterir (AlertDialog). Web tarafı
+// bunu hiç yapmıyordu — silme butonuna basar basmaz kayıt geri
+// dönüşsüz siliniyordu (soft-delete olsa da kullanıcı arayüzünden
+// geri getirme yolu yok). Bu ortak yardımcı, tüm silme akışlarına
+// tek satırla eklenir; tarayıcının yerleşik confirm()'i kullanılır
+// (ek bir modal bileşeni gerektirmez, mobildeki "Sil / Vazgeç" ikili
+// seçimiyle aynı işlevi görür).
+function confirmDelete(message) {
+  return window.confirm(message || 'Bu kaydı silmek istediğine emin misin?');
+}
+
+// DÜZELTME (2026-09, tam parite denetimi): mobil, birçok portföy
+// ekranında "Tümünü Temizle" (bulk soft-delete) sunuyor; web'de bu
+// yalnızca tek tek silme ile mümkündü. Ortak, tekrar kullanılabilir bir
+// yardımcı — her tablo için ayrı ayrı yazmak yerine tek satırla kullanılır.
+async function clearAllHoldings(tableName, confirmMsg, afterReload) {
+  if (!confirmDelete(confirmMsg)) return;
+  const { data: { user } } = await supa.auth.getUser();
+  if (!user) return;
+  const { error } = await supa
+    .from(tableName)
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('user_id', user.id)
+    .is('deleted_at', null);
+  if (error) {
+    showMsg('Toplu silme başarısız: ' + error.message, 'error');
+    return;
+  }
+  if (typeof afterReload === 'function') await afterReload();
+}
+
 /* ------------------------------------------------------------------
  * FORMAT YARDIMCILARI
  * ------------------------------------------------------------------ */
@@ -580,6 +613,7 @@ const PAGE_TITLES = {
   hisse: 'Hisse Senetleri',
   fon: 'Yatırım Fonları',
   kripto: 'Kripto Paralar',
+  doviz: 'Döviz',
   faiz: 'Faiz',
   kredi: 'Kredi Hesaplama',
   viop: 'VİOP Aktif Vade',
@@ -589,7 +623,7 @@ const PAGE_TITLES = {
   bulten: 'Bülten'
 };
 
-const VARLIKLAR_PAGES = ['emtia', 'hisse', 'fon', 'kripto', 'faiz', 'kredi', 'viop'];
+const VARLIKLAR_PAGES = ['emtia', 'hisse', 'fon', 'kripto', 'doviz', 'faiz', 'kredi', 'viop'];
 
 const pageLoaders = {}; // Diğer app-*.js dosyaları buraya kendi yükleyici fonksiyonlarını kaydeder.
 function registerPageLoader(pageId, fn) {

@@ -25,6 +25,7 @@ const FAVORI_CATEGORY_LABELS = {
 
 let favoriRows = [];
 let favoriActiveCategory = 'all';
+let favoriSearchText = '';
 
 // Favoriler listesi karma kategoriler içerdiğinden (hisse/endeks/emtia/
 // fon/kripto/viop/doviz), her satır kendi türüne uygun logoyu/ikonu
@@ -61,20 +62,32 @@ async function loadFavorilerPage() {
 function renderFavoriList() {
   const tbody = document.getElementById('favoriBody');
   const emptyState = document.getElementById('favoriEmptyState');
-  const filtered = favoriActiveCategory === 'all'
-    ? favoriRows
-    : favoriRows.filter(r => (r.category || '').toLowerCase() === favoriActiveCategory);
+  const q = favoriSearchText.trim().toLocaleUpperCase('tr-TR');
+  const filtered = favoriRows.filter(r => {
+    if (favoriActiveCategory !== 'all' && (r.category || '').toLowerCase() !== favoriActiveCategory) return false;
+    if (q && !(`${r.symbol || ''} ${r.name || ''}`).toLocaleUpperCase('tr-TR').includes(q)) return false;
+    return true;
+  });
   if (filtered.length === 0) {
     tbody.innerHTML = '';
     emptyState.style.display = 'block';
     return;
   }
   emptyState.style.display = 'none';
+  // DÜZELTME (2026-09, tam parite denetimi): satıra tıklayınca ilgili
+  // varlığın detay sayfası/modalı açılmıyordu (mobilde favoriler
+  // listesindeki her satır dokunulduğunda kendi detay ekranını açar).
+  // Hisse/Fon/Kripto/Emtia/VİOP/Döviz için ilgili piyasa dosyasındaki
+  // openXDetail() fonksiyonları burada yeniden kullanılıyor. Endeks
+  // (BIST index) detayı bileşen listesi gerektirdiğinden bu kategori
+  // tıklanabilir değildir — imleç ve stil buna göre ayarlanır.
+  const CLICKABLE_CATS = new Set(['hisse', 'emtia', 'fon', 'kripto', 'viop', 'doviz']);
   tbody.innerHTML = filtered.map(r => {
     const catSlug = (r.category || '').toLowerCase();
     const label = FAVORI_CATEGORY_LABELS[catSlug] || r.category || '';
+    const clickable = CLICKABLE_CATS.has(catSlug);
     return `
-    <tr>
+    <tr data-cat="${escapeHtml(catSlug)}" data-sym="${escapeHtml(r.symbol)}" data-name="${escapeHtml(r.name || '')}" style="${clickable ? 'cursor:pointer;' : ''}">
       <td>${favoriRowLogo(catSlug, r)}</td>
       <td>${escapeHtml(label)}</td>
       <td>
@@ -91,9 +104,37 @@ function renderFavoriList() {
   tbody.querySelectorAll('.favori-remove').forEach(btn => {
     // toggleFavorite tamamlanınca 'favorites:changed' event'i tetiklenir;
     // aşağıdaki genel dinleyici bu sayfa aktifse otomatik yeniden yükler.
-    btn.addEventListener('click', () => toggleFavorite(btn.dataset.cat, btn.dataset.sym));
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFavorite(btn.dataset.cat, btn.dataset.sym);
+    });
+  });
+  tbody.querySelectorAll('tr[data-cat]').forEach(tr => {
+    const catSlug = tr.dataset.cat;
+    if (!CLICKABLE_CATS.has(catSlug)) return;
+    tr.addEventListener('click', async () => {
+      const sym = tr.dataset.sym;
+      if (catSlug === 'hisse' && typeof openStockDetail === 'function') openStockDetail(sym);
+      else if (catSlug === 'emtia' && typeof openCommodityDetail === 'function') openCommodityDetail(sym);
+      else if (catSlug === 'fon' && typeof openFundDetail === 'function') openFundDetail(sym);
+      else if (catSlug === 'kripto' && typeof openCryptoDetail === 'function') openCryptoDetail(sym);
+      else if (catSlug === 'viop' && typeof openViopDetail === 'function') {
+        let livePrice = null, liveChange = null;
+        try {
+          const q = await fetchPriceProxy(`type=viop&symbol=${encodeURIComponent(sym)}`);
+          livePrice = q.price; liveChange = q.changePercent;
+        } catch (e) { /* modal "—" gösterecek */ }
+        openViopDetail({ symbol: sym, underlying: tr.dataset.name, category: 'other', isOption: false, price: livePrice, changePercent: liveChange, volumeTl: null, volumeLot: null });
+      }
+      else if (catSlug === 'doviz' && typeof openDovizDetail === 'function') openDovizDetail(sym);
+    });
   });
 }
+
+document.getElementById('favoriSearchInput')?.addEventListener('input', debounce((e) => {
+  favoriSearchText = e.target.value;
+  renderFavoriList();
+}, 200));
 
 document.querySelectorAll('#favoriCategoryChips .filter-chip').forEach(chip => {
   chip.addEventListener('click', () => {

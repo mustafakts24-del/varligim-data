@@ -70,6 +70,7 @@
           <div class="nav-subitem" data-page="hisse"><span class="msr">candlestick_chart</span> Hisse Senetleri</div>
           <div class="nav-subitem" data-page="fon"><span class="msr">donut_small</span> Yatırım Fonları</div>
           <div class="nav-subitem" data-page="kripto"><span class="msr">currency_bitcoin</span> Kripto Paralar</div>
+          <div class="nav-subitem" data-page="doviz"><span class="msr">currency_exchange</span> Döviz</div>
           <div class="nav-subitem" data-page="faiz"><span class="msr">percent</span> Faiz</div>
           <div class="nav-subitem" data-page="kredi"><span class="msr">calculate</span> Kredi Hesaplama</div>
           <div class="nav-subitem" data-page="viop"><span class="msr">show_chart</span> VİOP Aktif Vade</div>
@@ -158,6 +159,11 @@
             <div class="vhc-title">Kripto Paralar</div>
             <div class="vhc-desc">Bitcoin, Ethereum ve diğer kripto paralar</div>
           </div>
+          <div class="varliklar-hub-card" data-page="doviz" style="--vhc-color:#F0A020;">
+            <div class="vhc-icon"><span class="msr">currency_exchange</span></div>
+            <div class="vhc-title">Döviz</div>
+            <div class="vhc-desc">Canlı döviz kurları, grafik ve çevirici</div>
+          </div>
           <div class="varliklar-hub-card" data-page="faiz" style="--vhc-color:#2AA9E0;">
             <div class="vhc-icon"><span class="msr">account_balance</span></div>
             <div class="vhc-title">Faiz ve Kredi Hesaplama</div>
@@ -205,6 +211,12 @@
             <input type="search" id="hisseSearchInput" placeholder="Hisse kodu veya şirket adı ara..." />
             <span id="hisseCatalogSource" style="font-size:11.5px; color:var(--text-faint);"></span>
           </div>
+          <div class="chip-row" id="hisseMoverChips">
+            <div class="filter-chip active" data-mover="all">Tümü</div>
+            <div class="filter-chip" data-mover="gainers">Yükselenler</div>
+            <div class="filter-chip" data-mover="losers">Düşenler</div>
+            <div class="filter-chip" data-mover="volume">Yüksek Hacim</div>
+          </div>
           <div class="table-wrap">
           <table id="hisseMarketTable">
             <thead><tr>
@@ -237,6 +249,12 @@
             <div class="filter-chip" data-cat="Katılım">Katılım</div>
             <div class="filter-chip" data-cat="Emeklilik">Emeklilik</div>
             <div class="filter-chip" data-cat="Serbest">Serbest</div>
+            <div class="filter-chip" data-cat="Garantili">Garantili</div>
+            <div class="filter-chip" data-cat="Karma">Karma</div>
+            <div class="filter-chip" data-cat="Gayrimenkul">Gayrimenkul</div>
+            <div class="filter-chip" data-cat="Girişim Sermayesi">Girişim Sermayesi</div>
+            <div class="filter-chip" data-cat="Kira Sertifikaları">Kira Sertifikaları</div>
+            <div class="filter-chip" id="fonFavoritesOnlyChip"><span class="msr" style="font-size:14px; vertical-align:-2px;">star</span> Sadece Favorilerim</div>
           </div>
           <div class="table-wrap">
           <table id="fonMarketTable">
@@ -268,6 +286,42 @@
           </table>
           </div>
           <div id="kriptoMarketEmptyState" class="empty" style="display:none;">Sonuç bulunamadı.</div>
+        </div>
+      </div>
+
+      <!-- DÖVİZ (PİYASA) -->
+      <div class="page" id="page-doviz">
+        <h1 class="page-title">Döviz</h1>
+        <p class="page-lead">Canlı döviz kurları ve çevirici. Kendi döviz varlıkların için <strong>Varlığım</strong> menüsünü kullan.</p>
+        <div class="card">
+          <div class="market-toolbar">
+            <input type="search" id="dovizSearchInput" placeholder="Döviz kodu veya adı ara..." />
+          </div>
+          <div class="table-wrap">
+          <table id="dovizMarketTable">
+            <thead><tr>
+              <th></th><th></th><th>Döviz</th><th class="num">Kur</th><th class="num">Değişim</th><th></th>
+            </tr></thead>
+            <tbody id="dovizMarketBody"></tbody>
+          </table>
+          </div>
+          <div id="dovizMarketEmptyState" class="empty" style="display:none;">Sonuç bulunamadı.</div>
+        </div>
+        <div class="card">
+          <div class="section-title"><span class="msr">currency_exchange</span> Döviz Çevirici</div>
+          <div class="calc-inline-row">
+            <label for="dovizConverterTry">TL</label>
+            <input id="dovizConverterTry" type="text" inputmode="decimal" class="amt-grouped" value="100" />
+          </div>
+          <div class="calc-inline-row">
+            <label for="dovizConverterCurrency">Döviz</label>
+            <select id="dovizConverterCurrency"></select>
+          </div>
+          <div class="calc-inline-row">
+            <label for="dovizConverterFx">Karşılığı</label>
+            <input id="dovizConverterFx" type="text" inputmode="decimal" />
+          </div>
+          <div id="dovizConverterRateLabel" style="font-size:12px; color:var(--text-faint); margin-top:6px;">Kur yükleniyor…</div>
         </div>
       </div>
 
@@ -320,14 +374,14 @@
           <table id="depositTable">
             <thead><tr>
               <th>Banka</th><th class="num">Anapara</th><th class="num">Faiz</th>
-              <th class="num">Vade</th><th class="num">Güncel Değer</th><th></th>
+              <th class="num">Vade</th><th class="num">Güncel Değer</th><th class="num">Net Faiz</th><th></th>
             </tr></thead>
             <tbody id="depositBody"></tbody>
           </table>
           </div>
           <div id="depositEmptyState" class="empty" style="display:none;">Henüz mevduat eklenmemiş.</div>
           <div class="add-form">
-            <div class="full section-title" style="margin:0;">Mevduat kaydı ekle</div>
+            <div class="full section-title" style="margin:0;" id="faizDepositFormTitle">Mevduat kaydı ekle</div>
             <input id="newDepositBankName" class="full" type="text" autocomplete="off" placeholder="Banka adı" />
             <input id="newDepositPrincipal" type="text" inputmode="decimal" class="amt-grouped" placeholder="Anapara (₺)" />
             <input id="newDepositAnnualRate" type="number" step="any" min="0" placeholder="Yıllık faiz oranı (%)" />
@@ -335,6 +389,7 @@
             <input id="newDepositStartDate" type="date" />
             <input id="newDepositMaturityDate" type="date" />
             <button class="btn primary full" id="addDepositBtn" type="button">Ekle</button>
+            <button class="btn outline full" id="cancelFaizDepositEditBtn" type="button" style="display:none;">İptal</button>
           </div>
         </div>
       </div>
@@ -502,6 +557,7 @@
       <div class="page" id="page-favoriler">
         <h1 class="page-title">Favoriler</h1>
         <p class="page-lead">Favorilere eklediğin enstrümanlar. Mobil uygulamayla otomatik senkronize.</p>
+        <input id="favoriSearchInput" type="text" autocomplete="off" placeholder="Favorilerde ara..." style="width:100%; margin-bottom:10px;" />
         <div class="chip-row" id="favoriCategoryChips">
           <div class="filter-chip active" data-cat="all">Tümü</div>
           <div class="filter-chip" data-cat="hisse">Hisse Senetleri</div>
@@ -597,7 +653,10 @@
         <!-- HİSSE PORTFÖYÜ -->
         <div class="varligim-section" id="varligimSection-hisse" style="display:none;">
           <div class="card">
-            <div class="section-title">Hisseler</div>
+            <div class="section-title" style="justify-content:space-between;">
+              <span>Hisseler</span>
+              <button class="btn outline small" id="clearAllStocksBtn" type="button">Tümünü Temizle</button>
+            </div>
             <div class="table-wrap">
             <table id="holdingsTable">
               <thead><tr>
@@ -608,6 +667,7 @@
             </table>
             </div>
             <div id="emptyState" class="empty" style="display:none;">Henüz hisse eklenmemiş.</div>
+            <div class="stat-mini-grid" id="stockPortfolioSummary" style="display:none; margin-top:10px;"></div>
             <div class="add-form">
               <div class="full section-title" style="margin:0;">Yeni hisse ekle</div>
               <select id="newStockSelect" class="full"><option value="">Hisse seç...</option></select>
@@ -621,7 +681,10 @@
         <!-- YATIRIM FONLARIM -->
         <div class="varligim-section" id="varligimSection-fon" style="display:none;">
           <div class="card">
-            <div class="section-title">Fon Varlıkları</div>
+            <div class="section-title" style="justify-content:space-between;">
+              <span>Fon Varlıkları</span>
+              <button class="btn outline small" id="clearAllFundsBtn" type="button">Tümünü Temizle</button>
+            </div>
             <div class="table-wrap">
             <table id="fundTable">
               <thead><tr>
@@ -632,6 +695,7 @@
             </table>
             </div>
             <div id="fundEmptyState" class="empty" style="display:none;">Henüz fon eklenmemiş.</div>
+            <div class="stat-mini-grid" id="fundPortfolioSummary" style="display:none; margin-top:10px;"></div>
             <div class="add-form">
               <div class="full section-title" style="margin:0;">Fon ekle / güncelle</div>
               <input id="newFundCode" class="full" type="text" autocomplete="off" maxlength="8" placeholder="Fon kodunu yaz (örn. GUM)" />
@@ -711,14 +775,14 @@
             <table id="varligimDepositTable">
               <thead><tr>
                 <th>Banka</th><th class="num">Anapara</th><th class="num">Faiz</th>
-                <th class="num">Vade</th><th class="num">Güncel Değer</th><th></th>
+                <th class="num">Vade</th><th class="num">Güncel Değer</th><th class="num">Net Faiz</th><th></th>
               </tr></thead>
               <tbody id="varligimDepositBody"></tbody>
             </table>
             </div>
             <div id="varligimDepositEmptyState" class="empty" style="display:none;">Henüz mevduat eklenmemiş.</div>
             <div class="add-form">
-              <div class="full section-title" style="margin:0;">Mevduat ekle</div>
+              <div class="full section-title" style="margin:0;" id="varligimDepositFormTitle">Mevduat ekle</div>
               <input id="newVarligimDepositBankName" class="full" type="text" autocomplete="off" placeholder="Banka adı" />
               <input id="newVarligimDepositPrincipal" type="text" inputmode="decimal" class="amt-grouped" placeholder="Anapara (₺)" />
               <input id="newVarligimDepositAnnualRate" type="number" step="any" min="0" placeholder="Yıllık faiz oranı (%)" />
@@ -726,6 +790,7 @@
               <input id="newVarligimDepositStartDate" type="date" />
               <input id="newVarligimDepositMaturityDate" type="date" />
               <button class="btn primary full" id="addVarligimDepositBtn" type="button">Ekle</button>
+              <button class="btn outline full" id="cancelVarligimDepositEditBtn" type="button" style="display:none;">İptal</button>
             </div>
           </div>
         </div>
@@ -738,14 +803,15 @@
             <table id="realEstateTable">
               <thead><tr>
                 <th>Varlık</th><th>Konum</th><th class="num">Alış</th>
-                <th class="num">Güncel</th><th class="num">Aylık Kira</th><th></th>
+                <th class="num">Güncel</th><th class="num">Aylık Kira</th>
+                <th class="num">Değer Değişimi</th><th class="num">Kira Getirisi</th><th></th>
               </tr></thead>
               <tbody id="realEstateBody"></tbody>
             </table>
             </div>
             <div id="realEstateEmptyState" class="empty" style="display:none;">Henüz gayrimenkul eklenmemiş.</div>
             <div class="add-form">
-              <div class="full section-title" style="margin:0;">Gayrimenkul ekle</div>
+              <div class="full section-title" style="margin:0;" id="realEstateFormTitle">Gayrimenkul ekle</div>
               <select id="newRealEstateType">
                 <option value="Konut">Konut</option>
                 <option value="Arsa">Arsa</option>
@@ -763,6 +829,7 @@
               <input id="newRealEstateMonthlyRent" type="text" inputmode="decimal" class="amt-grouped" placeholder="Aylık kira (₺) - isteğe bağlı" />
               <input id="newRealEstatePurchaseDate" type="date" />
               <button class="btn primary full" id="addRealEstateBtn" type="button">Ekle</button>
+              <button class="btn outline full" id="cancelRealEstateEditBtn" type="button" style="display:none;">İptal</button>
             </div>
           </div>
         </div>
@@ -775,14 +842,14 @@
             <table id="vehicleTable">
               <thead><tr>
                 <th>Araç</th><th>Plaka</th><th class="num">Yıl</th>
-                <th class="num">Alış</th><th class="num">Güncel</th><th></th>
+                <th class="num">Alış</th><th class="num">Güncel</th><th class="num">Değer Değişimi</th><th></th>
               </tr></thead>
               <tbody id="vehicleBody"></tbody>
             </table>
             </div>
             <div id="vehicleEmptyState" class="empty" style="display:none;">Henüz araç eklenmemiş.</div>
             <div class="add-form">
-              <div class="full section-title" style="margin:0;">Araç ekle</div>
+              <div class="full section-title" style="margin:0;" id="vehicleFormTitle">Araç ekle</div>
               <select id="newVehicleType">
                 <option value="Otomobil">Otomobil</option>
                 <option value="Motosiklet">Motosiklet</option>
@@ -799,6 +866,7 @@
               <input id="newVehicleCurrentValue" type="text" inputmode="decimal" class="amt-grouped" placeholder="Güncel değer (₺)" />
               <input id="newVehiclePurchaseDate" type="date" />
               <button class="btn primary full" id="addVehicleBtn" type="button">Ekle</button>
+              <button class="btn outline full" id="cancelVehicleEditBtn" type="button" style="display:none;">İptal</button>
             </div>
           </div>
         </div>
@@ -818,7 +886,7 @@
             </div>
             <div id="otherAssetsEmptyState" class="empty" style="display:none;">Henüz diğer varlık eklenmemiş.</div>
             <div class="add-form">
-              <div class="full section-title" style="margin:0;">Diğer varlık ekle</div>
+              <div class="full section-title" style="margin:0;" id="otherAssetFormTitle">Diğer varlık ekle</div>
               <select id="newOtherAssetType">
                 <option value="Saat">Saat</option>
                 <option value="Mücevher">Mücevher</option>
@@ -835,6 +903,7 @@
               <input id="newOtherAssetCurrentValue" type="text" inputmode="decimal" class="amt-grouped" placeholder="Güncel değer (₺)" />
               <input id="newOtherAssetPurchaseDate" type="date" />
               <button class="btn primary full" id="addOtherAssetBtn" type="button">Ekle</button>
+              <button class="btn outline full" id="cancelOtherAssetEditBtn" type="button" style="display:none;">İptal</button>
             </div>
           </div>
         </div>
@@ -845,6 +914,10 @@
       <div class="page" id="page-bulten">
         <h1 class="page-title">Bülten</h1>
         <p class="page-lead">Piyasa özeti ve finans haberleri (mobil ile aynı kaynaklar).</p>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+          <input id="bultenSearchInput" type="text" autocomplete="off" placeholder="Haber ara..." style="flex:1; min-width:200px;" />
+          <span id="bultenLastUpdated" style="font-size:12px; color:var(--text-faint);"></span>
+        </div>
         <div class="chip-row" id="bultenCategoryChips">
           <div class="filter-chip active" data-cat="all">Tümü</div>
           <div class="filter-chip" data-cat="ekonomi">Ekonomi</div>
@@ -869,6 +942,7 @@
 <script src="app-piyasa-hisse.js?v=20260902"></script>
 <script src="app-piyasa-fon.js?v=20260902"></script>
 <script src="app-piyasa-kripto.js?v=20260902"></script>
+<script src="app-piyasa-doviz.js?v=20260903"></script>
 <script src="app-piyasa-viop.js?v=20260902"></script>
 <script src="app-favoriler.js?v=20260902"></script>
 <script src="app-bulten.js?v=20260902"></script>

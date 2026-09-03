@@ -232,13 +232,21 @@ async function loadHomeMovers() {
       listEl.innerHTML = `<div class="empty" style="padding:14px 0;">Veri alınamadı.</div>`;
       return;
     }
+    // DÜZELTME (2026-09, tam parite denetimi): bu satırlar tıklanamıyordu
+    // (mobilde ana sayfadaki "Piyasa Hareketleri" satırına dokununca ilgili
+    // hissenin detay ekranı açılır) — artık aynı davranış web'de de var.
     listEl.innerHTML = top5.map(q => `
-      <div class="movers-row">
+      <div class="movers-row" data-symbol="${escapeHtml(q.symbol)}" style="cursor:pointer;">
         <div class="sym">${escapeHtml(q.symbol)}</div>
         <div>${fmtTL(q.price)}</div>
         ${changeChipHtml(q.changePercent)}
       </div>
     `).join('');
+    listEl.querySelectorAll('.movers-row[data-symbol]').forEach(row => {
+      row.addEventListener('click', () => {
+        if (typeof openStockDetail === 'function') openStockDetail(row.dataset.symbol);
+      });
+    });
   } catch (e) {
     listEl.innerHTML = `<div class="empty" style="padding:14px 0;">Veri alınamadı.</div>`;
   }

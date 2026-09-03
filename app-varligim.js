@@ -23,7 +23,48 @@ document.querySelectorAll('#page-varligim .subtab-chip').forEach(chip => {
 
 /* ==================================================================
  * GAYRİMENKUL
+ * DÜZELTME (2026-09, tam parite denetimi): mobilde her gayrimenkul
+ * kaydı düzenlenebilir (real_estate_screen.dart popup menüsü "Sil" +
+ * "Düzenle"); web'de bu satır rastgele üretilen bir `id` ile
+ * upsert edildiğinden (onConflict: 'user_id,id'), "tekrar ekle"
+ * asla mevcut kaydı GÜNCELLEMİYOR, hep YENİ bir satır oluşturuyordu.
+ * Aşağıya budget sayfasındaki (app-butce.js) ile aynı düzenleme
+ * deseni eklendi: "Düzenle" satırı formu doldurur, "Ekle" butonu
+ * "Güncelle"ye döner ve aynı id ile upsert yapılır.
+ * Ayrıca mobildeki "Değer Değişimi %" ve "Yıllık Kira Getirisi %"
+ * hesaplamaları (var olan alanlardan türetilir, uydurulmaz) eklendi.
  * ================================================================== */
+let editingRealEstateId = null;
+
+function resetRealEstateForm() {
+  editingRealEstateId = null;
+  document.getElementById('realEstateFormTitle').textContent = 'Gayrimenkul ekle';
+  document.getElementById('addRealEstateBtn').textContent = 'Ekle';
+  document.getElementById('cancelRealEstateEditBtn').style.display = 'none';
+  ['newRealEstateTitle', 'newRealEstateCity', 'newRealEstateDistrict', 'newRealEstatePurchasePrice',
+    'newRealEstateCurrentValue', 'newRealEstateMonthlyRent', 'newRealEstatePurchaseDate']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('newRealEstateType').value = 'Konut';
+}
+
+function startEditRealEstate(row) {
+  editingRealEstateId = row.id;
+  document.getElementById('realEstateFormTitle').textContent = 'Gayrimenkulü düzenle';
+  document.getElementById('addRealEstateBtn').textContent = 'Güncelle';
+  document.getElementById('cancelRealEstateEditBtn').style.display = '';
+  document.getElementById('newRealEstateType').value = row.type || 'Konut';
+  document.getElementById('newRealEstateTitle').value = row.title || '';
+  document.getElementById('newRealEstateCity').value = row.city || '';
+  document.getElementById('newRealEstateDistrict').value = row.district || '';
+  setGroupedInputValue('newRealEstatePurchasePrice', row.purchase_price);
+  setGroupedInputValue('newRealEstateCurrentValue', row.current_value);
+  setGroupedInputValue('newRealEstateMonthlyRent', row.monthly_rent);
+  document.getElementById('newRealEstatePurchaseDate').value = row.purchase_date ? new Date(row.purchase_date).toISOString().slice(0, 10) : '';
+  document.getElementById('newRealEstateTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.getElementById('cancelRealEstateEditBtn').addEventListener('click', resetRealEstateForm);
+
 async function loadRealEstateHoldings() {
   const { data, error } = await supa
     .from('real_estate_holdings')
@@ -46,6 +87,11 @@ async function loadRealEstateHoldings() {
   for (const row of data) {
     const tr = document.createElement('tr');
     const locationText = [row.city, row.district].filter(Boolean).join(' / ');
+    const purchasePrice = Number(row.purchase_price) || 0;
+    const currentValue = Number(row.current_value) || 0;
+    const changePct = purchasePrice > 0 ? ((currentValue - purchasePrice) / purchasePrice) * 100 : null;
+    const rentYieldPct = (row.monthly_rent && currentValue > 0)
+      ? ((Number(row.monthly_rent) * 12) / currentValue) * 100 : null;
     tr.innerHTML = `
       <td>
         <div class="sym">${escapeHtml(row.title || row.type || 'Gayrimenkul')}</div>
@@ -55,16 +101,21 @@ async function loadRealEstateHoldings() {
       <td class="num">${fmtTL(row.purchase_price)}</td>
       <td class="num">${fmtTL(row.current_value)}</td>
       <td class="num">${row.monthly_rent ? fmtTL(row.monthly_rent) : '—'}</td>
+      <td class="num">${changePct == null ? '—' : changeChipHtml(changePct)}</td>
+      <td class="num">${rentYieldPct == null ? '—' : '%' + fmtNumber(rentYieldPct)}</td>
       <td class="num">
+        <button type="button" class="btn outline small real-estate-edit" title="Düzenle" style="margin-right:4px;"><span class="msr" style="font-size:16px;">edit</span></button>
         <button type="button" class="del real-estate-delete" data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
       </td>
     `;
+    tr.querySelector('.real-estate-edit').addEventListener('click', () => startEditRealEstate(row));
     tr.querySelector('.real-estate-delete').addEventListener('click', () => deleteRealEstateHolding(row.id));
     tbody.appendChild(tr);
   }
 }
 
 async function deleteRealEstateHolding(id) {
+  if (!confirmDelete('Bu gayrimenkul kaydını silmek istediğine emin misin?')) return;
   const { data: { user } } = await supa.auth.getUser();
   if (!user || !id) return;
   const { error } = await supa
@@ -76,6 +127,7 @@ async function deleteRealEstateHolding(id) {
     showMsg('Gayrimenkul silinemedi: ' + error.message, 'error');
     return;
   }
+  if (editingRealEstateId === id) resetRealEstateForm();
   await loadRealEstateHoldings();
 }
 
@@ -99,7 +151,7 @@ document.getElementById('addRealEstateBtn').addEventListener('click', async () =
     return;
   }
 
-  const id = `${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+  const id = editingRealEstateId || `${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
   const purchaseDate = new Date(`${purchaseDateRaw}T12:00:00`).toISOString();
 
   const { error } = await supa.from('real_estate_holdings').upsert({
@@ -112,16 +164,44 @@ document.getElementById('addRealEstateBtn').addEventListener('click', async () =
     showMsg('Gayrimenkul eklenemedi: ' + error.message, 'error');
     return;
   }
-  ['newRealEstateTitle', 'newRealEstateCity', 'newRealEstateDistrict', 'newRealEstatePurchasePrice',
-    'newRealEstateCurrentValue', 'newRealEstateMonthlyRent', 'newRealEstatePurchaseDate']
-    .forEach(id => document.getElementById(id).value = '');
-  document.getElementById('newRealEstateType').value = 'Konut';
+  resetRealEstateForm();
   await loadRealEstateHoldings();
 });
 
 /* ==================================================================
- * ARAÇ
+ * ARAÇ (aynı düzenleme/onay/hesaplama düzeltmesi — bkz. Gayrimenkul)
  * ================================================================== */
+let editingVehicleId = null;
+
+function resetVehicleForm() {
+  editingVehicleId = null;
+  document.getElementById('vehicleFormTitle').textContent = 'Araç ekle';
+  document.getElementById('addVehicleBtn').textContent = 'Ekle';
+  document.getElementById('cancelVehicleEditBtn').style.display = 'none';
+  ['newVehicleBrand', 'newVehicleModel', 'newVehicleModelYear', 'newVehiclePlate',
+    'newVehiclePurchasePrice', 'newVehicleCurrentValue', 'newVehiclePurchaseDate']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('newVehicleType').value = 'Otomobil';
+}
+
+function startEditVehicle(row) {
+  editingVehicleId = row.id;
+  document.getElementById('vehicleFormTitle').textContent = 'Aracı düzenle';
+  document.getElementById('addVehicleBtn').textContent = 'Güncelle';
+  document.getElementById('cancelVehicleEditBtn').style.display = '';
+  document.getElementById('newVehicleType').value = row.type || 'Otomobil';
+  document.getElementById('newVehicleBrand').value = row.brand || '';
+  document.getElementById('newVehicleModel').value = row.model || '';
+  document.getElementById('newVehicleModelYear').value = row.model_year || '';
+  document.getElementById('newVehiclePlate').value = row.plate || '';
+  setGroupedInputValue('newVehiclePurchasePrice', row.purchase_price);
+  setGroupedInputValue('newVehicleCurrentValue', row.current_value);
+  document.getElementById('newVehiclePurchaseDate').value = row.purchase_date ? new Date(row.purchase_date).toISOString().slice(0, 10) : '';
+  document.getElementById('newVehicleBrand').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.getElementById('cancelVehicleEditBtn').addEventListener('click', resetVehicleForm);
+
 async function loadVehicleHoldings() {
   const { data, error } = await supa
     .from('vehicle_holdings')
@@ -143,6 +223,9 @@ async function loadVehicleHoldings() {
   emptyState.style.display = 'none';
   for (const row of data) {
     const tr = document.createElement('tr');
+    const purchasePrice = Number(row.purchase_price) || 0;
+    const currentValue = Number(row.current_value) || 0;
+    const changePct = purchasePrice > 0 ? ((currentValue - purchasePrice) / purchasePrice) * 100 : null;
     tr.innerHTML = `
       <td>
         <div class="sym">${escapeHtml([row.brand, row.model].filter(Boolean).join(' '))}</div>
@@ -152,16 +235,20 @@ async function loadVehicleHoldings() {
       <td class="num">${row.model_year || '—'}</td>
       <td class="num">${fmtTL(row.purchase_price)}</td>
       <td class="num">${fmtTL(row.current_value)}</td>
+      <td class="num">${changePct == null ? '—' : changeChipHtml(changePct)}</td>
       <td class="num">
+        <button type="button" class="btn outline small vehicle-edit" title="Düzenle" style="margin-right:4px;"><span class="msr" style="font-size:16px;">edit</span></button>
         <button type="button" class="del vehicle-delete" data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
       </td>
     `;
+    tr.querySelector('.vehicle-edit').addEventListener('click', () => startEditVehicle(row));
     tr.querySelector('.vehicle-delete').addEventListener('click', () => deleteVehicleHolding(row.id));
     tbody.appendChild(tr);
   }
 }
 
 async function deleteVehicleHolding(id) {
+  if (!confirmDelete('Bu aracı silmek istediğine emin misin?')) return;
   const { data: { user } } = await supa.auth.getUser();
   if (!user || !id) return;
   const { error } = await supa
@@ -173,6 +260,7 @@ async function deleteVehicleHolding(id) {
     showMsg('Araç silinemedi: ' + error.message, 'error');
     return;
   }
+  if (editingVehicleId === id) resetVehicleForm();
   await loadVehicleHoldings();
 }
 
@@ -196,7 +284,7 @@ document.getElementById('addVehicleBtn').addEventListener('click', async () => {
     return;
   }
 
-  const id = `${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+  const id = editingVehicleId || `${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
   const purchaseDate = new Date(`${purchaseDateRaw}T12:00:00`).toISOString();
 
   const { error } = await supa.from('vehicle_holdings').upsert({
@@ -208,10 +296,7 @@ document.getElementById('addVehicleBtn').addEventListener('click', async () => {
     showMsg('Araç eklenemedi: ' + error.message, 'error');
     return;
   }
-  ['newVehicleBrand', 'newVehicleModel', 'newVehicleModelYear', 'newVehiclePlate',
-    'newVehiclePurchasePrice', 'newVehicleCurrentValue', 'newVehiclePurchaseDate']
-    .forEach(id => document.getElementById(id).value = '');
-  document.getElementById('newVehicleType').value = 'Otomobil';
+  resetVehicleForm();
   await loadVehicleHoldings();
 });
 
@@ -220,6 +305,34 @@ document.getElementById('addVehicleBtn').addEventListener('click', async () => {
  * tablosu, Faiz sayfasındaki liste ile aynı veriyi farklı bir
  * sayfadan da yönetilebilir kılar)
  * ================================================================== */
+let editingVarligimDepositId = null;
+
+function resetVarligimDepositForm() {
+  editingVarligimDepositId = null;
+  document.getElementById('varligimDepositFormTitle').textContent = 'Mevduat ekle';
+  document.getElementById('addVarligimDepositBtn').textContent = 'Ekle';
+  document.getElementById('cancelVarligimDepositEditBtn').style.display = 'none';
+  ['newVarligimDepositBankName', 'newVarligimDepositPrincipal', 'newVarligimDepositAnnualRate',
+    'newVarligimDepositWithholdingRate', 'newVarligimDepositStartDate', 'newVarligimDepositMaturityDate']
+    .forEach(id => document.getElementById(id).value = '');
+}
+
+function startEditVarligimDeposit(row) {
+  editingVarligimDepositId = row.id;
+  document.getElementById('varligimDepositFormTitle').textContent = 'Mevduatı düzenle';
+  document.getElementById('addVarligimDepositBtn').textContent = 'Güncelle';
+  document.getElementById('cancelVarligimDepositEditBtn').style.display = '';
+  document.getElementById('newVarligimDepositBankName').value = row.bank_name || '';
+  setGroupedInputValue('newVarligimDepositPrincipal', row.principal);
+  document.getElementById('newVarligimDepositAnnualRate').value = row.annual_rate ?? '';
+  document.getElementById('newVarligimDepositWithholdingRate').value = row.withholding_rate ?? '';
+  document.getElementById('newVarligimDepositStartDate').value = row.start_date ? new Date(row.start_date).toISOString().slice(0, 10) : '';
+  document.getElementById('newVarligimDepositMaturityDate').value = row.maturity_date ? new Date(row.maturity_date).toISOString().slice(0, 10) : '';
+  document.getElementById('newVarligimDepositBankName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.getElementById('cancelVarligimDepositEditBtn').addEventListener('click', resetVarligimDepositForm);
+
 async function loadVarligimDeposits() {
   const { data, error } = await supa
     .from('deposit_holdings')
@@ -239,25 +352,54 @@ async function loadVarligimDeposits() {
     return;
   }
   emptyState.style.display = 'none';
+  // Yaklaşan vade uyarısı (mobildeki deposit_notification_service.dart'ın
+  // 7/3/1/0 gün eşiğiyle aynı mantık — burada push bildirimi yerine
+  // pasif bir liste olarak gösterilir; bkz. teslim raporu).
+  const upcoming = data.filter(row => {
+    if (!row.maturity_date) return false;
+    const days = Math.ceil((new Date(row.maturity_date) - new Date()) / 86400000);
+    return days >= 0 && days <= 7;
+  });
+  let upcomingBanner = document.getElementById('varligimDepositUpcomingBanner');
+  if (upcoming.length > 0) {
+    const html = `<span class="msr" style="vertical-align:middle;">event_upcoming</span> Yaklaşan vade: ` +
+      upcoming.map(r => `${escapeHtml(r.bank_name || 'Mevduat')} (${new Date(r.maturity_date).toLocaleDateString('tr-TR')})`).join(', ');
+    if (!upcomingBanner) {
+      upcomingBanner = document.createElement('div');
+      upcomingBanner.id = 'varligimDepositUpcomingBanner';
+      upcomingBanner.className = 'banner-warning';
+      tbody.closest('.table-wrap').before(upcomingBanner);
+    }
+    upcomingBanner.innerHTML = html;
+    upcomingBanner.style.display = '';
+  } else if (upcomingBanner) {
+    upcomingBanner.style.display = 'none';
+  }
   for (const row of data) {
     const tr = document.createElement('tr');
     const maturityText = row.maturity_date ? new Date(row.maturity_date).toLocaleDateString('tr-TR') : '—';
     const rateText = row.annual_rate == null ? '—' : `%${fmtNumber(row.annual_rate)}`;
+    const currentValue = depositCurrentValue(row);
+    const netInterest = currentValue - (Number(row.principal) || 0);
     tr.innerHTML = `
       <td><div class="sym">${escapeHtml(row.bank_name || 'Mevduat')}</div></td>
       <td class="num">${fmtTL(row.principal)}</td>
       <td class="num">${rateText}</td>
       <td class="num">${escapeHtml(maturityText)}</td>
-      <td class="num">${fmtTL(depositCurrentValue(row))}</td>
+      <td class="num">${fmtTL(currentValue)}</td>
+      <td class="num">${netInterest > 0 ? '+' + fmtTL(netInterest) : fmtTL(netInterest)}</td>
       <td class="num">
+        <button type="button" class="btn outline small varligim-deposit-edit" title="Düzenle" style="margin-right:4px;"><span class="msr" style="font-size:16px;">edit</span></button>
         <button type="button" class="del varligim-deposit-delete" data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
       </td>`;
+    tr.querySelector('.varligim-deposit-edit').addEventListener('click', () => startEditVarligimDeposit(row));
     tr.querySelector('.varligim-deposit-delete').addEventListener('click', () => deleteVarligimDeposit(row.id));
     tbody.appendChild(tr);
   }
 }
 
 async function deleteVarligimDeposit(id) {
+  if (!confirmDelete('Bu mevduat kaydını silmek istediğine emin misin?')) return;
   const { data: { user } } = await supa.auth.getUser();
   if (!user || !id) return;
   const { error } = await supa
@@ -269,6 +411,7 @@ async function deleteVarligimDeposit(id) {
     showMsg('Mevduat silinemedi: ' + error.message, 'error');
     return;
   }
+  if (editingVarligimDepositId === id) resetVarligimDepositForm();
   await loadVarligimDeposits();
 }
 
@@ -288,7 +431,7 @@ document.getElementById('addVarligimDepositBtn').addEventListener('click', async
     showMsg('Lütfen mevduat bilgilerini eksiksiz ve geçerli şekilde gir.', 'error');
     return;
   }
-  const id = `${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+  const id = editingVarligimDepositId || `${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
   const startDate = new Date(`${startDateRaw}T12:00:00`).toISOString();
   const maturityDate = new Date(`${maturityDateRaw}T12:00:00`).toISOString();
   const { error } = await supa.from('deposit_holdings').upsert({
@@ -299,15 +442,42 @@ document.getElementById('addVarligimDepositBtn').addEventListener('click', async
     showMsg('Mevduat eklenemedi: ' + error.message, 'error');
     return;
   }
-  ['newVarligimDepositBankName', 'newVarligimDepositPrincipal', 'newVarligimDepositAnnualRate',
-    'newVarligimDepositWithholdingRate', 'newVarligimDepositStartDate', 'newVarligimDepositMaturityDate']
-    .forEach(id => document.getElementById(id).value = '');
+  resetVarligimDepositForm();
   await loadVarligimDeposits();
 });
 
 /* ==================================================================
  * DİĞER VARLIKLAR
  * ================================================================== */
+let editingOtherAssetId = null;
+
+function resetOtherAssetForm() {
+  editingOtherAssetId = null;
+  document.getElementById('otherAssetFormTitle').textContent = 'Diğer varlık ekle';
+  document.getElementById('addOtherAssetBtn').textContent = 'Ekle';
+  document.getElementById('cancelOtherAssetEditBtn').style.display = 'none';
+  ['newOtherAssetTitle', 'newOtherAssetDescription', 'newOtherAssetPurchasePrice',
+    'newOtherAssetCurrentValue', 'newOtherAssetPurchaseDate']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('newOtherAssetType').value = 'Diğer';
+}
+
+function startEditOtherAsset(row) {
+  editingOtherAssetId = row.id;
+  document.getElementById('otherAssetFormTitle').textContent = 'Diğer varlığı düzenle';
+  document.getElementById('addOtherAssetBtn').textContent = 'Güncelle';
+  document.getElementById('cancelOtherAssetEditBtn').style.display = '';
+  document.getElementById('newOtherAssetType').value = row.type || 'Diğer';
+  document.getElementById('newOtherAssetTitle').value = row.title || '';
+  document.getElementById('newOtherAssetDescription').value = row.description || '';
+  setGroupedInputValue('newOtherAssetPurchasePrice', row.purchase_price);
+  setGroupedInputValue('newOtherAssetCurrentValue', row.current_value);
+  document.getElementById('newOtherAssetPurchaseDate').value = row.purchase_date ? new Date(row.purchase_date).toISOString().slice(0, 10) : '';
+  document.getElementById('newOtherAssetTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.getElementById('cancelOtherAssetEditBtn').addEventListener('click', resetOtherAssetForm);
+
 async function loadOtherAssetHoldings() {
   const { data, error } = await supa
     .from('other_asset_holdings')
@@ -338,15 +508,18 @@ async function loadOtherAssetHoldings() {
       <td class="num">${fmtTL(row.purchase_price)}</td>
       <td class="num">${fmtTL(row.current_value)}</td>
       <td class="num">
+        <button type="button" class="btn outline small other-asset-edit" title="Düzenle" style="margin-right:4px;"><span class="msr" style="font-size:16px;">edit</span></button>
         <button type="button" class="del other-asset-delete" data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
       </td>
     `;
+    tr.querySelector('.other-asset-edit').addEventListener('click', () => startEditOtherAsset(row));
     tr.querySelector('.other-asset-delete').addEventListener('click', () => deleteOtherAssetHolding(row.id));
     tbody.appendChild(tr);
   }
 }
 
 async function deleteOtherAssetHolding(id) {
+  if (!confirmDelete('Bu varlığı silmek istediğine emin misin?')) return;
   const { data: { user } } = await supa.auth.getUser();
   if (!user || !id) return;
   const { error } = await supa
@@ -358,6 +531,7 @@ async function deleteOtherAssetHolding(id) {
     showMsg('Diğer varlık silinemedi: ' + error.message, 'error');
     return;
   }
+  if (editingOtherAssetId === id) resetOtherAssetForm();
   await loadOtherAssetHoldings();
 }
 
@@ -377,7 +551,7 @@ document.getElementById('addOtherAssetBtn').addEventListener('click', async () =
     return;
   }
 
-  const id = `${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+  const id = editingOtherAssetId || `${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
   const purchaseDate = new Date(`${purchaseDateRaw}T12:00:00`).toISOString();
 
   const { error } = await supa.from('other_asset_holdings').upsert({
@@ -389,10 +563,7 @@ document.getElementById('addOtherAssetBtn').addEventListener('click', async () =
     showMsg('Diğer varlık eklenemedi: ' + error.message, 'error');
     return;
   }
-  ['newOtherAssetTitle', 'newOtherAssetDescription', 'newOtherAssetPurchasePrice',
-    'newOtherAssetCurrentValue', 'newOtherAssetPurchaseDate']
-    .forEach(id => document.getElementById(id).value = '');
-  document.getElementById('newOtherAssetType').value = 'Diğer';
+  resetOtherAssetForm();
   await loadOtherAssetHoldings();
 });
 
@@ -505,6 +676,7 @@ async function loadVarligimCurrencyLivePrices(rows) {
 }
 
 async function deleteVarligimCurrencyHolding(currencyCode) {
+  if (!confirmDelete('Bu dövizi silmek istediğine emin misin?')) return;
   const { data: { user } } = await supa.auth.getUser();
   if (!user) return;
   const { error } = await supa
@@ -575,6 +747,19 @@ function loadStockOptions() {
   }
 }
 
+function renderStockPortfolioSummary(data) {
+  const el = document.getElementById('stockPortfolioSummary');
+  if (!el) return;
+  if (!data || data.length === 0) { el.style.display = 'none'; return; }
+  const invested = data.reduce((sum, row) => sum + (Number(row.lot) || 0) * (Number(row.cost) || 0), 0);
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="stat-mini"><div class="lbl">Toplam Yatırılan</div><div class="val">${fmtTL(invested)}</div></div>
+    <div class="stat-mini"><div class="lbl">Güncel Değer</div><div class="val" id="stockPortfolioTotalValue">…</div></div>
+    <div class="stat-mini"><div class="lbl">Kâr/Zarar</div><div class="val" id="stockPortfolioTotalPl">…</div></div>
+  `;
+}
+
 async function loadHoldings() {
   const { data, error } = await supa
     .from('stock_holdings')
@@ -589,6 +774,7 @@ async function loadHoldings() {
     showMsg('Hisse verileri yüklenemedi: ' + error.message, 'error');
     return;
   }
+  renderStockPortfolioSummary(data);
   if (!data || data.length === 0) {
     emptyState.style.display = 'block';
     return;
@@ -597,10 +783,16 @@ async function loadHoldings() {
   for (const row of data) {
     const invested = (Number(row.lot) || 0) * (Number(row.cost) || 0);
     const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
     tr.innerHTML = `
       <td>
-        <div class="sym">${escapeHtml(row.symbol)}</div>
-        ${row.name ? `<div class="name">${escapeHtml(row.name)}</div>` : ''}
+        <div style="display:flex; align-items:center; gap:8px;">
+          ${typeof stockLogoImg === 'function' ? stockLogoImg(row.symbol, 24) : ''}
+          <div>
+            <div class="sym">${escapeHtml(row.symbol)}</div>
+            ${row.name ? `<div class="name">${escapeHtml(row.name)}</div>` : ''}
+          </div>
+        </div>
       </td>
       <td class="num">${fmtNumber(row.lot)}</td>
       <td class="num">${fmtTL(row.cost)}</td>
@@ -612,13 +804,21 @@ async function loadHoldings() {
         <button type="button" class="del stock-delete" data-symbol="${escapeHtml(row.symbol)}" title="Sil">✕</button>
       </td>
     `;
-    tr.querySelector('.stock-delete').addEventListener('click', () => deleteHolding(row.symbol));
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('.stock-delete')) return;
+      if (typeof openStockDetail === 'function') openStockDetail(row.symbol);
+    });
+    tr.querySelector('.stock-delete').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteHolding(row.symbol);
+    });
     tbody.appendChild(tr);
   }
   loadStockLivePrices(data);
 }
 
 async function loadStockLivePrices(rows) {
+  let totalInvested = 0, totalValue = 0, anyKnown = false;
   await Promise.all(rows.map(async (row) => {
     const priceEl = document.getElementById(`stock-price-${row.symbol}`);
     const valueEl = document.getElementById(`stock-value-${row.symbol}`);
@@ -632,15 +832,30 @@ async function loadStockLivePrices(rows) {
       priceEl.textContent = fmtTL(quote.price);
       valueEl.textContent = fmtTL(currentValue);
       plEl.innerHTML = profitLossHtml(invested, currentValue);
+      totalInvested += invested;
+      totalValue += currentValue;
+      anyKnown = true;
     } catch (e) {
       priceEl.textContent = '—';
       valueEl.textContent = '—';
       plEl.textContent = '—';
     }
   }));
+  const totalValueEl = document.getElementById('stockPortfolioTotalValue');
+  const totalPlEl = document.getElementById('stockPortfolioTotalPl');
+  if (totalValueEl && totalPlEl) {
+    if (anyKnown) {
+      totalValueEl.textContent = fmtTL(totalValue);
+      totalPlEl.innerHTML = profitLossHtml(totalInvested, totalValue);
+    } else {
+      totalValueEl.textContent = '—';
+      totalPlEl.textContent = '—';
+    }
+  }
 }
 
 async function deleteHolding(symbol) {
+  if (!confirmDelete('Bu hisseyi portföyünden silmek istediğine emin misin?')) return;
   const { data: { user } } = await supa.auth.getUser();
   if (!user) return;
   const { error } = await supa
@@ -685,15 +900,16 @@ document.getElementById('addBtn').addEventListener('click', async () => {
 /* ==================================================================
  * EMTİA PORTFÖYÜM
  * ================================================================== */
-const commodityMarketList = [
-  { key:'GOLD', symbol:'Au', name:'Altın', unit:'Gram' },
-  { key:'SILVER', symbol:'Ag', name:'Gümüş', unit:'Gram' },
-  { key:'COPPER', symbol:'Cu', name:'Bakır', unit:'Gram' },
-  { key:'PLATINUM', symbol:'Pt', name:'Platin', unit:'Gram' },
-  { key:'PALLADIUM', symbol:'Pd', name:'Paladyum', unit:'Gram' },
-  { key:'BRENT', symbol:'BRENT', name:'Brent Petrol', unit: 'Varil' },
-  { key:'BRENT_USD', symbol:'BRENT_USD', name:'Brent Petrol (USD)', unit: 'Varil' }
-];
+// DÜZELTME (2026-09, tam parite denetimi): bu liste eskiden yalnızca 7
+// kalemlik elle yazılmış bir kopyaydı; piyasa sayfasındaki (app-piyasa-
+// emtia.js) COMMODITY_MARKET_ITEMS artık 16 kalem içeriyor (5 fiziki
+// altın sikkesi + 4 "Ons ... USD" dahil) ama buradaki Emtia Portföyüm
+// ekleme listesi güncellenmemişti — kullanıcı örn. "Çeyrek Altın"ı
+// portföyüne EKLEYEMİYORDU. Artık TEK kaynaktan (COMMODITY_MARKET_ITEMS)
+// türetiliyor, iki liste birbirinden asla sapamaz.
+const commodityMarketList = (typeof COMMODITY_MARKET_ITEMS !== 'undefined' ? COMMODITY_MARKET_ITEMS : []).map(item => ({
+  key: item.key, symbol: item.key, name: item.name, unit: item.unit, currency: item.currency
+}));
 
 function loadCommodityOptions() {
   const list = document.getElementById('commodityOptions');
@@ -739,6 +955,7 @@ async function loadCommodityHoldings() {
   emptyState.style.display = 'none';
   for (const row of data) {
     const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
     const costText = row.cost == null ? '—' : fmtTL(row.cost);
     tr.innerHTML = `
       <td>
@@ -754,7 +971,14 @@ async function loadCommodityHoldings() {
         <button type="button" class="del" title="Sil" data-commodity-key="${escapeHtml(row.commodity_key)}">✕</button>
       </td>
     `;
-    tr.querySelector('[data-commodity-key]').addEventListener('click', () => deleteCommodityHolding(row.commodity_key));
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('[data-commodity-key]')) return;
+      if (typeof openCommodityDetail === 'function') openCommodityDetail(row.commodity_key);
+    });
+    tr.querySelector('[data-commodity-key]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteCommodityHolding(row.commodity_key);
+    });
     tbody.appendChild(tr);
   }
   loadCommodityLivePrices(data);
@@ -768,7 +992,8 @@ async function loadCommodityLivePrices(rows) {
     if (!priceEl || !valueEl || !plEl) return;
     try {
       const quote = await fetchPriceProxy(`type=commodity&key=${encodeURIComponent(row.commodity_key)}`);
-      const isUsd = row.commodity_key === 'BRENT_USD';
+      const marketItem = commodityMarketList.find(c => c.key === row.commodity_key);
+      const isUsd = marketItem ? marketItem.currency === 'USD' : row.commodity_key === 'BRENT_USD';
       const fmt = isUsd ? fmtUSD : fmtTL;
       const amount = Number(row.amount) || 0;
       const currentValue = amount * quote.price;
@@ -789,6 +1014,7 @@ async function loadCommodityLivePrices(rows) {
 }
 
 async function deleteCommodityHolding(commodityKey) {
+  if (!confirmDelete('Bu emtiayı silmek istediğine emin misin?')) return;
   const { data: { user } } = await supa.auth.getUser();
   if (!user) return;
   const { error } = await supa
@@ -835,52 +1061,53 @@ document.getElementById('addCommodityBtn').addEventListener('click', async () =>
 /* ==================================================================
  * KRİPTO SEÇİM LİSTESİ + PORTFÖYÜM
  * ================================================================== */
-function loadCryptoOptions() {
+// DÜZELTME (2026-09, tam parite denetimi): bu seçim listesi eskiden
+// elle yazılmış ~30 kripto paraydı; "Varlıklar → Kripto Paralar" piyasa
+// sayfası (app-piyasa-kripto.js) zaten CoinGecko'dan piyasa değerine
+// göre İLK 100 kripto parayı çekiyor (kriptoMarketList) — bu listeyi
+// TEKRAR ETMEK yerine artık ondan besleniyoruz; henüz o sayfa hiç
+// açılmadıysa (kriptoMarketList boşsa) burada aynı uçtan tembel
+// (lazy) olarak çekilir. Ağ isteği başarısız olursa mobil/web ortak
+// en-likit ~30 paralık dar bir yedek listeye düşülür (uydurma değil,
+// yalnızca kesintide en azından en bilinen paraların eklenebilmesi
+// için bir yedek).
+const CRYPTO_OPTIONS_FALLBACK = [
+  { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin' }, { id: 'ethereum', symbol: 'ETH', name: 'Ethereum' },
+  { id: 'tether', symbol: 'USDT', name: 'Tether' }, { id: 'binancecoin', symbol: 'BNB', name: 'BNB' },
+  { id: 'solana', symbol: 'SOL', name: 'Solana' }, { id: 'usd-coin', symbol: 'USDC', name: 'USDC' },
+  { id: 'ripple', symbol: 'XRP', name: 'XRP' }, { id: 'dogecoin', symbol: 'DOGE', name: 'Dogecoin' },
+  { id: 'cardano', symbol: 'ADA', name: 'Cardano' }, { id: 'avalanche-2', symbol: 'AVAX', name: 'Avalanche' }
+];
+
+async function loadCryptoOptions() {
   const select = document.getElementById('newCryptoSelect');
   if (!select) return;
-  const cryptos = [
-    { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin' },
-    { id: 'ethereum', symbol: 'ETH', name: 'Ethereum' },
-    { id: 'tether', symbol: 'USDT', name: 'Tether' },
-    { id: 'binancecoin', symbol: 'BNB', name: 'BNB' },
-    { id: 'solana', symbol: 'SOL', name: 'Solana' },
-    { id: 'usd-coin', symbol: 'USDC', name: 'USDC' },
-    { id: 'ripple', symbol: 'XRP', name: 'XRP' },
-    { id: 'dogecoin', symbol: 'DOGE', name: 'Dogecoin' },
-    { id: 'cardano', symbol: 'ADA', name: 'Cardano' },
-    { id: 'avalanche-2', symbol: 'AVAX', name: 'Avalanche' },
-    { id: 'tron', symbol: 'TRX', name: 'TRON' },
-    { id: 'chainlink', symbol: 'LINK', name: 'Chainlink' },
-    { id: 'polkadot', symbol: 'DOT', name: 'Polkadot' },
-    { id: 'matic-network', symbol: 'POL', name: 'Polygon' },
-    { id: 'litecoin', symbol: 'LTC', name: 'Litecoin' },
-    { id: 'shiba-inu', symbol: 'SHIB', name: 'Shiba Inu' },
-    { id: 'bitcoin-cash', symbol: 'BCH', name: 'Bitcoin Cash' },
-    { id: 'uniswap', symbol: 'UNI', name: 'Uniswap' },
-    { id: 'stellar', symbol: 'XLM', name: 'Stellar' },
-    { id: 'near', symbol: 'NEAR', name: 'NEAR Protocol' },
-    { id: 'internet-computer', symbol: 'ICP', name: 'Internet Computer' },
-    { id: 'aptos', symbol: 'APT', name: 'Aptos' },
-    { id: 'arbitrum', symbol: 'ARB', name: 'Arbitrum' },
-    { id: 'optimism', symbol: 'OP', name: 'Optimism' },
-    { id: 'cosmos', symbol: 'ATOM', name: 'Cosmos' },
-    { id: 'filecoin', symbol: 'FIL', name: 'Filecoin' },
-    { id: 'hedera-hashgraph', symbol: 'HBAR', name: 'Hedera' },
-    { id: 'vechain', symbol: 'VET', name: 'VeChain' },
-    { id: 'the-open-network', symbol: 'TON', name: 'Toncoin' },
-    { id: 'sui', symbol: 'SUI', name: 'Sui' },
-    { id: 'pepe', symbol: 'PEPE', name: 'Pepe' }
-  ];
+  let source = CRYPTO_OPTIONS_FALLBACK;
+  try {
+    if (typeof kriptoMarketList !== 'undefined' && kriptoMarketList.length > 0) {
+      source = kriptoMarketList;
+    } else if (typeof fetchKriptoMarkets === 'function') {
+      const fetched = await fetchKriptoMarkets();
+      if (Array.isArray(fetched) && fetched.length > 0) {
+        kriptoMarketList = fetched;
+        source = fetched;
+      }
+    }
+  } catch (e) {
+    // Sessizce yedek listeye düş.
+  }
+  const currentValue = select.value;
   select.innerHTML = '<option value="">Kripto seç...</option>';
-  cryptos.forEach((crypto) => {
+  source.forEach((crypto) => {
     const option = document.createElement('option');
     option.value = crypto.id;
-    option.textContent = `${crypto.symbol} — ${crypto.name}`;
-    option.dataset.symbol = crypto.symbol;
+    option.textContent = `${(crypto.symbol || '').toUpperCase()} — ${crypto.name}`;
+    option.dataset.symbol = (crypto.symbol || '').toUpperCase();
     option.dataset.name = crypto.name;
-    option.dataset.image = '';
+    option.dataset.image = crypto.image || '';
     select.appendChild(option);
   });
+  if (currentValue) select.value = currentValue;
 }
 
 async function loadCryptoLivePrices(rows) {
@@ -933,6 +1160,7 @@ async function loadCryptoHoldings() {
   for (const row of data) {
     const invested = (Number(row.amount) || 0) * (Number(row.cost) || 0);
     const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
     tr.innerHTML = `
       <td>
         <div class="sym">${escapeHtml(row.symbol)}</div>
@@ -948,15 +1176,23 @@ async function loadCryptoHoldings() {
         <button class="del crypto-delete" data-id="${escapeHtml(row.crypto_id)}" title="Sil">✕</button>
       </td>
     `;
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('.crypto-delete')) return;
+      if (typeof openCryptoDetail === 'function') openCryptoDetail(row.crypto_id);
+    });
     tbody.appendChild(tr);
   }
   loadCryptoLivePrices(data);
   tbody.querySelectorAll('.crypto-delete').forEach(btn => {
-    btn.addEventListener('click', () => deleteCryptoHolding(btn.dataset.id));
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteCryptoHolding(btn.dataset.id);
+    });
   });
 }
 
 async function deleteCryptoHolding(cryptoId) {
+  if (!confirmDelete('Bu kriptoyu silmek istediğine emin misin?')) return;
   const { data: { user } } = await supa.auth.getUser();
   if (!user) return;
   const { error } = await supa
@@ -1006,6 +1242,19 @@ document.getElementById('addCryptoBtn').addEventListener('click', async () => {
 /* ==================================================================
  * YATIRIM FONLARIM
  * ================================================================== */
+function renderFundPortfolioSummary(data) {
+  const el = document.getElementById('fundPortfolioSummary');
+  if (!el) return;
+  if (!data || data.length === 0) { el.style.display = 'none'; return; }
+  const invested = data.reduce((sum, row) => sum + (Number(row.units) || 0) * (Number(row.cost) || 0), 0);
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="stat-mini"><div class="lbl">Toplam Yatırılan</div><div class="val">${fmtTL(invested)}</div></div>
+    <div class="stat-mini"><div class="lbl">Güncel Değer</div><div class="val" id="fundPortfolioTotalValue">…</div></div>
+    <div class="stat-mini"><div class="lbl">Kâr/Zarar</div><div class="val" id="fundPortfolioTotalPl">…</div></div>
+  `;
+}
+
 async function loadFundHoldings() {
   const { data, error } = await supa
     .from('fund_holdings')
@@ -1020,6 +1269,7 @@ async function loadFundHoldings() {
     showMsg('Fon verileri yüklenemedi: ' + error.message, 'error');
     return;
   }
+  renderFundPortfolioSummary(data);
   if (!data || data.length === 0) {
     emptyState.style.display = 'block';
     return;
@@ -1030,6 +1280,7 @@ async function loadFundHoldings() {
     const cost = Number(row.cost) || 0;
     const invested = units * cost;
     const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
     tr.innerHTML = `
       <td>
         <div class="sym">${escapeHtml(row.code || '')}</div>
@@ -1045,13 +1296,21 @@ async function loadFundHoldings() {
         <button type="button" class="del fund-delete" data-fund-code="${escapeHtml(row.code || '')}" title="Sil">✕</button>
       </td>
     `;
-    tr.querySelector('[data-fund-code]').addEventListener('click', () => deleteFundHolding(row.code));
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('[data-fund-code]')) return;
+      if (typeof openFundDetail === 'function') openFundDetail(row.code);
+    });
+    tr.querySelector('[data-fund-code]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteFundHolding(row.code);
+    });
     tbody.appendChild(tr);
   }
   loadFundLivePrices(data);
 }
 
 async function loadFundLivePrices(rows) {
+  let totalInvested = 0, totalValue = 0, anyKnown = false;
   await Promise.all(rows.map(async (row) => {
     const code = row.code || '';
     const priceEl = document.getElementById(`fund-price-${code}`);
@@ -1067,18 +1326,31 @@ async function loadFundLivePrices(rows) {
       if (row.cost != null) {
         const invested = units * Number(row.cost);
         plEl.innerHTML = profitLossHtml(invested, currentValue);
-      } else {
-        plEl.textContent = '—';
+        totalInvested += invested;
       }
+      totalValue += currentValue;
+      anyKnown = true;
     } catch (e) {
       priceEl.textContent = '—';
       valueEl.textContent = '—';
       plEl.textContent = '—';
     }
   }));
+  const totalValueEl = document.getElementById('fundPortfolioTotalValue');
+  const totalPlEl = document.getElementById('fundPortfolioTotalPl');
+  if (totalValueEl && totalPlEl) {
+    if (anyKnown) {
+      totalValueEl.textContent = fmtTL(totalValue);
+      totalPlEl.innerHTML = profitLossHtml(totalInvested, totalValue);
+    } else {
+      totalValueEl.textContent = '—';
+      totalPlEl.textContent = '—';
+    }
+  }
 }
 
 async function deleteFundHolding(code) {
+  if (!confirmDelete('Bu fonu silmek istediğine emin misin?')) return;
   const { data: { user } } = await supa.auth.getUser();
   if (!user) return;
   const { error } = await supa
@@ -1224,6 +1496,7 @@ async function loadViopHoldings() {
     const invested = cost != null ? lot * cost : null;
     const symKey = encodeURIComponent(row.symbol || '');
     const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
     tr.innerHTML = `
       <td>
         <div class="sym">${escapeHtml(row.symbol || '')}</div>
@@ -1241,7 +1514,26 @@ async function loadViopHoldings() {
         <button type="button" class="del viop-delete" data-symbol="${escapeHtml(row.symbol || '')}" title="Sil">✕</button>
       </td>
     `;
-    tr.querySelector('.viop-delete').addEventListener('click', () => deleteViopHolding(row.symbol));
+    tr.addEventListener('click', async (e) => {
+      if (e.target.closest('.viop-delete')) return;
+      if (typeof openViopDetail !== 'function') return;
+      let livePrice = null, liveChange = null;
+      try {
+        const q = await fetchPriceProxy(`type=viop&symbol=${encodeURIComponent(row.symbol)}`);
+        livePrice = q.price;
+        liveChange = q.changePercent;
+      } catch (err) { /* modal "—" gösterecek */ }
+      const categoryKey = { 0: 'equity', 1: 'index', 2: 'currency', 3: 'metal', 4: 'other' }[row.category_index] || 'other';
+      openViopDetail({
+        symbol: row.symbol, underlying: row.underlying, category: categoryKey,
+        isOption: row.is_option, price: livePrice, changePercent: liveChange,
+        volumeTl: null, volumeLot: null
+      });
+    });
+    tr.querySelector('.viop-delete').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteViopHolding(row.symbol);
+    });
     tbody.appendChild(tr);
   }
   loadViopLivePrices(data);
@@ -1276,6 +1568,7 @@ async function loadViopLivePrices(rows) {
 }
 
 async function deleteViopHolding(symbol) {
+  if (!confirmDelete('Bu VİOP pozisyonunu silmek istediğine emin misin?')) return;
   const { data: { user } } = await supa.auth.getUser();
   if (!user || !symbol) return;
   const { error } = await supa
@@ -1320,6 +1613,11 @@ document.getElementById('addViopBtn').addEventListener('click', async () => {
   document.getElementById('newViopCategory').value = '4';
   await loadViopHoldings();
 });
+
+document.getElementById('clearAllStocksBtn')?.addEventListener('click', () =>
+  clearAllHoldings('stock_holdings', 'Tüm hisse portföyünü silmek istediğine emin misin? Bu işlem geri alınamaz.', loadHoldings));
+document.getElementById('clearAllFundsBtn')?.addEventListener('click', () =>
+  clearAllHoldings('fund_holdings', 'Tüm fon portföyünü silmek istediğine emin misin? Bu işlem geri alınamaz.', loadFundHoldings));
 
 /* ==================================================================
  * SAYFA YÜKLEYİCİSİ (Varlığım — 10 kategori)
