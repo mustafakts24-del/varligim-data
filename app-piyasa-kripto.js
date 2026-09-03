@@ -18,24 +18,48 @@ const KRIPTO_RANGE_DAYS = { '1G': 1, '7G': 7, '1A': 30, '3A': 90, '1Y': 365 };
  * Mobildeki CryptoService.getOhlcHistory() ile AYNI CoinGecko
  * `/coins/{id}/ohlc` ucu — gerçek OHLC mum verisi döner (hacim bu uç
  * noktada hiç yoktur, mobil de bunu 0/null bırakır — uydurulmaz).
+ *
+ * KÖK NEDEN DÜZELTMESİ (2026-09, kullanıcı raporu: "veri gelmiyor" —
+ * BTC/ETH gibi ana kriptolarda bile sürekli "Veri alınamadı"): bu istek
+ * daha önce tarayıcıdan DOĞRUDAN CoinGecko'ya gidiyordu. CoinGecko'nun
+ * ücretsiz/anahtarsız erişimi IP başına PAYLAŞIMLI bir istek sınırı
+ * uyguluyor ("Keyless: IP-based rate limiting — shared across all users
+ * on the same IP", bkz. docs.coingecko.com/docs/errors-and-rate-limits)
+ * — kullanıcının kendi tarayıcı/İSS IP'si bu paylaşımlı sınıra takılınca
+ * grafik kalıcı olarak veri alamıyordu (tek seferlik yeniden deneme de
+ * yetmiyordu, çünkü sınır dakikalarca sürebiliyor). Çözüm: bu veri artık
+ * ÖNCELİKLE price-proxy (Supabase Edge Function) üzerinden, AYNI gerçek
+ * CoinGecko ucundan çekiliyor — farklı bir sunucu IP'si kullanıyor ve
+ * kısa süreli sunucu-taraflı önbellekle aynı anda birden fazla
+ * kullanıcının aynı isteğini tek bir gerçek CoinGecko çağrısında
+ * birleştirebiliyor. Sunucuya hiçbir sebeple ulaşılamazsa (ör. geçici
+ * Edge Function sorunu), eskisi gibi doğrudan CoinGecko'ya (bir kez
+ * otomatik yeniden denemeyle) dürüst bir yedek olarak düşülür — hiçbir
+ * veri uydurulmaz.
  */
+function mapCryptoOhlcRaw(data) {
+  if (!Array.isArray(data)) return [];
+  return data
+    .filter(row => Array.isArray(row) && row.length >= 5)
+    .map(row => ({ t: row[0], o: row[1], h: row[2], l: row[3], c: row[4], v: null }));
+}
+
 async function fetchCryptoOhlcSeries(id, days) {
-  const data = await cachedFetch(`crypto-ohlc:${id}:${days}`, 60000, async () => {
+  return await cachedFetch(`crypto-ohlc:${id}:${days}`, 60000, async () => {
+    try {
+      const result = await fetchPriceProxy(`type=crypto-ohlc&id=${encodeURIComponent(id)}&days=${days}`);
+      if (Array.isArray(result.points)) return result.points;
+    } catch (e) { /* aşağıdaki doğrudan CoinGecko yedeğine düş */ }
+
+    // YEDEK: price-proxy'ye ulaşılamazsa doğrudan CoinGecko'dan (geçici
+    // hatalarda bir kez otomatik yeniden deneme ile) — eskisiyle aynı yol.
     const url = `https://api.coingecko.com/api/v3/coins/${encodeURIComponent(id)}/ohlc?vs_currency=try&days=${days}`;
-    // DAYANIKLILIK DÜZELTMESİ (2026-09, kullanıcı raporu: "veriler
-    // gelmiyor"/"Veri alınamadı"): CoinGecko'nun ücretsiz/anahtarsız
-    // ucu tarayıcıdan doğrudan çağrıldığından zaman zaman geçici 429
-    // (istek sınırı) veya ağ hatası dönebiliyor. Hiçbir veri uydurulmaz
-    // — yalnızca geçici bir hata olursa kısa bir bekleme sonrası AYNI
-    // gerçek uçtan bir kez daha denenir; ikinci deneme de başarısız
-    // olursa hata olduğu gibi yukarı iletilir (arayüz "Veri alınamadı"
-    // gösterir, sahte veri gösterilmez).
     let lastErr;
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
+        return mapCryptoOhlcRaw(await res.json());
       } catch (e) {
         lastErr = e;
         if (attempt === 0) await new Promise(r => setTimeout(r, 900));
@@ -43,10 +67,6 @@ async function fetchCryptoOhlcSeries(id, days) {
     }
     throw lastErr;
   });
-  if (!Array.isArray(data)) return [];
-  return data
-    .filter(row => Array.isArray(row) && row.length >= 5)
-    .map(row => ({ t: row[0], o: row[1], h: row[2], l: row[3], c: row[4], v: null }));
 }
 
 let kriptoMarketList = [];
