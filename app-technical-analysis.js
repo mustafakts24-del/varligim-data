@@ -225,8 +225,14 @@ async function taFetchCryptoBars(config) {
 }
 
 function taCryptoSourceLabel(bars) {
-  if (bars && bars._taSource === 'yahoo5y') return 'Yahoo Finance ($, 5 yıla kadar gerçek veri)';
-  if (bars && bars._taSource === 'coingecko1y') return 'CoinGecko (₺, bu kripto için 5 yıllık geçmiş desteklenmiyor — en fazla 1 yıl gösteriliyor)';
+  if (bars && bars._taSource === 'yahoo5y') return 'Yahoo Finance ($, 5 yıla kadar gerçek veri, haftalık mumlar)';
+  // AÇIKLIK DÜZELTMESİ (2026-09, kullanıcı sorusu: "2 mum arasında 4-5
+  // gün fark var, normal mi?"): CoinGecko'nun ücretsiz OHLC ucu uzun
+  // aralıklarda (>30 gün) mum aralığını KENDİSİ otomatik olarak ~4 güne
+  // genişletiyor (bu, CoinGecko'nun kendi belgelenmiş davranışıdır,
+  // buradaki kodun bir hatası değildir) — bu artık dipnotta önceden
+  // belirtiliyor ki kullanıcı mum aralıklarını görünce şaşırmasın.
+  if (bars && bars._taSource === 'coingecko1y') return 'CoinGecko (₺, bu kripto için 5 yıllık geçmiş desteklenmiyor — en fazla 1 yıl, ~4 günlük mum aralığıyla gösteriliyor)';
   return '';
 }
 
@@ -769,7 +775,17 @@ async function openTechnicalAnalysis(config) {
       } catch (e) {
         return; // Ağ hatası: mevcut mum olduğu gibi kalır, bir sonraki tikte tekrar denenir.
       }
-      if (price != null) applyLiveTick(price);
+      if (price == null) return;
+      applyLiveTick(price);
+      // AÇIKLIK DÜZELTMESİ (2026-09, kullanıcı sorusu: "güncelleme 10
+      // dakika öncesini gösteriyor, normal mi?"): son mumun tarih
+      // ETİKETİ o mumun temsil ettiği DÖNEMİN BAŞLANGICIDIR (kaynağa
+      // göre günlük/4 günlük/haftalık) — "şu an" değildir; bu, HER
+      // mum grafiğinde normaldir (gerçek borsalarda da aynı). Fiyatın
+      // GERÇEKTEN ne zaman tazelendiğini karışıklık olmadan görebilmek
+      // için ayrı bir "son fiyat" damgası burada durum satırına yazılır.
+      const stamp = new Date().toLocaleTimeString('tr-TR');
+      overlay.querySelector('#taStatus').textContent = taStatusText(`Son fiyat güncellemesi: ${stamp}`);
     }, 7000);
   }
 }
