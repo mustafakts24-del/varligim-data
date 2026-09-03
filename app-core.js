@@ -503,16 +503,29 @@ const YAHOO_CHART_RANGES = {
   '5Y': { range: '5y', interval: '1wk' }
 };
 
-async function fetchYahooRangeSeries(yahooSymbol, rangeKey) {
+// DÜZELTME (2026-09, kullanıcı raporu: "BIST 50 ve sektör endekslerinde
+// grafik yok"): isteğe bağlı 3. parametre `fallbackSymbols` (Yahoo
+// sembolü dizisi, örn. endeksin gerçek bileşen hisseleri) — yalnızca
+// endeks/sektör detay sayfası bunu gönderir; diğer TÜM çağıranlar (hisse/
+// emtia/döviz/fon/teknik analiz) bu parametreyi hiç geçmez ve davranışları
+// birebir eskisi gibi kalır. Döndürülen dizinin `.approximate` özelliği
+// (varsa) sunucunun gerçek endeks verisi yerine bileşen hisselerinden
+// hesaplanmış yaklaşık bir seri döndürdüğünü belirtir — çağıran kod
+// isterse bunu bir dipnot olarak gösterebilir.
+async function fetchYahooRangeSeries(yahooSymbol, rangeKey, fallbackSymbols) {
   const cfg = YAHOO_CHART_RANGES[rangeKey] || YAHOO_CHART_RANGES['1A'];
-  const cacheKey = `ohlc:${yahooSymbol}:${cfg.range}:${cfg.interval}`;
+  const fallbackParam = Array.isArray(fallbackSymbols) && fallbackSymbols.length > 0
+    ? `&fallbackSymbols=${encodeURIComponent(fallbackSymbols.join(','))}`
+    : '';
+  const cacheKey = `ohlc:${yahooSymbol}:${cfg.range}:${cfg.interval}${fallbackParam ? ':fb' : ''}`;
   const data = await cachedFetch(cacheKey, 60000, () =>
-    fetchPriceProxy(`type=stock-ohlc&symbol=${encodeURIComponent(yahooSymbol)}&range=${cfg.range}&interval=${cfg.interval}`)
+    fetchPriceProxy(`type=stock-ohlc&symbol=${encodeURIComponent(yahooSymbol)}&range=${cfg.range}&interval=${cfg.interval}${fallbackParam}`)
   );
   let points = data.points || [];
   if (cfg.sliceLastN && points.length > cfg.sliceLastN) {
     points = points.slice(points.length - cfg.sliceLastN);
   }
+  try { points.approximate = !!data.approximate; } catch (e) { /* dizi değilse yut */ }
   return points;
 }
 
