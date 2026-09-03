@@ -127,6 +127,7 @@ async function openCryptoDetail(id) {
   );
   bindTechnicalAnalysisButton('cryptoTaBtn', {
     title: `${(meta.symbol || '').toUpperCase()} — ${meta.name || ''}`, assetType: 'crypto', cryptoId: id,
+    symbol: (meta.symbol || '').toUpperCase(),
   });
 
   document.getElementById('cryptoDetailAddBtn')?.addEventListener('click', async () => {

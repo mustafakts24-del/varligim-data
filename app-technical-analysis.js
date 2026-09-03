@@ -165,6 +165,72 @@ function taVWAP(bars) {
 }
 
 /* ------------------------------------------------------------------
+ * KRİPTO 5 YILLIK GEÇMİŞ (2026-09, kullanıcı raporu): CoinGecko'nun
+ * ücretsiz/anahtarsız katmanı geçmiş veriyi GERÇEKTEN en fazla 1 yılla
+ * sınırlıyor (bkz. coingecko.com/en/api/pricing → Demo plan: "Daily
+ * historical data: 1 year", "Hourly historical data: 1 year" — bu
+ * doğrulandı, tahmin değildir). 5 yıla kadar GERÇEK veri sunabilmek
+ * için başlıca kripto paralarda Yahoo Finance'in kendi `{SEMBOL}-USD`
+ * kripto verisi (stock/emtia/endeks'te zaten kullanılan AYNI Yahoo
+ * OHLC kaynağı) yedek/öncelikli kaynak olarak eklendi.
+ *
+ * Bu eşleme BİLİNÇLİ OLARAK KISITLI tutuldu: bazı CoinGecko sembolleri
+ * Yahoo'da başka bir enstrümanla çakışabilir ya da marka değişikliği
+ * sonrası farklı bir tiker koduna taşınmış olabilir — böyle bir durumda
+ * YANLIŞ varlığın verisini göstermek, uydurma veri göstermekten farksız
+ * bir hatadır. Bu yüzden yalnızca eşlemesi kesin olan başlıca kripto
+ * paralar listelendi; listede olmayan (veya Yahoo'da geçici olarak
+ * veri bulunamayan) bir kripto için GERÇEK CoinGecko 1 yıllık verisiyle
+ * (₺) devam edilir ve bu arayüzde açıkça belirtilir — 5 yıla asla
+ * uydurma veriyle tamamlanmaz.
+ * ------------------------------------------------------------------ */
+const TA_CRYPTO_YAHOO_MAP = {
+  bitcoin: 'BTC-USD', ethereum: 'ETH-USD', tether: 'USDT-USD',
+  binancecoin: 'BNB-USD', solana: 'SOL-USD', ripple: 'XRP-USD',
+  'usd-coin': 'USDC-USD', cardano: 'ADA-USD', dogecoin: 'DOGE-USD',
+  tron: 'TRX-USD', 'avalanche-2': 'AVAX-USD', chainlink: 'LINK-USD',
+  polkadot: 'DOT-USD', 'matic-network': 'MATIC-USD', litecoin: 'LTC-USD',
+  'shiba-inu': 'SHIB-USD', 'bitcoin-cash': 'BCH-USD', uniswap: 'UNI-USD',
+  dai: 'DAI-USD', 'wrapped-bitcoin': 'WBTC-USD', cosmos: 'ATOM-USD',
+  'ethereum-classic': 'ETC-USD', stellar: 'XLM-USD', near: 'NEAR-USD',
+  filecoin: 'FIL-USD', aptos: 'APT-USD', arbitrum: 'ARB-USD',
+  optimism: 'OP-USD', aave: 'AAVE-USD', algorand: 'ALGO-USD',
+  vechain: 'VET-USD', 'internet-computer': 'ICP-USD', 'the-graph': 'GRT-USD',
+  'hedera-hashgraph': 'HBAR-USD', monero: 'XMR-USD', maker: 'MKR-USD',
+  sui: 'SUI-USD', 'injective-protocol': 'INJ-USD', fantom: 'FTM-USD',
+  tezos: 'XTZ-USD', 'theta-token': 'THETA-USD', eos: 'EOS-USD',
+  flow: 'FLOW-USD', kaspa: 'KAS-USD', 'immutable-x': 'IMX-USD',
+  'crypto-com-chain': 'CRO-USD', bittensor: 'TAO-USD', celestia: 'TIA-USD',
+  'sei-network': 'SEI-USD', 'worldcoin-wld': 'WLD-USD',
+};
+
+async function taFetchCryptoBars(config) {
+  const yahooSymbol = TA_CRYPTO_YAHOO_MAP[config.cryptoId];
+  if (yahooSymbol) {
+    try {
+      const points = await fetchYahooRangeSeries(yahooSymbol, '5Y');
+      if (Array.isArray(points) && points.length >= 2) {
+        points._taSource = 'yahoo5y';
+        return points;
+      }
+    } catch (e) { /* aşağıdaki gerçek CoinGecko yedeğine düş */ }
+  }
+  // Yedek (veya eşlemesi olmayan kripto): CoinGecko /coins/{id}/ohlc —
+  // mobildeki CryptoService.getOhlcHistory ile aynı gerçek OHLC kaynağı,
+  // ücretsiz katmanın güvenilir biçimde desteklediği en geniş aralık
+  // olan 365 gün (1Y) ile.
+  const points = await fetchCryptoOhlcSeries(config.cryptoId, 365);
+  points._taSource = 'coingecko1y';
+  return points;
+}
+
+function taCryptoSourceLabel(bars) {
+  if (bars && bars._taSource === 'yahoo5y') return 'Yahoo Finance ($, 5 yıla kadar gerçek veri)';
+  if (bars && bars._taSource === 'coingecko1y') return 'CoinGecko (₺, bu kripto için 5 yıllık geçmiş desteklenmiyor — en fazla 1 yıl gösteriliyor)';
+  return '';
+}
+
+/* ------------------------------------------------------------------
  * VERİ ÇEKME — assetType'a göre en geniş güvenilir aralığı çeker.
  * ------------------------------------------------------------------ */
 async function taFetchBars(config) {
@@ -173,13 +239,7 @@ async function taFetchBars(config) {
     return points.map(p => ({ t: p.t, o: p.c, h: p.c, l: p.c, c: p.c, v: null }));
   }
   if (config.assetType === 'crypto') {
-    // CoinGecko /coins/{id}/ohlc, mobildeki CryptoService.getOhlcHistory
-    // ile aynı gerçek OHLC kaynağı (hacim bu uç noktada yok — uydurulmaz).
-    // CoinGecko'nun ücretsiz katmanı güvenilir biçimde en fazla 365 gün
-    // (1Y) destekliyor (bkz. app-piyasa-kripto.js KRIPTO_RANGE_DAYS) —
-    // diğer varlık sınıflarının 5Y'sine kıyasla bu, kaynağın kendi
-    // sınırı; uydurma veriyle 5Y'ye tamamlanmadı (kural 11: dürüstlük).
-    return await fetchCryptoOhlcSeries(config.cryptoId, 365);
+    return await taFetchCryptoBars(config);
   }
   // stock / commodity / index — hepsi Yahoo sembolü ile aynı OHLC kaynağı.
   // Kullanıcı talebiyle (2026-09 hata raporu #4) varsayılan aralık 5
@@ -264,12 +324,14 @@ async function openTechnicalAnalysis(config) {
     overlaySeries: {},
     oscChart: null,
     oscSeries: [],
+    refreshTimer: null,
   };
 
   function close() {
     document.body.style.overflow = '';
     overlay.remove();
     window.removeEventListener('resize', onResize);
+    if (state.refreshTimer) { clearInterval(state.refreshTimer); state.refreshTimer = null; }
   }
   overlay.querySelector('#taCloseBtn').addEventListener('click', close);
   overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
@@ -291,7 +353,18 @@ async function openTechnicalAnalysis(config) {
     overlay.querySelector('#taStatus').textContent = 'Bu varlık için geçmiş veri bulunamadı.';
     return;
   }
-  overlay.querySelector('#taStatus').textContent = `${state.bars.length} veri noktası · ${escapeHtml(config.title || '')}`;
+
+  function taStatusText(extra) {
+    let text = `${state.bars.length} veri noktası · ${escapeHtml(config.title || '')}`;
+    if (config.assetType === 'crypto') {
+      text += ` · Kaynak: ${taCryptoSourceLabel(state.bars)}`;
+    }
+    if (extra) text += ` · ${extra}`;
+    return text;
+  }
+  overlay.querySelector('#taStatus').textContent = taStatusText(
+    config.assetType === 'crypto' ? "Canlı — 60 sn'de bir otomatik yenilenir" : null
+  );
 
   const mainEl = overlay.querySelector('#taMainChart');
   const drawCanvas = overlay.querySelector('#taDrawCanvas');
@@ -608,4 +681,32 @@ async function openTechnicalAnalysis(config) {
       redrawAll();
     }
   });
+
+  /* ---- CANLI YENİLEME (2026-09, kullanıcı raporu: "grafik anlık
+   * olarak yenilensin") — yalnızca kripto için: kullanıcı bu talebi
+   * özellikle "kripto grafiği" için yaptı, diğer varlık türleri zaten
+   * çalışıyor ve dokunulmadı (kural: çalışan sistemlere dokunma).
+   * VİOP detayındaki (app-piyasa-viop.js openViopDetail) canlı
+   * setInterval deseniyle aynı mantık: periyodik olarak gerçek veri
+   * yeniden çekilir, hiçbir şey uydurulmaz; kapanışta interval temizlenir. */
+  if (config.assetType === 'crypto') {
+    state.refreshTimer = setInterval(async () => {
+      let freshBars;
+      try {
+        freshBars = await taFetchCryptoBars(config);
+      } catch (e) {
+        return; // Ağ hatası: mevcut veri korunur, bir sonraki turda tekrar denenir.
+      }
+      if (!Array.isArray(freshBars) || freshBars.length === 0) return;
+      state.bars = freshBars;
+      if (state.mainSeries) {
+        state.mainSeries.setData(state.chartType === 'candlestick' ? barsAsCandles() : barsAsLine());
+      }
+      refreshOverlays();
+      refreshOscillator();
+      redrawAll();
+      const stamp = new Date().toLocaleTimeString('tr-TR');
+      overlay.querySelector('#taStatus').textContent = taStatusText(`Canlı — son güncelleme ${stamp}`);
+    }, 60000);
+  }
 }
