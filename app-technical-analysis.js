@@ -380,7 +380,20 @@ async function openTechnicalAnalysis(config) {
 
   state.mainChart = LightweightCharts.createChart(mainEl, chartOptions);
 
-  function toLwcTime(ms) { return Math.floor(ms / 1000); }
+  // SAAT DİLİMİ DÜZELTMESİ (2026-09, kullanıcı raporu: "gelen veriler 3
+  // saat öncesini gösteriyor"): lightweight-charts, kendisine verilen
+  // zaman değerini HER ZAMAN UTC olarak yorumlayıp öyle etiketler —
+  // tarayıcının yerel saatine (ör. Türkiye UTC+3) hiç çevirmez. Bu
+  // yüzden ham UTC epoch saniyesi verildiğinde tüm eksen/crosshair
+  // etiketleri yerel saatten sistematik olarak geride görünüyordu
+  // (Türkiye'de tam 3 saat). Veri NOKTALARI zaten doğruydu — yalnızca
+  // GÖSTERİM saat dilimi hatalıydı; bu düzeltme kullanıcının tarayıcı
+  // saat dilimi farkını (yaz/kış saati dahil) epoch değerine ekleyerek
+  // grafiğin yerel duvar saatini doğru göstermesini sağlıyor.
+  function toLwcTime(ms) {
+    const offsetMs = -(new Date(ms).getTimezoneOffset()) * 60000;
+    return Math.floor((ms + offsetMs) / 1000);
+  }
 
   function barsAsCandles() {
     return state.bars.map(b => ({

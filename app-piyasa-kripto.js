@@ -22,9 +22,26 @@ const KRIPTO_RANGE_DAYS = { '1G': 1, '7G': 7, '1A': 30, '3A': 90, '1Y': 365 };
 async function fetchCryptoOhlcSeries(id, days) {
   const data = await cachedFetch(`crypto-ohlc:${id}:${days}`, 60000, async () => {
     const url = `https://api.coingecko.com/api/v3/coins/${encodeURIComponent(id)}/ohlc?vs_currency=try&days=${days}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
+    // DAYANIKLILIK DÜZELTMESİ (2026-09, kullanıcı raporu: "veriler
+    // gelmiyor"/"Veri alınamadı"): CoinGecko'nun ücretsiz/anahtarsız
+    // ucu tarayıcıdan doğrudan çağrıldığından zaman zaman geçici 429
+    // (istek sınırı) veya ağ hatası dönebiliyor. Hiçbir veri uydurulmaz
+    // — yalnızca geçici bir hata olursa kısa bir bekleme sonrası AYNI
+    // gerçek uçtan bir kez daha denenir; ikinci deneme de başarısız
+    // olursa hata olduğu gibi yukarı iletilir (arayüz "Veri alınamadı"
+    // gösterir, sahte veri gösterilmez).
+    let lastErr;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (e) {
+        lastErr = e;
+        if (attempt === 0) await new Promise(r => setTimeout(r, 900));
+      }
+    }
+    throw lastErr;
   });
   if (!Array.isArray(data)) return [];
   return data
