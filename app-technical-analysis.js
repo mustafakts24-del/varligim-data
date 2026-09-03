@@ -325,6 +325,7 @@ async function openTechnicalAnalysis(config) {
     oscChart: null,
     oscSeries: [],
     refreshTimer: null,
+    liveTickTimer: null,
   };
 
   function close() {
@@ -332,6 +333,7 @@ async function openTechnicalAnalysis(config) {
     overlay.remove();
     window.removeEventListener('resize', onResize);
     if (state.refreshTimer) { clearInterval(state.refreshTimer); state.refreshTimer = null; }
+    if (state.liveTickTimer) { clearInterval(state.liveTickTimer); state.liveTickTimer = null; }
   }
   overlay.querySelector('#taCloseBtn').addEventListener('click', close);
   overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
@@ -363,7 +365,7 @@ async function openTechnicalAnalysis(config) {
     return text;
   }
   overlay.querySelector('#taStatus').textContent = taStatusText(
-    config.assetType === 'crypto' ? "Canlı — 60 sn'de bir otomatik yenilenir" : null
+    config.assetType === 'crypto' ? "Canlı — son mum 7 sn'de bir, tam grafik 60 sn'de bir yenilenir" : null
   );
 
   const mainEl = overlay.querySelector('#taMainChart');
@@ -406,6 +408,34 @@ async function openTechnicalAnalysis(config) {
   }
   function barsAsLine() {
     return state.bars.map(b => ({ time: toLwcTime(b.t), value: b.c }));
+  }
+
+  // CANLI SON MUM (2026-09, kullanıcı raporu: "grafikler 5-10 saniyede
+  // güncellensin, yeni mumlar oluşsun"). Kullanıcıyla konuşulup dürüst
+  // orta yol seçildi: kaynağın kendi gerçek çözünürlüğü (CoinGecko OHLC
+  // en fazla ~30dk, Yahoo haftalık) bu kadar sık GERÇEKTEN yeni bir mum
+  // sınırı oluşturmaya izin vermiyor — bunun yerine henüz kapanmamış SON
+  // mum, gerçek anlık fiyatla sık sık güncelleniyor (tıpkı gerçek bir
+  // borsa arayüzündeki "açık mum" gibi). `lightweight-charts`'ın
+  // `series.update()` metodu yalnızca bu tek mumu değiştirir — tüm
+  // grafiği yeniden çizmez, kullanıcının yakınlaştırma/kaydırma
+  // konumunu bozmaz. Yeni mum sınırları yine 60 saniyelik tam
+  // yenilemede (aşağıda) kaynağın kendi gerçek çözünürlüğünde oluşur.
+  function applyLiveTick(price) {
+    if (!Number.isFinite(price) || state.bars.length === 0 || !state.mainSeries) return;
+    const last = state.bars[state.bars.length - 1];
+    if (last.o == null) last.o = last.c != null ? last.c : price;
+    last.c = price;
+    if (last.h == null || price > last.h) last.h = price;
+    if (last.l == null || price < last.l) last.l = price;
+    const t = toLwcTime(last.t);
+    try {
+      if (state.chartType === 'candlestick') {
+        state.mainSeries.update({ time: t, open: last.o, high: last.h, low: last.l, close: last.c });
+      } else {
+        state.mainSeries.update({ time: t, value: last.c });
+      }
+    } catch (e) { /* seri henüz hazır değilse sessizce geç, bir sonraki tikte tekrar denenir */ }
   }
 
   function createMainSeries() {
@@ -721,5 +751,25 @@ async function openTechnicalAnalysis(config) {
       const stamp = new Date().toLocaleTimeString('tr-TR');
       overlay.querySelector('#taStatus').textContent = taStatusText(`Canlı — son güncelleme ${stamp}`);
     }, 60000);
+
+    /* ---- CANLI SON MUM (2026-09, kullanıcı raporu: "grafikler 5-10
+     * saniyede güncellensin, yeni mumlar oluşsun"). Kullanıcıyla
+     * konuşulup dürüst orta yol seçildi (bkz. yukarıdaki applyLiveTick
+     * yorumu): kaynağın kendi gerçek çözünürlüğü bu kadar sık GERÇEKTEN
+     * yeni bir mum oluşturmaya izin vermediğinden, henüz kapanmamış SON
+     * mum her 7 saniyede bir gerçek anlık fiyatla güncelleniyor. Fiyatın
+     * para birimi (`vs`), o an grafikte gösterilen kaynakla EŞLEŞTİRİLİR
+     * — Yahoo (BTC-USD gibi) kaynaklıysa USD, CoinGecko kaynaklıysa ₺;
+     * aksi halde iki farklı ölçek karışıp anlamsız bir sıçrama gösterir. */
+    state.liveTickTimer = setInterval(async () => {
+      const vs = (state.bars && state.bars._taSource === 'yahoo5y') ? 'usd' : 'try';
+      let price;
+      try {
+        price = await fetchCryptoLivePrice(config.cryptoId, vs);
+      } catch (e) {
+        return; // Ağ hatası: mevcut mum olduğu gibi kalır, bir sonraki tikte tekrar denenir.
+      }
+      if (price != null) applyLiveTick(price);
+    }, 7000);
   }
 }

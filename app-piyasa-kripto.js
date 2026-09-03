@@ -69,6 +69,36 @@ async function fetchCryptoOhlcSeries(id, days) {
   });
 }
 
+/**
+ * KULLANICI RAPORU (2026-09): "kripto grafikleri 5-10 saniyede bir
+ * güncellensin ve yeni mumlar oluşsun". Kaynağın kendi gerçek çözünürlüğü
+ * (CoinGecko OHLC en fazla ~30dk, Yahoo haftalık) bu kadar sık GERÇEKTEN
+ * yeni bir mum sınırı oluşmasına izin vermiyor — bu yüzden (kullanıcıyla
+ * konuşulup) dürüst bir orta yol seçildi: Teknik Analiz ekranı, henüz
+ * kapanmamış SON mumu bu hafif canlı fiyat ucuyla 5-10 saniyede bir
+ * güncelliyor (bkz. app-technical-analysis.js `applyLiveTick`); yeni mum
+ * sınırları yine kaynağın kendi gerçek çözünürlüğünde oluşuyor, hiçbir
+ * şey uydurulmuyor. `vs`, ana grafiğin para birimiyle (Yahoo kaynaklıysa
+ * USD, CoinGecko kaynaklıysa ₺) EŞLEŞMEK ZORUNDA — aksi halde iki farklı
+ * ölçekteki fiyat karışıp grafikte anlamsız bir sıçrama gösterir.
+ */
+async function fetchCryptoLivePrice(id, vs) {
+  try {
+    const result = await fetchPriceProxy(`type=crypto-quote&id=${encodeURIComponent(id)}&vs=${encodeURIComponent(vs)}`);
+    if (typeof result.price === 'number') return result.price;
+  } catch (e) { /* aşağıdaki doğrudan CoinGecko yedeğine düş */ }
+  try {
+    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(id)}&vs_currencies=${encodeURIComponent(vs)}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const price = data?.[id]?.[vs];
+    return typeof price === 'number' ? price : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 let kriptoMarketList = [];
 let kriptoFilterText = '';
 
