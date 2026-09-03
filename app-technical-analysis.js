@@ -208,8 +208,22 @@ async function taFetchCryptoBars(config) {
   const yahooSymbol = TA_CRYPTO_YAHOO_MAP[config.cryptoId];
   if (yahooSymbol) {
     try {
-      const points = await fetchYahooRangeSeries(yahooSymbol, '5Y');
-      if (Array.isArray(points) && points.length >= 2) {
+      // KULLANICI TALEBİ (2026-09): kripto Teknik Analiz'de mumlar GÜNLÜK
+      // olsun (öncesinde diğer varlık sınıflarıyla aynı YAHOO_CHART_RANGES
+      // ['5Y'] kullanılıyordu — haftalık mum). O paylaşılan sözlüğe yeni
+      // bir '5Y-günlük' anahtarı EKLENMEDİ, çünkü aynı sözlük hisse/emtia/
+      // döviz detay sayfalarındaki aralık "chip" düğmelerini de besliyor;
+      // oraya dokunmak istenmeyen yeni bir düğme ekler ve çalışan bir
+      // sisteme müdahale eder. Bunun yerine yalnızca kripto Teknik Analiz'e
+      // özel, doğrudan bir Yahoo günlük istek (`range=5y&interval=1d`)
+      // yapılıyor — Yahoo'nun günlük mumlarda 5 yıl gibi uzun aralıkları
+      // desteklemesi normaldir (kısıtlama yalnızca dakika/saatlik mumlarda
+      // vardır), bu yüzden bu tamamen gerçek, sorunsuz bir veri isteğidir.
+      const cacheKey = `ohlc:${yahooSymbol}:5y:1d`;
+      const data = await cachedFetch(cacheKey, 60000, () =>
+        fetchPriceProxy(`type=stock-ohlc&symbol=${encodeURIComponent(yahooSymbol)}&range=5y&interval=1d`));
+      const points = Array.isArray(data.points) ? data.points : [];
+      if (points.length >= 2) {
         points._taSource = 'yahoo5y';
         return points;
       }
@@ -225,7 +239,7 @@ async function taFetchCryptoBars(config) {
 }
 
 function taCryptoSourceLabel(bars) {
-  if (bars && bars._taSource === 'yahoo5y') return 'Yahoo Finance ($, 5 yıla kadar gerçek veri, haftalık mumlar)';
+  if (bars && bars._taSource === 'yahoo5y') return 'Yahoo Finance ($, 5 yıla kadar gerçek veri, günlük mumlar)';
   // AÇIKLIK DÜZELTMESİ (2026-09, kullanıcı sorusu: "2 mum arasında 4-5
   // gün fark var, normal mi?"): CoinGecko'nun ücretsiz OHLC ucu uzun
   // aralıklarda (>30 gün) mum aralığını KENDİSİ otomatik olarak ~4 güne
