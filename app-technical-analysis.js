@@ -294,6 +294,60 @@ async function taFetchBars(config) {
 }
 
 /* ------------------------------------------------------------------
+ * NOT METNİ GİRİŞ PENCERESİ (2026-09, kullanıcı raporu: "T (Not Ekle)
+ * aracına tıklayınca hiçbir şey açılmıyor").
+ *
+ * KÖK NEDEN: bu daha önce tarayıcının yerleşik `window.prompt()`
+ * penceresini kullanıyordu. `window.prompt`/`alert`/`confirm` gibi
+ * senkron tarayıcı diyalogları, kullanıcı (ya da sayfa) art arda birkaç
+ * kez bu tür bir pencere tetiklediğinde tarayıcı tarafından SESSİZCE
+ * bastırılabilir ("Bu sayfanın başka pencere açmasına izin verme"
+ * onay kutusu bir kez işaretlendiğinde, o sekmedeki TÜM sonraki
+ * prompt/alert/confirm çağrıları hiçbir hata vermeden anında `null`
+ * döner) — bu, kullanıcının "hiçbir şey olmuyor" şeklinde bildirdiği
+ * belirtiyle birebir örtüşüyor ve `window.prompt`'a bağımlı OLMASININ
+ * kendisi kırılgan bir tasarımdır (mobilde de tutarsız davranabilir).
+ * Düzeltme: tarayıcı diyaloğuna hiç bağımlı olmayan, uygulamanın kendi
+ * koyu temasıyla tutarlı, sayfa içi (in-page) bir giriş kutusu.
+ * ------------------------------------------------------------------ */
+function taPromptText(hostEl, title) {
+  return new Promise((resolve) => {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'ta-text-modal-backdrop';
+    backdrop.innerHTML = `
+      <div class="ta-text-modal">
+        <div class="ta-text-modal-title">${escapeHtml(title || 'Not Ekle')}</div>
+        <input type="text" class="ta-text-modal-input" maxlength="80" placeholder="Not metnini yazın…" />
+        <div class="ta-text-modal-actions">
+          <button type="button" class="btn outline small" data-cancel>Vazgeç</button>
+          <button type="button" class="btn primary small" data-ok>Ekle</button>
+        </div>
+      </div>
+    `;
+    hostEl.appendChild(backdrop);
+    const input = backdrop.querySelector('.ta-text-modal-input');
+    input.focus();
+
+    function finish(value) {
+      backdrop.remove();
+      resolve(value);
+    }
+    backdrop.querySelector('[data-cancel]').addEventListener('click', () => finish(null));
+    backdrop.querySelector('[data-ok]').addEventListener('click', () => finish(input.value.trim() || null));
+    // Arka plana tıklamak da vazgeçme sayılır (yalnızca arka planın
+    // KENDİSİNE tıklanırsa — kutunun içine tıklamalar buraya sızmaz).
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) finish(null); });
+    input.addEventListener('keydown', (e) => {
+      // stopPropagation: bu tuş vuruşları .ta-overlay'in kendi Escape
+      // dinleyicisine (tüm Teknik Analiz ekranını kapatan) sızmasın —
+      // aksi hâlde Escape'e basmak yanlışlıkla TÜM ekranı kapatırdı.
+      if (e.key === 'Enter') { e.stopPropagation(); finish(input.value.trim() || null); }
+      else if (e.key === 'Escape') { e.stopPropagation(); finish(null); }
+    });
+  });
+}
+
+/* ------------------------------------------------------------------
  * ANA GİRİŞ NOKTASI
  * ------------------------------------------------------------------ */
 async function openTechnicalAnalysis(config) {
@@ -691,17 +745,23 @@ async function openTechnicalAnalysis(config) {
     return { time, price };
   }
 
-  drawCanvas.addEventListener('click', (e) => {
+  drawCanvas.addEventListener('click', async (e) => {
     if (!state.drawTool) return;
     const rect = drawCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left, y = e.clientY - rect.top;
     const pt = coordToPricePoint(x, y);
-    if (!pt) return;
+    if (!pt) {
+      // DÜZELTME (2026-09): önceden bu durumda TAMAMEN SESSİZCE hiçbir
+      // şey olmuyordu — kullanıcı tıklamanın grafiğe ulaşıp ulaşmadığını
+      // anlayamıyordu. Artık en azından görünür bir geri bildirim var.
+      overlay.querySelector('#taStatus').textContent =
+        taStatusText('Bu noktaya çizim eklenemedi — grafiğin veri içeren bir bölümüne tıklayın.');
+      return;
+    }
 
     if (state.drawTool === 'text') {
-      const text = window.prompt('Not metni:', '');
-      if (text) state.drawings.push({ type: 'text', p1: pt, text });
-      redrawAll();
+      const text = await taPromptText(overlay, 'Not Ekle');
+      if (text) { state.drawings.push({ type: 'text', p1: pt, text }); redrawAll(); }
       return;
     }
     if (state.drawTool === 'horizontal' || state.drawTool === 'vertical') {
