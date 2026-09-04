@@ -907,7 +907,24 @@ tbody tr:hover { background: var(--bg-elevated); }
    bırakıyordu. Artık `pointer-events` yalnızca bir çizim aracı seçiliyken
    JS tarafından eklenen `.ta-drawing-active` sınıfıyla açılıyor (bkz.
    #taDrawGroup click handler). */
-.ta-draw-canvas { position: absolute; inset: 0; pointer-events: none; }
+/* DÜZELTME (2026-09, kullanıcı raporu: "T aracı hâlâ hiçbir şey açmıyor",
+   dosyaların en güncel sürümü yüklü olduğu doğrulandıktan SONRA bulundu):
+   `.ta-chart-el`/`.ta-draw-canvas`'ın kendisinde z-index YOKTU (yalnızca
+   `position:absolute`) — bu, "position:absolute + z-index:auto" tek
+   başına yeni bir istifleme (stacking) bağlamı OLUŞTURMADIĞI için, altta
+   yatan `lightweight-charts` kütüphanesinin KENDİ iç katmanlarından
+   (mum/crosshair için ayrı iç <canvas>'lar, kendi z-index değerleriyle)
+   biri, aradaki hiçbir kapsayıcı (.ta-main-pane/.ta-chart-el) kendi
+   istifleme bağlamını kurmadığı için doğrudan ÜST `.ta-overlay`
+   bağlamında bizim çizim katmanımızın ÜSTÜNE çıkabiliyordu. Sonuç:
+   fare imleci grafiğin kendi crosshair'ini (tarih/fiyat çizgileri)
+   tetikliyordu — kütüphanenin o iç katmanı olayları alıyordu — ama
+   TIKLAMALAR bizim `.ta-draw-canvas`'ımıza hiç ULAŞMIYORDU, çünkü kendi
+   katmanları artık önündeydi. Düzeltme: çizim katmanına AÇIK, yeterince
+   yüksek bir `z-index` verilerek kütüphanenin kendi iç katmanlarının
+   z-index'i ne olursa olsun her zaman EN ÜSTTE kalması garanti ediliyor. */
+.ta-chart-el { z-index: 1; }
+.ta-draw-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
 .ta-draw-canvas.ta-drawing-active { pointer-events: auto; cursor: crosshair; }
 
 /* "Not Ekle" çizim aracının sayfa-içi giriş kutusu (2026-09 — tarayıcının
