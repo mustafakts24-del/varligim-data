@@ -165,30 +165,45 @@ async function openDovizDetail(code) {
 /* ------------------------------------------------------------------
  * DÖVİZ ÇEVİRİCİ (mobildeki CurrencyConverterScreen'in basitleştirilmiş
  * web karşılığı — TL <-> seçilen döviz, tek yönlü canlı kur ile).
+ *
+ * DÜZELTME (2026-09, kullanıcı talebi: "döviz çeviri kısmını daha
+ * anlaşılır hale getir ve ana sayfada... görüntülensin"): bu fonksiyon
+ * artık bir `ids` parametresi alıyor, böylece AYNI çevirici mantığı
+ * hem Döviz (Piyasa) sayfasındaki orijinal karta HEM DE ana sayfaya
+ * eklenen ikinci, bağımsız bir örneğe bağlanabiliyor — ikisi de kendi
+ * kur/tutar durumunu ayrı tutar (birbirini etkilemez). Önceki tek
+ * elemanlı `dovizConverterInitialized` boole bayrağı, her `ids.select`
+ * için ayrı ayrı iz tutan bir Set'e çevrildi.
  * ------------------------------------------------------------------ */
-let dovizConverterInitialized = false;
-function initDovizConverter() {
-  if (dovizConverterInitialized) return;
-  dovizConverterInitialized = true;
-  const select = document.getElementById('dovizConverterCurrency');
-  if (!select) { dovizConverterInitialized = false; return; }
+const _dovizConverterInitialized = new Set();
+const DOVIZ_CONVERTER_DEFAULT_IDS = {
+  select: 'dovizConverterCurrency',
+  try: 'dovizConverterTry',
+  fx: 'dovizConverterFx',
+  label: 'dovizConverterRateLabel'
+};
+function initDovizConverter(ids) {
+  ids = ids || DOVIZ_CONVERTER_DEFAULT_IDS;
+  if (_dovizConverterInitialized.has(ids.select)) return;
+  const select = document.getElementById(ids.select);
+  if (!select) return;
+  _dovizConverterInitialized.add(ids.select);
   select.innerHTML = DOVIZ_MARKET_LIST.map(c => `<option value="${c.code}">${escapeHtml(c.code)} — ${escapeHtml(c.name)}</option>`).join('');
 
-  const tryInput = document.getElementById('dovizConverterTry');
-  const fxInput = document.getElementById('dovizConverterFx');
+  const tryInput = document.getElementById(ids.try);
+  const fxInput = document.getElementById(ids.fx);
   let lastQuotePrice = null;
 
   async function refreshRate() {
     const code = select.value;
+    const label = document.getElementById(ids.label);
     try {
       const quote = await cachedFetch(`currency:${code}`, 30000, () => fetchPriceProxy(`type=currency&code=${code}`));
       lastQuotePrice = quote.price;
-      const label = document.getElementById('dovizConverterRateLabel');
-      if (label) label.textContent = `1 ${code} = ${fmtTLPrecise(quote.price)}`;
+      if (label) label.innerHTML = `<span class="msr" style="font-size:14px; vertical-align:-2px;">bolt</span> 1 ${code} = ${fmtTLPrecise(quote.price)}`;
       recalcFromTry();
     } catch (e) {
       lastQuotePrice = null;
-      const label = document.getElementById('dovizConverterRateLabel');
       if (label) label.textContent = 'Kur alınamadı';
     }
   }

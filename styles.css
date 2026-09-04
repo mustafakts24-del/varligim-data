@@ -758,6 +758,15 @@ tbody tr:hover { background: var(--bg-elevated); }
 /* ============================================================
    ANA SAYFA (FAZ 11)
    ============================================================ */
+
+/* DÜZELTME (2026-09, kullanıcı talebi: "döviz çevirici... ana sayfada
+   daire grafiğinin yan hizasına sabitle"): Varlık Dağılımı kartı ile
+   Döviz Çevirici kartını masaüstünde yan yana, dar ekranda alt alta
+   gösteren iki sütunlu satır. */
+.home-top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; margin-bottom: 20px; }
+.home-top-row > .card { margin-bottom: 0; }
+@media (max-width: 900px) { .home-top-row { grid-template-columns: 1fr; } }
+
 .home-quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 18px 0; }
 .home-quick-box {
   background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);
@@ -896,6 +905,44 @@ tbody tr:hover { background: var(--bg-elevated); }
    FAİZ/KREDİ — banka teklif kartları (app-interest.js)
    ============================================================ */
 .calc-inline-row { max-width: 320px; }
+
+/* ============================================================
+   DÖVİZ ÇEVİRİCİ — "daha anlaşılır" yeniden tasarım (2026-09,
+   kullanıcı talebi). Aynı stil hem Döviz (Piyasa) sayfasındaki
+   orijinal karta hem de ana sayfaya eklenen ikinci örneğe uygulanır.
+   ============================================================ */
+.fx-hint { font-size: 12px; color: var(--text-faint); margin: -4px 0 16px; }
+.fx-rate-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--positive-bg); color: var(--positive);
+  font-size: 12.5px; font-weight: 700; padding: 6px 12px 6px 10px;
+  border-radius: var(--radius-pill); margin-bottom: 16px;
+}
+.fx-convert-row { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+.fx-field { flex: 1; min-width: 140px; }
+.fx-field label { margin: 0 0 6px; }
+.fx-input-wrap { position: relative; display: flex; align-items: center; }
+.fx-input-wrap input { padding-right: 44px; }
+.fx-input-wrap input.fx-has-select { padding-right: 92px; }
+.fx-suffix {
+  position: absolute; right: 14px; font-size: 13px; font-weight: 700;
+  color: var(--text-faint); pointer-events: none;
+}
+.fx-suffix-select {
+  position: absolute; right: 4px; width: auto; max-width: 104px;
+  background: transparent !important; border: none !important; color: var(--secondary);
+  font-weight: 700; font-size: 12.5px; padding: 6px 6px; cursor: pointer;
+}
+.fx-swap {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; margin-bottom: 10px;
+  background: var(--bg-elevated); color: var(--text-faint);
+}
+.fx-swap .msr { font-size: 17px; }
+@media (max-width: 480px) {
+  .fx-convert-row { flex-direction: column; align-items: stretch; }
+  .fx-swap { align-self: center; transform: rotate(90deg); margin: 0; }
+}
 .bank-offer-row {
   display: grid; grid-template-columns: 40px 1.4fr 1fr 1fr 1fr; gap: 10px; align-items: center;
   background: var(--bg-elevated); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px;

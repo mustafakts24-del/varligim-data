@@ -565,6 +565,23 @@ async function loadHomePage() {
   // ---- VARLIK DAĞILIM GRAFİĞİ (FAZ 11, kullanıcının açıkça istediği ek) ----
   renderAssetDistributionChart(cards.filter(c => ASSET_DISTRIBUTION_COLORS[c.key]));
 
+  // DÜZELTME (2026-09, kullanıcı talebi: "döviz çevirici... ana sayfada
+  // daire grafiğinin yan hizasına sabitle, ana sayfada görüntülensin"):
+  // app-piyasa-doviz.js'teki AYNI çevirici mantığı, ana sayfaya özel
+  // farklı element id'leriyle ikinci, bağımsız bir örnek olarak burada
+  // başlatılıyor (bkz. initDovizConverter'ın ids parametresi). Bu dosya
+  // portfoy.html'de app-piyasa-doviz.js'ten SONRA yüklendiği için
+  // fonksiyon burada zaten tanımlı olur; yine de tip kontrolüyle
+  // güvenceye alınıyor.
+  if (typeof initDovizConverter === 'function') {
+    initDovizConverter({
+      select: 'homeDovizConverterCurrency',
+      try: 'homeDovizConverterTry',
+      fx: 'homeDovizConverterFx',
+      label: 'homeDovizConverterRateLabel'
+    });
+  }
+
   // ---- PİYASALAR / EMTİALAR mini bölümleri + Piyasa Hareketleri ----
   await Promise.all([
     loadHomeMarketSections(),

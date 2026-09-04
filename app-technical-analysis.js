@@ -261,9 +261,34 @@ async function taFetchBars(config) {
   if (config.assetType === 'crypto') {
     return await taFetchCryptoBars(config);
   }
-  // stock / commodity / index — hepsi Yahoo sembolü ile aynı OHLC kaynağı.
-  // Kullanıcı talebiyle (2026-09 hata raporu #4) varsayılan aralık 5
-  // yıla çıkarıldı (Yahoo haftalık mum verisiyle, bkz. YAHOO_CHART_RANGES['5Y']).
+  if (config.assetType === 'stock') {
+    // KULLANICI TALEBİ (2026-09): hisse Teknik Analiz'de mumlar GÜNLÜK
+    // olsun (öncesinde diğer varlık sınıflarıyla aynı YAHOO_CHART_RANGES
+    // ['5Y'] kullanılıyordu — range=5y&interval=1wk, yani haftalık mum).
+    // Kripto'da uygulanan AYNI düzeltme deseni: paylaşılan sözlüğe yeni
+    // bir anahtar EKLENMEDİ (o sözlük emtia/döviz/endeks detay
+    // sayfalarındaki aralık "chip" düğmelerini de besliyor; oraya
+    // dokunmak istenmeyen yeni bir düğme ekler), bunun yerine yalnızca
+    // hisse Teknik Analiz'e özel, doğrudan bir Yahoo günlük istek
+    // (`range=5y&interval=1d`) yapılıyor. Yahoo'nun günlük mumlarda 5
+    // yıl gibi uzun aralıkları desteklemesi normaldir (kısıtlama
+    // yalnızca dakika/saatlik mumlarda vardır), bu yüzden bu tamamen
+    // gerçek, sorunsuz bir veri isteğidir.
+    try {
+      const cacheKey = `ohlc:${config.yahooSymbol}:5y:1d`;
+      const data = await cachedFetch(cacheKey, 60000, () =>
+        fetchPriceProxy(`type=stock-ohlc&symbol=${encodeURIComponent(config.yahooSymbol)}&range=5y&interval=1d`));
+      const points = Array.isArray(data.points) ? data.points : [];
+      if (points.length >= 2) return points;
+    } catch (e) { /* aşağıdaki haftalık 5Y yoluna düş */ }
+    // Yedek (günlük istek başarısız olursa): önceki, kanıtlanmış haftalık
+    // 5Y yolu — dürüstlük gereği veri göstermemek yerine daha kaba
+    // çözünürlükte de olsa gerçek veri gösterilir.
+    return await fetchYahooRangeSeries(config.yahooSymbol, '5Y');
+  }
+  // commodity / index — bu turda kullanıcı yalnızca hisse grafiğini
+  // istedi; bu iki varlık sınıfı önceki (haftalık 5Y) davranışında
+  // değişmeden kalıyor.
   const points = await fetchYahooRangeSeries(config.yahooSymbol, '5Y');
   return points;
 }

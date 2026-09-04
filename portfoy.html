@@ -9,7 +9,7 @@
   name="description"
   content="Varlığım hesabınızla giriş yapın; hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı web üzerinden yönetin."
 />
-<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="styles.css?v=20260904" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -114,11 +114,35 @@
 
         <div class="stat-grid" id="statGrid"></div>
 
-        <div class="card">
-          <div class="section-title"><span class="msr">donut_large</span> Varlık Dağılımı</div>
-          <div style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
-            <div class="chart-wrap" style="width:220px; height:220px; flex:0 0 auto;"><canvas id="assetDistributionChart"></canvas></div>
-            <div id="assetDistributionLegend" style="flex:1; min-width:180px; font-size:13px;"></div>
+        <div class="home-top-row">
+          <div class="card">
+            <div class="section-title"><span class="msr">donut_large</span> Varlık Dağılımı</div>
+            <div style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
+              <div class="chart-wrap" style="width:220px; height:220px; flex:0 0 auto;"><canvas id="assetDistributionChart"></canvas></div>
+              <div id="assetDistributionLegend" style="flex:1; min-width:180px; font-size:13px;"></div>
+            </div>
+          </div>
+          <div class="card fx-card">
+            <div class="section-title"><span class="msr">currency_exchange</span> Döviz Çevirici</div>
+            <p class="fx-hint">TL veya döviz tutarını gir; diğer alan anında hesaplanır.</p>
+            <div class="fx-rate-badge" id="homeDovizConverterRateLabel"><span class="msr" style="font-size:14px; vertical-align:-2px;">bolt</span> Kur yükleniyor…</div>
+            <div class="fx-convert-row">
+              <div class="fx-field">
+                <label for="homeDovizConverterTry">Türk Lirası</label>
+                <div class="fx-input-wrap">
+                  <input id="homeDovizConverterTry" type="text" inputmode="decimal" class="amt-grouped" value="100" />
+                  <span class="fx-suffix">₺</span>
+                </div>
+              </div>
+              <div class="fx-swap"><span class="msr">sync_alt</span></div>
+              <div class="fx-field">
+                <label for="homeDovizConverterCurrency">Karşılığı</label>
+                <div class="fx-input-wrap">
+                  <input id="homeDovizConverterFx" type="text" inputmode="decimal" class="fx-has-select" />
+                  <select id="homeDovizConverterCurrency" class="fx-suffix-select"></select>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -307,21 +331,27 @@
           </div>
           <div id="dovizMarketEmptyState" class="empty" style="display:none;">Sonuç bulunamadı.</div>
         </div>
-        <div class="card">
+        <div class="card fx-card">
           <div class="section-title"><span class="msr">currency_exchange</span> Döviz Çevirici</div>
-          <div class="calc-inline-row">
-            <label for="dovizConverterTry">TL</label>
-            <input id="dovizConverterTry" type="text" inputmode="decimal" class="amt-grouped" value="100" />
+          <p class="fx-hint">TL veya döviz tutarını gir; diğer alan anında hesaplanır.</p>
+          <div class="fx-rate-badge" id="dovizConverterRateLabel"><span class="msr" style="font-size:14px; vertical-align:-2px;">bolt</span> Kur yükleniyor…</div>
+          <div class="fx-convert-row">
+            <div class="fx-field">
+              <label for="dovizConverterTry">Türk Lirası</label>
+              <div class="fx-input-wrap">
+                <input id="dovizConverterTry" type="text" inputmode="decimal" class="amt-grouped" value="100" />
+                <span class="fx-suffix">₺</span>
+              </div>
+            </div>
+            <div class="fx-swap"><span class="msr">sync_alt</span></div>
+            <div class="fx-field">
+              <label for="dovizConverterCurrency">Karşılığı</label>
+              <div class="fx-input-wrap">
+                <input id="dovizConverterFx" type="text" inputmode="decimal" class="fx-has-select" />
+                <select id="dovizConverterCurrency" class="fx-suffix-select"></select>
+              </div>
+            </div>
           </div>
-          <div class="calc-inline-row">
-            <label for="dovizConverterCurrency">Döviz</label>
-            <select id="dovizConverterCurrency"></select>
-          </div>
-          <div class="calc-inline-row">
-            <label for="dovizConverterFx">Karşılığı</label>
-            <input id="dovizConverterFx" type="text" inputmode="decimal" />
-          </div>
-          <div id="dovizConverterRateLabel" style="font-size:12px; color:var(--text-faint); margin-top:6px;">Kur yükleniyor…</div>
         </div>
       </div>
 
@@ -935,18 +965,18 @@
 </div>
 
 <script src="app-core.js?v=20260903-2"></script>
-<script src="app-logos.js?v=20260902"></script>
-<script src="app-charts.js?v=20260903-5"></script>
+<script src="app-logos.js?v=20260904"></script>
+<script src="app-charts.js?v=20260904"></script>
 <script src="bist-stocks-data.js?v=20260902"></script>
 <script src="app-piyasa-emtia.js?v=20260903-2"></script>
 <script src="app-piyasa-hisse.js?v=20260903-2"></script>
 <script src="app-piyasa-fon.js?v=20260902"></script>
 <script src="app-piyasa-kripto.js?v=20260903-4"></script>
-<script src="app-piyasa-doviz.js?v=20260903-2"></script>
+<script src="app-piyasa-doviz.js?v=20260904"></script>
 <script src="app-piyasa-viop.js?v=20260902"></script>
 <script src="app-favoriler.js?v=20260903-2"></script>
 <script src="app-bulten.js?v=20260902"></script>
-<script src="app-home.js?v=20260902"></script>
+<script src="app-home.js?v=20260904"></script>
 <script src="app-varliklar.js?v=20260902"></script>
 <script src="app-interest.js?v=20260902"></script>
 <script src="app-butce.js?v=20260902"></script>

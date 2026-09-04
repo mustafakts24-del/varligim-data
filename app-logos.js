@@ -150,33 +150,55 @@ function fundLogoImg(founderName, fundName, code, size) {
     `</span>`;
 }
 
-// Emtia ikonları — mobilde karşılığı olmayan, web'e özel basit SVG
-// ikon seti (dürüstlük notu yukarıda). Renkler mevcut koyu temaya
-// uygun seçildi.
+// Emtia ikonları — mobilde karşılığı olmayan, web'e özel SVG ikon seti
+// (dürüstlük notu yukarıda). Renkler mevcut koyu temaya uygun seçildi.
+//
+// DÜZELTME (2026-09, kullanıcı talebi: "emtia logolarını daha modern
+// yap"): iki ayrı sorun giderildi. (1) ÖNCEKİ sürümde metal rozetlerinin
+// TÜMÜ (gümüş, bakır, platin, paladyum dahil) yanlışlıkla sabit "Au"
+// harfini gösteriyordu — her metal artık KENDİ doğru element sembolünü
+// gösteriyor (Au/Ag/Cu/Pt/Pd). (2) Görsel stil düz tek renk daireden,
+// radyal degrade + parlama efektli "sikke" görünümüne ve Brent Petrol
+// için düz bardak yerine daha modern bir "damla" ikonuna geçirildi.
 const COMMODITY_ICON_SVG = {
-  GOLD: ['#F5C542', '#B8860B'], GOLD_ONS_USD: ['#F5C542', '#B8860B'],
-  GOLD_22K: ['#F0C24B', '#A9720C'], GOLD_CEYREK: ['#EFC24E', '#9C6A17'],
-  GOLD_YARIM: ['#EEC155', '#8F651E'], GOLD_TAM: ['#EDC05C', '#835F25'],
-  GOLD_ATA: ['#ECC063', '#785A2C'],
-  SILVER: ['#D9D9E3', '#8A8A99'], SILVER_ONS_USD: ['#D9D9E3', '#8A8A99'],
-  COPPER: ['#E07B39', '#8A4B1F'],
-  PLATINUM: ['#CBD3D8', '#6E7B84'], PLATINUM_ONS_USD: ['#CBD3D8', '#6E7B84'],
-  PALLADIUM: ['#C9C2D9', '#6C5F87'], PALLADIUM_ONS_USD: ['#C9C2D9', '#6C5F87'],
-  BRENT: ['#3B3B3B', '#111111'], BRENT_USD: ['#3B3B3B', '#111111'],
+  GOLD: { symbol: 'Au', c1: '#FFE9AE', c2: '#B9860F' },
+  GOLD_ONS_USD: { symbol: 'Au', c1: '#FFE9AE', c2: '#B9860F' },
+  GOLD_22K: { symbol: 'Au', c1: '#FBE0A0', c2: '#A9740F' },
+  GOLD_CEYREK: { symbol: 'Au', c1: '#F8DB97', c2: '#96650E' },
+  GOLD_YARIM: { symbol: 'Au', c1: '#F5D68E', c2: '#82570D' },
+  GOLD_TAM: { symbol: 'Au', c1: '#F2D186', c2: '#70490C' },
+  GOLD_ATA: { symbol: 'Au', c1: '#EFCC7D', c2: '#5E3C0A' },
+  SILVER: { symbol: 'Ag', c1: '#F4F6FA', c2: '#8992A6' },
+  SILVER_ONS_USD: { symbol: 'Ag', c1: '#F4F6FA', c2: '#8992A6' },
+  COPPER: { symbol: 'Cu', c1: '#F2B27F', c2: '#93481A' },
+  PLATINUM: { symbol: 'Pt', c1: '#E8ECF0', c2: '#71808D' },
+  PLATINUM_ONS_USD: { symbol: 'Pt', c1: '#E8ECF0', c2: '#71808D' },
+  PALLADIUM: { symbol: 'Pd', c1: '#E1DBF2', c2: '#6B5C97' },
+  PALLADIUM_ONS_USD: { symbol: 'Pd', c1: '#E1DBF2', c2: '#6B5C97' },
+  BRENT: { symbol: null, c1: '#4C4C55', c2: '#0E0E11' },
+  BRENT_USD: { symbol: null, c1: '#4C4C55', c2: '#0E0E11' },
 };
 
+let _commodityIconGradSeq = 0;
 function commodityIconSvg(key, size) {
   const px = size || 24;
-  const colors = COMMODITY_ICON_SVG[(key || '').toUpperCase()] || ['#5B6EF5', '#3145A6'];
-  const isBar = (key || '').toUpperCase().startsWith('BRENT') ? false : true;
-  const inner = isBar
-    ? `<circle cx="12" cy="12" r="9" fill="${colors[0]}" stroke="${colors[1]}" stroke-width="1.5"/>
-       <text x="12" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="${colors[1]}" font-family="sans-serif">Au</text>`
-    : `<rect x="4" y="8" width="16" height="10" rx="2" fill="${colors[0]}" stroke="${colors[1]}" stroke-width="1.5"/>
-       <path d="M7 8 V6a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2" fill="none" stroke="${colors[1]}" stroke-width="1.5"/>`;
+  const cfg = COMMODITY_ICON_SVG[(key || '').toUpperCase()] || { symbol: '?', c1: '#8B9BF8', c2: '#3145A6' };
+  const gid = `ci-grad-${_commodityIconGradSeq++}`;
+  const inner = cfg.symbol == null
+    // Brent Petrol: bardak yerine modern bir "damla" simgesi.
+    ? `<path d="M12 5.2c2.2 2.9 4.4 5.6 4.4 8.4a4.4 4.4 0 1 1-8.8 0c0-2.8 2.2-5.5 4.4-8.4z" fill="rgba(255,255,255,0.92)"/>
+       <ellipse cx="10.3" cy="12" rx="1.4" ry="2.1" fill="${cfg.c1}" opacity="0.55"/>`
+    : `<ellipse cx="9" cy="7.8" rx="4.3" ry="2.3" fill="rgba(255,255,255,0.4)" transform="rotate(-25 9 7.8)"/>
+       <text x="12" y="15.6" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff" stroke="${cfg.c2}" stroke-width="0.35" paint-order="stroke" font-family="Roboto, sans-serif" letter-spacing="-0.3">${cfg.symbol}</text>`;
   return `<span class="logo-slot" style="width:${px}px;height:${px}px;">` +
-    `<svg width="${px}" height="${px}" viewBox="0 0 24 24">${inner}</svg>` +
-    `</span>`;
+    `<svg width="${px}" height="${px}" viewBox="0 0 24 24">` +
+    `<defs><radialGradient id="${gid}" cx="35%" cy="30%" r="75%">` +
+    `<stop offset="0%" stop-color="${cfg.c1}"/><stop offset="100%" stop-color="${cfg.c2}"/>` +
+    `</radialGradient></defs>` +
+    `<circle cx="12" cy="12" r="10" fill="url(#${gid})"/>` +
+    `<circle cx="12" cy="12" r="10" fill="none" stroke="${cfg.c2}" stroke-opacity="0.4" stroke-width="0.75"/>` +
+    inner +
+    `</svg></span>`;
 }
 
 // Banka logosu: mobildeki BankRateService/interest_credit_calculator_
