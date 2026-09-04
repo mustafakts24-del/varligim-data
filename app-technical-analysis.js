@@ -417,6 +417,7 @@ async function openTechnicalAnalysis(config) {
     drawTool: null,
     drawings: [],
     pendingPoints: [],
+    hoverPoint: null,
     mainChart: null,
     mainSeries: null,
     volumeSeries: null,
@@ -707,6 +708,47 @@ async function openTechnicalAnalysis(config) {
         drawFib(ctx, x1, y1, x2, y2, d.p1.price, d.p2.price);
       }
     }
+
+    // DÜZELTME (2026-09, kullanıcı raporu: "Trend Çizgisi'ni seçip
+    // tıklıyorum, hâlâ hiçbir şey olmuyor"): Trend/Dikdörtgen/Ok/
+    // Fibonacci İKİ tıklama gerektirir, ama ÖNCEDEN ilk tıklamadan sonra
+    // ekranda KESİNLİKLE hiçbir şey görünmüyordu — çizim yalnızca ikinci
+    // tıklamadan SONRA birdenbire beliriyordu. Bu, ilk tıklamanın gerçekten
+    // algılanıp algılanmadığını kullanıcının hiçbir şekilde anlayamaması
+    // anlamına geliyordu ve "araç çalışmıyor" izlenimi veriyordu — aracın
+    // kendisi çalışıyordu, yalnızca ara geri bildirim yoktu. Artık ilk
+    // noktaya tıklandığı AN küçük bir işaret noktası beliriyor ve fare
+    // ikinci noktaya doğru hareket ettikçe kesikli bir önizleme çizgisi/
+    // şekli anlık olarak takip ediyor — TradingView ve benzeri tüm grafik
+    // araçlarındaki standart davranışın aynısı.
+    if (state.pendingPoints.length === 1 && state.drawTool) {
+      const p1 = state.pendingPoints[0];
+      const mx1 = timeToX(p1.time), my1 = priceToY(p1.price);
+      if (mx1 != null && my1 != null) {
+        ctx.save();
+        ctx.fillStyle = '#F5A623';
+        ctx.beginPath(); ctx.arc(mx1, my1, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+
+        if (state.hoverPoint) {
+          const mx2 = timeToX(state.hoverPoint.time), my2 = priceToY(state.hoverPoint.price);
+          if (mx2 != null && my2 != null) {
+            ctx.save();
+            ctx.setLineDash([4, 3]);
+            ctx.strokeStyle = 'rgba(245,166,35,0.65)';
+            if (state.drawTool === 'rect') {
+              ctx.strokeRect(Math.min(mx1, mx2), Math.min(my1, my2), Math.abs(mx2 - mx1), Math.abs(my2 - my1));
+            } else if (state.drawTool === 'arrow') {
+              drawArrow(ctx, mx1, my1, mx2, my2);
+            } else {
+              // trend / fib için basit kesikli önizleme çizgisi yeterli
+              ctx.beginPath(); ctx.moveTo(mx1, my1); ctx.lineTo(mx2, my2); ctx.stroke();
+            }
+            ctx.restore();
+          }
+        }
+      }
+    }
   }
 
   function drawArrow(ctx, x1, y1, x2, y2) {
@@ -774,8 +816,25 @@ async function openTechnicalAnalysis(config) {
     if (state.pendingPoints.length === 2) {
       state.drawings.push({ type: state.drawTool, p1: state.pendingPoints[0], p2: state.pendingPoints[1] });
       state.pendingPoints = [];
+      state.hoverPoint = null;
+      redrawAll();
+    } else {
+      // İlk nokta kaydedildi — hemen bir işaret + canlı önizleme
+      // gösterebilmek için redrawAll() burada da çağrılıyor (bkz.
+      // redrawAll içindeki "bekleyen nokta" yorumu).
       redrawAll();
     }
+  });
+
+  // Trend/Dikdörtgen/Ok/Fibonacci için ilk tıklamadan sonra fareyi ikinci
+  // noktaya doğru hareket ettirirken canlı (kesikli) önizleme çizgisi/
+  // şekli göstermek için — bkz. redrawAll() içindeki ilgili yorum.
+  drawCanvas.addEventListener('mousemove', (e) => {
+    if (!state.drawTool || state.pendingPoints.length !== 1) return;
+    const rect = drawCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    state.hoverPoint = coordToPricePoint(x, y);
+    redrawAll();
   });
 
   state.mainChart.timeScale().subscribeVisibleTimeRangeChange(redrawAll);
@@ -826,6 +885,7 @@ async function openTechnicalAnalysis(config) {
       const isActive = btn.classList.contains('active');
       overlay.querySelectorAll('#taDrawGroup .ta-btn[data-draw]').forEach(b => b.classList.remove('active'));
       state.pendingPoints = [];
+      state.hoverPoint = null;
       if (!isActive) { btn.classList.add('active'); state.drawTool = btn.dataset.draw; }
       else { state.drawTool = null; }
       // DÜZELTME (2026-09, kullanıcı raporu: "grafik üzerinde çizim
@@ -837,10 +897,13 @@ async function openTechnicalAnalysis(config) {
       // yakınlaştırma/crosshair etkileşimini tamamen engelliyordu. Artık
       // bu sınıf, aracın seçili olup olmamasıyla birebir eşleşiyor.
       drawCanvas.classList.toggle('ta-drawing-active', !!state.drawTool);
+      redrawAll(); // aracı değiştirince yarım kalmış işaret/önizleme temizlensin
       return;
     }
     if (e.target.closest('#taClearDrawings')) {
       state.drawings = [];
+      state.pendingPoints = [];
+      state.hoverPoint = null;
       redrawAll();
     }
   });
