@@ -894,9 +894,21 @@ tbody tr:hover { background: var(--bg-elevated); }
 .ta-chart-stack { flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
 .ta-main-pane { position: relative; flex: 1; min-height: 0; }
 .ta-chart-el { position: absolute; inset: 0; }
+/* DÜZELTME (2026-09, kullanıcı raporu: "grafikler üzerinde çizim
+   yapılamıyor / grafik tepki vermiyor"): bu iki kural ÖNCEDEN çelişiyordu
+   — `#taDrawGroup.ta-group ~ .ta-draw-canvas` seçicisi, DOM'da hiçbir
+   zaman gerçekleşmeyen bir kardeşlik ilişkisi varsayıyordu (taDrawGroup
+   araç çubuğunda, .ta-draw-canvas ise ayrı bir üst kapsayıcı içinde —
+   asla "kardeş" olamazlar), bu yüzden ikinci kuralın seçici listesindeki
+   YALIN `.ta-draw-canvas` kısmı devreye giriyor ve `pointer-events: auto`
+   HER ZAMAN, koşulsuz olarak uygulanıyordu — bu da altındaki gerçek
+   grafiği (kaydırma/yakınlaştırma/crosshair) hiçbir çizim aracı seçili
+   değilken bile görünmez bir katmanın altında tamamen tepkisiz
+   bırakıyordu. Artık `pointer-events` yalnızca bir çizim aracı seçiliyken
+   JS tarafından eklenen `.ta-drawing-active` sınıfıyla açılıyor (bkz.
+   #taDrawGroup click handler). */
 .ta-draw-canvas { position: absolute; inset: 0; pointer-events: none; }
-#taDrawGroup.ta-group ~ .ta-draw-canvas,
-.ta-draw-canvas { pointer-events: auto; }
+.ta-draw-canvas.ta-drawing-active { pointer-events: auto; cursor: crosshair; }
 .ta-osc-pane { height: 160px; flex-shrink: 0; position: relative; }
 .ta-osc-pane .ta-chart-el { position: absolute; inset: 0; }
 .ta-status { font-size: 11.5px; color: var(--text-faint); padding-top: 6px; }

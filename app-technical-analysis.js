@@ -318,7 +318,7 @@ async function openTechnicalAnalysis(config) {
           <button type="button" class="ta-btn active" data-overlay="volume">Hacim</button>
         </div>
         <div class="ta-group" id="taOscGroup">
-          <button type="button" class="ta-btn" data-osc="none">Alt Gösterge Yok</button>
+          <button type="button" class="ta-btn active" data-osc="none">Alt Gösterge Yok</button>
           <button type="button" class="ta-btn" data-osc="rsi">RSI</button>
           <button type="button" class="ta-btn" data-osc="macd">MACD</button>
           <button type="button" class="ta-btn" data-osc="stochastic">Stochastic</button>
@@ -377,6 +377,7 @@ async function openTechnicalAnalysis(config) {
     document.body.style.overflow = '';
     overlay.remove();
     window.removeEventListener('resize', onResize);
+    document.removeEventListener('fullscreenchange', onResize);
     if (state.refreshTimer) { clearInterval(state.refreshTimer); state.refreshTimer = null; }
     if (state.liveTickTimer) { clearInterval(state.liveTickTimer); state.liveTickTimer = null; }
   }
@@ -722,6 +723,11 @@ async function openTechnicalAnalysis(config) {
 
   const onResize = () => { resizeDrawCanvas(); };
   window.addEventListener('resize', onResize);
+  // DÜZELTME (2026-09, dayanıklılık): tam ekran açılıp/kapanınca bazı
+  // tarayıcılarda pencere `resize` olayı gecikmeli/eksik tetiklenebilir
+  // — çizim katmanının boyutu grafikle senkron kalsın diye `fullscreen
+  // change` olayı da aynı yeniden boyutlandırmayı tetikliyor.
+  document.addEventListener('fullscreenchange', onResize);
   resizeDrawCanvas();
 
   /* ---- TOOLBAR OLAYLARI ---- */
@@ -762,6 +768,15 @@ async function openTechnicalAnalysis(config) {
       state.pendingPoints = [];
       if (!isActive) { btn.classList.add('active'); state.drawTool = btn.dataset.draw; }
       else { state.drawTool = null; }
+      // DÜZELTME (2026-09, kullanıcı raporu: "grafik üzerinde çizim
+      // yapılamıyor"): çizim katmanı (taDrawCanvas) yalnızca bir çizim
+      // aracı SEÇİLİYKEN tıklamaları yakalamalı — CSS'teki bir seçici
+      // hatası bu katmanı önceden HER ZAMAN tıklamaları yakalar hâlde
+      // bırakıyordu (bkz. styles.css .ta-draw-canvas notu), bu da hiçbir
+      // araç seçili değilken bile alttaki gerçek grafiğin kaydırma/
+      // yakınlaştırma/crosshair etkileşimini tamamen engelliyordu. Artık
+      // bu sınıf, aracın seçili olup olmamasıyla birebir eşleşiyor.
+      drawCanvas.classList.toggle('ta-drawing-active', !!state.drawTool);
       return;
     }
     if (e.target.closest('#taClearDrawings')) {

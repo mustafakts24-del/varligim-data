@@ -125,7 +125,7 @@ function ensureTechnicalAnalysisModule() {
   if (_taModuleLoadPromise) return _taModuleLoadPromise;
   _taModuleLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'app-technical-analysis.js?v=20260904';
+    script.src = 'app-technical-analysis.js?v=20260904-2';
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('Teknik analiz modülü yüklenemedi.'));
     document.head.appendChild(script);
