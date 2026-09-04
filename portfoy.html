@@ -9,7 +9,7 @@
   name="description"
   content="Varlığım hesabınızla giriş yapın; hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı web üzerinden yönetin."
 />
-<link rel="stylesheet" href="styles.css?v=20260904-4" />
+<link rel="stylesheet" href="styles.css?v=20260904-5" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -124,22 +124,20 @@
           </div>
           <div class="card fx-card">
             <div class="section-title"><span class="msr">currency_exchange</span> Döviz Çevirici</div>
-            <p class="fx-hint">TL veya döviz tutarını gir; diğer alan anında hesaplanır.</p>
+            <p class="fx-hint">İki para birimi seç, herhangi birine tutar gir; diğeri anında hesaplanır.</p>
             <div class="fx-rate-badge" id="homeDovizConverterRateLabel"><span class="msr" style="font-size:14px; vertical-align:-2px;">bolt</span> Kur yükleniyor…</div>
             <div class="fx-convert-row">
               <div class="fx-field">
-                <label for="homeDovizConverterTry">Türk Lirası</label>
                 <div class="fx-input-wrap">
-                  <input id="homeDovizConverterTry" type="text" inputmode="decimal" class="amt-grouped" value="100" />
-                  <span class="fx-suffix">₺</span>
+                  <input id="homeDovizConverterFromAmount" type="text" inputmode="decimal" class="fx-has-select" />
+                  <select id="homeDovizConverterFromCode" class="fx-suffix-select"></select>
                 </div>
               </div>
-              <div class="fx-swap"><span class="msr">sync_alt</span></div>
+              <button type="button" class="fx-swap" id="homeDovizConverterSwapBtn" aria-label="Para birimlerini değiştir"><span class="msr">sync_alt</span></button>
               <div class="fx-field">
-                <label for="homeDovizConverterCurrency">Karşılığı</label>
                 <div class="fx-input-wrap">
-                  <input id="homeDovizConverterFx" type="text" inputmode="decimal" class="fx-has-select" />
-                  <select id="homeDovizConverterCurrency" class="fx-suffix-select"></select>
+                  <input id="homeDovizConverterToAmount" type="text" inputmode="decimal" class="fx-has-select" />
+                  <select id="homeDovizConverterToCode" class="fx-suffix-select"></select>
                 </div>
               </div>
             </div>
@@ -333,22 +331,20 @@
         </div>
         <div class="card fx-card">
           <div class="section-title"><span class="msr">currency_exchange</span> Döviz Çevirici</div>
-          <p class="fx-hint">TL veya döviz tutarını gir; diğer alan anında hesaplanır.</p>
+          <p class="fx-hint">İki para birimi seç, herhangi birine tutar gir; diğeri anında hesaplanır.</p>
           <div class="fx-rate-badge" id="dovizConverterRateLabel"><span class="msr" style="font-size:14px; vertical-align:-2px;">bolt</span> Kur yükleniyor…</div>
           <div class="fx-convert-row">
             <div class="fx-field">
-              <label for="dovizConverterTry">Türk Lirası</label>
               <div class="fx-input-wrap">
-                <input id="dovizConverterTry" type="text" inputmode="decimal" class="amt-grouped" value="100" />
-                <span class="fx-suffix">₺</span>
+                <input id="dovizConverterFromAmount" type="text" inputmode="decimal" class="fx-has-select" />
+                <select id="dovizConverterFromCode" class="fx-suffix-select"></select>
               </div>
             </div>
-            <div class="fx-swap"><span class="msr">sync_alt</span></div>
+            <button type="button" class="fx-swap" id="dovizConverterSwapBtn" aria-label="Para birimlerini değiştir"><span class="msr">sync_alt</span></button>
             <div class="fx-field">
-              <label for="dovizConverterCurrency">Karşılığı</label>
               <div class="fx-input-wrap">
-                <input id="dovizConverterFx" type="text" inputmode="decimal" class="fx-has-select" />
-                <select id="dovizConverterCurrency" class="fx-suffix-select"></select>
+                <input id="dovizConverterToAmount" type="text" inputmode="decimal" class="fx-has-select" />
+                <select id="dovizConverterToCode" class="fx-suffix-select"></select>
               </div>
             </div>
           </div>
@@ -972,11 +968,11 @@
 <script src="app-piyasa-hisse.js?v=20260903-2"></script>
 <script src="app-piyasa-fon.js?v=20260902"></script>
 <script src="app-piyasa-kripto.js?v=20260903-4"></script>
-<script src="app-piyasa-doviz.js?v=20260904"></script>
+<script src="app-piyasa-doviz.js?v=20260904-2"></script>
 <script src="app-piyasa-viop.js?v=20260902"></script>
 <script src="app-favoriler.js?v=20260903-2"></script>
 <script src="app-bulten.js?v=20260902"></script>
-<script src="app-home.js?v=20260904"></script>
+<script src="app-home.js?v=20260904-2"></script>
 <script src="app-varliklar.js?v=20260902"></script>
 <script src="app-interest.js?v=20260902"></script>
 <script src="app-butce.js?v=20260902"></script>

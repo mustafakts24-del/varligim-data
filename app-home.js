@@ -575,9 +575,11 @@ async function loadHomePage() {
   // güvenceye alınıyor.
   if (typeof initDovizConverter === 'function') {
     initDovizConverter({
-      select: 'homeDovizConverterCurrency',
-      try: 'homeDovizConverterTry',
-      fx: 'homeDovizConverterFx',
+      fromCode: 'homeDovizConverterFromCode',
+      fromAmount: 'homeDovizConverterFromAmount',
+      toCode: 'homeDovizConverterToCode',
+      toAmount: 'homeDovizConverterToAmount',
+      swapBtn: 'homeDovizConverterSwapBtn',
       label: 'homeDovizConverterRateLabel'
     });
   }

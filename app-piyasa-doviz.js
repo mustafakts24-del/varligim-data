@@ -164,62 +164,109 @@ async function openDovizDetail(code) {
 
 /* ------------------------------------------------------------------
  * DÖVİZ ÇEVİRİCİ (mobildeki CurrencyConverterScreen'in basitleştirilmiş
- * web karşılığı — TL <-> seçilen döviz, tek yönlü canlı kur ile).
+ * web karşılığı).
  *
  * DÜZELTME (2026-09, kullanıcı talebi: "döviz çeviri kısmını daha
  * anlaşılır hale getir ve ana sayfada... görüntülensin"): bu fonksiyon
- * artık bir `ids` parametresi alıyor, böylece AYNI çevirici mantığı
- * hem Döviz (Piyasa) sayfasındaki orijinal karta HEM DE ana sayfaya
- * eklenen ikinci, bağımsız bir örneğe bağlanabiliyor — ikisi de kendi
- * kur/tutar durumunu ayrı tutar (birbirini etkilemez). Önceki tek
- * elemanlı `dovizConverterInitialized` boole bayrağı, her `ids.select`
- * için ayrı ayrı iz tutan bir Set'e çevrildi.
+ * bir `ids` parametresi alıyor, böylece AYNI çevirici mantığı hem Döviz
+ * (Piyasa) sayfasındaki karta HEM DE ana sayfaya eklenen ikinci,
+ * bağımsız bir örneğe bağlanabiliyor — ikisi de kendi kur/tutar
+ * durumunu ayrı tutar (birbirini etkilemez).
+ *
+ * GÜNCELLEME (2026-09, kullanıcı talebi: "TL'yi sabit tutma, kullanıcı
+ * isterse diğer kurları da kendi arasında hesaplayabilsin"): ÖNCEDEN
+ * sol taraf her zaman sabit "Türk Lirası" idi, yalnızca sağ taraftaki
+ * döviz seçilebiliyordu (ör. TL→EUR mümkündü ama EUR→USD gibi iki
+ * YABANCI para birimini doğrudan karşılaştırmak mümkün değildi). Artık
+ * HER İKİ taraf da (TL dahil) serbestçe seçilebiliyor — ör. EUR→USD,
+ * GBP→JPY gibi herhangi bir çift doğrudan hesaplanabiliyor, ayrıca bir
+ * "yer değiştir" düğmesiyle iki taraf tek tıkla takas edilebiliyor.
+ * Hesaplama, price-proxy'nin zaten var olan `type=currency` ucunun
+ * döndürdüğü "TRY başına 1 birim" kurunu HER İKİ para birimi için de
+ * çekip aralarında çapraz oran kurmaya dayanıyor (fromRateToTry /
+ * toRateToTry) — yeni bir uç nokta ya da Supabase değişikliği GEREKMEDİ,
+ * TL de listede rate=1 olan sıradan bir seçenek olarak yer alıyor.
  * ------------------------------------------------------------------ */
+const DOVIZ_CONVERTER_CURRENCIES = [
+  { code: 'TRY', name: 'Türk Lirası' },
+  ...DOVIZ_MARKET_LIST.map(c => ({ code: c.code, name: c.name }))
+];
+
+async function dovizRateToTry(code) {
+  if (code === 'TRY') return 1;
+  const quote = await cachedFetch(`currency:${code}`, 30000, () => fetchPriceProxy(`type=currency&code=${code}`));
+  return quote.price;
+}
+
 const _dovizConverterInitialized = new Set();
 const DOVIZ_CONVERTER_DEFAULT_IDS = {
-  select: 'dovizConverterCurrency',
-  try: 'dovizConverterTry',
-  fx: 'dovizConverterFx',
+  fromCode: 'dovizConverterFromCode',
+  fromAmount: 'dovizConverterFromAmount',
+  toCode: 'dovizConverterToCode',
+  toAmount: 'dovizConverterToAmount',
+  swapBtn: 'dovizConverterSwapBtn',
   label: 'dovizConverterRateLabel'
 };
 function initDovizConverter(ids) {
   ids = ids || DOVIZ_CONVERTER_DEFAULT_IDS;
-  if (_dovizConverterInitialized.has(ids.select)) return;
-  const select = document.getElementById(ids.select);
-  if (!select) return;
-  _dovizConverterInitialized.add(ids.select);
-  select.innerHTML = DOVIZ_MARKET_LIST.map(c => `<option value="${c.code}">${escapeHtml(c.code)} — ${escapeHtml(c.name)}</option>`).join('');
+  if (_dovizConverterInitialized.has(ids.fromCode)) return;
+  const fromSelect = document.getElementById(ids.fromCode);
+  const toSelect = document.getElementById(ids.toCode);
+  if (!fromSelect || !toSelect) return;
+  _dovizConverterInitialized.add(ids.fromCode);
 
-  const tryInput = document.getElementById(ids.try);
-  const fxInput = document.getElementById(ids.fx);
-  let lastQuotePrice = null;
+  const optionsHtml = DOVIZ_CONVERTER_CURRENCIES
+    .map(c => `<option value="${c.code}">${escapeHtml(c.code)} — ${escapeHtml(c.name)}</option>`).join('');
+  fromSelect.innerHTML = optionsHtml;
+  toSelect.innerHTML = optionsHtml;
+  fromSelect.value = 'TRY';
+  toSelect.value = 'USD';
+
+  const fromInput = document.getElementById(ids.fromAmount);
+  const toInput = document.getElementById(ids.toAmount);
+  const swapBtn = document.getElementById(ids.swapBtn);
+  const label = document.getElementById(ids.label);
+  let crossRate = null; // 1 birim "from" = crossRate birim "to"
 
   async function refreshRate() {
-    const code = select.value;
-    const label = document.getElementById(ids.label);
+    const fromCode = fromSelect.value, toCode = toSelect.value;
     try {
-      const quote = await cachedFetch(`currency:${code}`, 30000, () => fetchPriceProxy(`type=currency&code=${code}`));
-      lastQuotePrice = quote.price;
-      if (label) label.innerHTML = `<span class="msr" style="font-size:14px; vertical-align:-2px;">bolt</span> 1 ${code} = ${fmtTLPrecise(quote.price)}`;
-      recalcFromTry();
+      const [fromRateToTry, toRateToTry] = await Promise.all([dovizRateToTry(fromCode), dovizRateToTry(toCode)]);
+      crossRate = fromRateToTry / toRateToTry;
+      if (label) {
+        label.innerHTML = `<span class="msr" style="font-size:14px; vertical-align:-2px;">bolt</span> 1 ${fromCode} = ${fmtNumber(crossRate)} ${toCode}`;
+      }
+      recalcFromLeft();
     } catch (e) {
-      lastQuotePrice = null;
+      crossRate = null;
       if (label) label.textContent = 'Kur alınamadı';
     }
   }
-  function recalcFromTry() {
-    if (lastQuotePrice == null) return;
-    const tryAmount = parseFloat(tryInput.value);
-    if (!isNaN(tryAmount)) fxInput.value = (tryAmount / lastQuotePrice).toFixed(4);
+  function recalcFromLeft() {
+    if (crossRate == null) return;
+    const amt = parseFloat(fromInput.value);
+    if (!isNaN(amt)) toInput.value = (amt * crossRate).toFixed(4);
   }
-  function recalcFromFx() {
-    if (lastQuotePrice == null) return;
-    const fxAmount = parseFloat(fxInput.value);
-    if (!isNaN(fxAmount)) tryInput.value = (fxAmount * lastQuotePrice).toFixed(2);
+  function recalcFromRight() {
+    if (crossRate == null) return;
+    const amt = parseFloat(toInput.value);
+    if (!isNaN(amt)) fromInput.value = (amt / crossRate).toFixed(4);
   }
-  select.addEventListener('change', refreshRate);
-  tryInput.addEventListener('input', recalcFromTry);
-  fxInput.addEventListener('input', recalcFromFx);
+  fromSelect.addEventListener('change', refreshRate);
+  toSelect.addEventListener('change', refreshRate);
+  fromInput.addEventListener('input', recalcFromLeft);
+  toInput.addEventListener('input', recalcFromRight);
+  swapBtn?.addEventListener('click', () => {
+    const fCode = fromSelect.value, tCode = toSelect.value;
+    const fAmt = fromInput.value;
+    fromSelect.value = tCode;
+    toSelect.value = fCode;
+    fromInput.value = toInput.value;
+    toInput.value = fAmt;
+    refreshRate();
+  });
+
+  fromInput.value = '100';
   refreshRate();
 }
 

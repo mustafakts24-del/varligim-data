@@ -964,7 +964,6 @@ tbody tr:hover { background: var(--bg-elevated); }
 }
 .fx-convert-row { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
 .fx-field { flex: 1; min-width: 140px; }
-.fx-field label { margin: 0 0 6px; }
 .fx-input-wrap { position: relative; display: flex; align-items: center; }
 .fx-input-wrap input { padding-right: 44px; }
 .fx-input-wrap input.fx-has-select { padding-right: 92px; }
@@ -979,9 +978,11 @@ tbody tr:hover { background: var(--bg-elevated); }
 }
 .fx-swap {
   display: flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; margin-bottom: 10px;
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
   background: var(--bg-elevated); color: var(--text-faint);
+  border: none; padding: 0; cursor: pointer; transition: background 0.15s, color 0.15s;
 }
+.fx-swap:hover { background: var(--secondary); color: #fff; }
 .fx-swap .msr { font-size: 17px; }
 @media (max-width: 480px) {
   .fx-convert-row { flex-direction: column; align-items: stretch; }
