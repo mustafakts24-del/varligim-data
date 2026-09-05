@@ -794,16 +794,22 @@ async function openStockDetail(symbol) {
     document.getElementById('stockFundamentalsTable').innerHTML = `
       <tr><td>F/K (Fiyat/Kazanç)</td><td>${naIfMissing(fx.trailingPE, v => fmtDecimal(v, 2))}</td></tr>
       <tr><td>PD/DD (Piyasa Değeri/Defter Değeri)</td><td>${naIfMissing(fx.priceToBook, v => fmtDecimal(v, 2))}</td></tr>
+      <tr><td>FD/FAVÖK</td><td>${naIfMissing(fx.evEbitda, v => fmtDecimal(v, 2))}</td></tr>
+      <tr><td>FD/Satışlar</td><td>${naIfMissing(fx.evSales, v => fmtDecimal(v, 2))}</td></tr>
       <tr><td>Piyasa Değeri</td><td>${naIfMissing(fx.marketCap, v => fmtTL(v))}</td></tr>
       <tr><td>Temettü Verimi</td><td>${pct(fx.dividendYield)}</td></tr>
       <tr><td>52 Hafta Aralığı</td><td>${naIfMissing(fx.fiftyTwoWeekLow, fmtNumber)} / ${naIfMissing(fx.fiftyTwoWeekHigh, fmtNumber)}</td></tr>
       <tr><td>Özkaynak Kârlılığı (ROE)</td><td>${pct(fx.returnOnEquity)}</td></tr>
       <tr><td>Net Kâr Marjı</td><td>${pct(fx.profitMargins)}</td></tr>
+      <tr><td>Son Yıllık Satışlar</td><td>${naIfMissing(fx.recentRevenue, v => fmtTL(v))}</td></tr>
+      <tr><td>Son Yıllık Net Kâr</td><td>${naIfMissing(fx.recentNetProfit, v => fmtTL(v))}</td></tr>
       <tr><td>Hisse Başı Kazanç (EPS, TTM)</td><td>${naIfMissing(fx.epsTrailingTwelveMonths, fmtNumber)}</td></tr>
       <tr><td>Beta</td><td>${naIfMissing(fx.beta, v => fmtDecimal(v, 2))}</td></tr>
       <tr><td>Net Borç</td><td>${naIfMissing(fx.netDebt, v => fmtTL(v))}</td></tr>
       <tr><td>Borç/Özkaynak (D/E)</td><td>${naIfMissing(fx.debtToEquity, v => fmtDecimal(v, 2))}</td></tr>
       <tr><td>Cari Oran</td><td>${naIfMissing(fx.currentRatio, v => fmtDecimal(v, 2))}</td></tr>
+      <tr><td>Halka Açıklık Oranı</td><td>${naIfMissing(fx.freeFloatPercent, v => '%' + fmtPercent(v, 2))}</td></tr>
+      <tr><td>Yabancı Oranı</td><td>${naIfMissing(fx.foreignOwnershipPercent, v => '%' + fmtPercent(v, 2))}</td></tr>
       <tr><td>Son Bilanço Tarihi</td><td>${naIfMissing(fx.mostRecentQuarter, v => new Date(v * 1000).toLocaleDateString('tr-TR'))}</td></tr>
     `;
     // DÜZELTME (2026-09, kullanıcı raporu: "Şirket Bilgisi'nde eksik
