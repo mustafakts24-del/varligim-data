@@ -760,3 +760,38 @@ supa.auth.onAuthStateChange((_event, session) => {
     appShell.style.display = 'none';
   }
 });
+
+/* ==================================================================
+ * MOBİL UYGULAMA İNDİRME ROZETLERİ (2026-09, kullanıcı talebi: "web de
+ * her sayfada sabit görünecek appstore ve google play mobil uygulama
+ * indirme butonu ekleyelim"). #storeBadgeBar, #authView / #appShell
+ * dışında body'nin doğrudan çocuğu olduğu için (bkz. portfoy.html)
+ * giriş ekranı dahil HER ekranda aynı konumda sabit kalır.
+ *
+ * Dürüstlük notu: uygulama şu an App Store / Google Play'de YAYINDA
+ * DEĞİL (kullanıcı ile teyit edildi) — bu yüzden rozetler UYDURMA bir
+ * mağaza linkine gitmiyor; tıklanınca kısa süreli, dürüst bir "çok
+ * yakında" bilgisi gösteriyor. Gerçek mağaza linkleri paylaşıldığında
+ * bu iki buton `window.open(...)` ile doğrudan bağlanacak şekilde
+ * güncellenebilir (bkz. rapor).
+ * ================================================================== */
+function showStoreBadgeToast(anchorBtn) {
+  const bar = document.getElementById('storeBadgeBar');
+  if (!bar) return;
+  const existing = document.getElementById('storeBadgeToast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'store-badge-toast';
+  toast.id = 'storeBadgeToast';
+  toast.textContent = 'Çok yakında mağazalarda 🚀';
+  anchorBtn.style.position = 'relative';
+  anchorBtn.appendChild(toast);
+  setTimeout(() => { toast.remove(); }, 2200);
+}
+
+document.getElementById('appStoreBadgeBtn')?.addEventListener('click', (e) => {
+  showStoreBadgeToast(e.currentTarget);
+});
+document.getElementById('googlePlayBadgeBtn')?.addEventListener('click', (e) => {
+  showStoreBadgeToast(e.currentTarget);
+});

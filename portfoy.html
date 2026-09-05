@@ -9,7 +9,7 @@
   name="description"
   content="Varlığım hesabınızla giriş yapın; hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı web üzerinden yönetin."
 />
-<link rel="stylesheet" href="styles.css?v=20260904-5" />
+<link rel="stylesheet" href="styles.css?v=20260904-6" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -645,7 +645,8 @@
               <input id="newVarligimCurrencySearch" class="full" list="varligimCurrencyOptions" autocomplete="off" placeholder="Döviz ara veya seç (örn. USD)" />
               <datalist id="varligimCurrencyOptions"></datalist>
               <input id="newVarligimCurrencyAmount" type="number" step="any" placeholder="Miktar" />
-              <input id="newVarligimCurrencyCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
+              <input id="newVarligimCurrencyCost" type="number" step="any" placeholder="Birim maliyet (₺) - güncel kurdan otomatik dolar, istersen değiştir" />
+              <div class="full auto-cost-hint" id="varligimCurrencyCostHint"><span class="msr">bolt</span></div>
               <button class="btn primary full" id="addVarligimCurrencyBtn" type="button">Ekle / Güncelle</button>
             </div>
           </div>
@@ -670,7 +671,8 @@
               <input id="newCommoditySearch" class="full" list="commodityOptions" autocomplete="off" placeholder="Emtia ara veya seç (örn. Altın)" />
               <datalist id="commodityOptions"></datalist>
               <input id="newCommodityAmount" type="number" step="any" placeholder="Miktar" />
-              <input id="newCommodityCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
+              <input id="newCommodityCost" type="number" step="any" placeholder="Birim maliyet (₺) - güncel fiyattan otomatik dolar, istersen değiştir" />
+              <div class="full auto-cost-hint" id="commodityCostHint"><span class="msr">bolt</span></div>
               <button class="btn primary full" id="addCommodityBtn" type="button">Ekle / Güncelle</button>
             </div>
           </div>
@@ -698,7 +700,8 @@
               <div class="full section-title" style="margin:0;">Yeni hisse ekle</div>
               <select id="newStockSelect" class="full"><option value="">Hisse seç...</option></select>
               <input id="newLot" type="number" step="any" placeholder="Lot" />
-              <input id="newCost" type="number" step="any" placeholder="Maliyet (₺)" />
+              <input id="newCost" type="number" step="any" placeholder="Maliyet (₺) - güncel fiyattan otomatik dolar, istersen değiştir" />
+              <div class="full auto-cost-hint" id="stockCostHint"><span class="msr">bolt</span></div>
               <button class="btn primary full" id="addBtn" type="button">Ekle</button>
             </div>
           </div>
@@ -727,7 +730,8 @@
               <input id="newFundCode" class="full" type="text" autocomplete="off" maxlength="8" placeholder="Fon kodunu yaz (örn. GUM)" />
               <input id="newFundName" class="full" type="text" autocomplete="off" placeholder="Fon adı otomatik bulunacak" readonly />
               <input id="newFundUnits" type="number" step="any" placeholder="Adet" />
-              <input id="newFundCost" type="number" step="any" placeholder="Birim maliyet (₺)" />
+              <input id="newFundCost" type="number" step="any" placeholder="Birim maliyet (₺) - güncel fiyattan otomatik dolar, istersen değiştir" />
+              <div class="full auto-cost-hint" id="fundCostHint"><span class="msr">bolt</span></div>
               <button class="btn primary full" id="addFundBtn" type="button">Ekle / Güncelle</button>
             </div>
           </div>
@@ -751,7 +755,8 @@
               <div class="full section-title" style="margin:0;">Yeni kripto ekle</div>
               <select id="newCryptoSelect" class="full"><option value="">Kripto seç...</option></select>
               <input id="newCryptoAmount" type="number" step="any" placeholder="Miktar" />
-              <input id="newCryptoCost" type="number" step="any" placeholder="Birim maliyet (₺)" />
+              <input id="newCryptoCost" type="number" step="any" placeholder="Birim maliyet (₺) - güncel fiyattan otomatik dolar, istersen değiştir" />
+              <div class="full auto-cost-hint" id="cryptoCostHint"><span class="msr">bolt</span></div>
               <button class="btn primary full" id="addCryptoBtn" type="button">Ekle</button>
             </div>
           </div>
@@ -787,7 +792,8 @@
                 <option value="true">Opsiyon</option>
               </select>
               <input id="newViopLot" type="number" step="any" placeholder="Lot" />
-              <input id="newViopCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı" />
+              <input id="newViopCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı, sözleşme tam eşleşirse güncel fiyattan otomatik dolar" />
+              <div class="full auto-cost-hint" id="viopCostHint"><span class="msr">bolt</span></div>
               <button class="btn primary full" id="addViopBtn" type="button">Ekle</button>
             </div>
           </div>
@@ -960,7 +966,21 @@
   </div>
 </div>
 
-<script src="app-core.js?v=20260903-2"></script>
+<!-- ============================================================
+     MOBİL UYGULAMA İNDİRME ROZETLERİ (sabit, her ekranda görünür)
+     ============================================================ -->
+<div id="storeBadgeBar">
+  <button type="button" class="store-badge" id="appStoreBadgeBtn" aria-label="App Store'dan indir">
+    <svg viewBox="0 0 24 24"><path d="M16.365 1.43c0 1.14-.415 2.06-1.246 2.76-.833.706-1.723 1.09-2.67 1.02-.13-1.09.32-2.06 1.16-2.79.83-.73 1.85-1.18 2.756-1.03zM19.6 17.05c-.36.86-.79 1.65-1.29 2.38-.7 1.02-1.28 1.73-1.73 2.12-.7.66-1.44 1-2.24 1.02-.57.01-1.26-.16-2.06-.5-.8-.34-1.53-.5-2.19-.5-.69 0-1.44.16-2.26.5-.82.35-1.48.53-2 .55-.76.03-1.52-.32-2.27-1.06-.5-.44-1.1-1.18-1.82-2.24-.78-1.13-1.42-2.45-1.92-3.95-.55-1.63-.82-3.2-.82-4.72 0-1.74.375-3.24 1.13-4.5.59-1.02 1.375-1.82 2.36-2.4.98-.58 2.04-.88 3.19-.9.6 0 1.4.19 2.4.55.99.36 1.63.55 1.91.55.21 0 .92-.21 2.11-.63 1.13-.39 2.08-.55 2.87-.49 2.12.17 3.71 1.01 4.77 2.52-1.9 1.15-2.84 2.76-2.82 4.83.02 1.62.6 2.97 1.75 4.02.52.5 1.1.88 1.75 1.15-.14.41-.29.8-.45 1.18z"/></svg>
+    <span class="store-badge-text"><small>Çok Yakında</small><strong>App Store</strong></span>
+  </button>
+  <button type="button" class="store-badge" id="googlePlayBadgeBtn" aria-label="Google Play'den indir">
+    <svg viewBox="0 0 24 24"><path d="M3.6 2.3c-.34.33-.55.85-.55 1.5v16.4c0 .65.2 1.17.55 1.5l.1.08L13.3 12v-.23L3.7 2.22l-.1.08z"/><path d="M16.55 15.25l-3.25-3.25V11.7l3.26-3.26 3.6 2.06c1.03.6 1.03 1.6 0 2.2l-3.6 2.06z" opacity=".7"/><path d="M13.3 12l3.25 3.25-9.85 5.6c-.35.2-.75.17-1.05-.03L13.3 12z"/><path d="M13.3 12L5.65 3.18c.3-.2.7-.23 1.05-.03l9.85 5.6L13.3 12z" opacity=".85"/></svg>
+    <span class="store-badge-text"><small>Çok Yakında</small><strong>Google Play</strong></span>
+  </button>
+</div>
+
+<script src="app-core.js?v=20260903-3"></script>
 <script src="app-logos.js?v=20260904"></script>
 <script src="app-charts.js?v=20260904-4"></script>
 <script src="bist-stocks-data.js?v=20260902"></script>
@@ -976,6 +996,6 @@
 <script src="app-varliklar.js?v=20260902"></script>
 <script src="app-interest.js?v=20260902"></script>
 <script src="app-butce.js?v=20260902"></script>
-<script src="app-varligim.js?v=20260902"></script>
+<script src="app-varligim.js?v=20260905"></script>
 </body>
 </html>

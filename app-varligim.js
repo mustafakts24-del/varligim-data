@@ -22,6 +22,91 @@ document.querySelectorAll('#page-varligim .subtab-chip').forEach(chip => {
 });
 
 /* ==================================================================
+ * "EKLE" FORMLARI — GÜNCEL FİYATTAN OTOMATİK MALİYET DOLDURMA
+ * (2026-09, kullanıcı talebi: "hisse ekleme kısımında maliyet kısmı
+ * güncel veri üzerinden otomatik doldurulsun kullanıcı sadece lot
+ * miktarını yazsın ve ekle butonunun üzerinde tutar otomatik
+ * hesaplanıp gösterilsin kullanıcı isterse kendisi maliyet kısmına
+ * tutar girsin, bunu varlığım kısmındaki bütün ekleme bölümlerine
+ * ayarla").
+ *
+ * Kapsam: Döviz, Emtia, Hisse, Fon, Kripto, VİOP — bu 6 bölümün
+ * hepsinde price-proxy üzerinden GERÇEK bir güncel fiyat mevcut
+ * (mevcut liste/detay sayfalarının zaten kullandığı AYNI uçlar).
+ * Mevduat/Gayrimenkul/Araç/Diğer Varlıklarım kapsam DIŞI bırakıldı —
+ * bunların (mobilde de) canlı bir piyasa fiyatı yok, bu yüzden
+ * "otomatik doldurma" burada UYDURMA bir sayı üretmek anlamına
+ * gelirdi.
+ *
+ * Davranış: kullanıcı bir enstrüman seçtiğinde (veya arama/kod
+ * alanında geçerli bir eşleşme bulunduğunda) maliyet alanı güncel
+ * fiyatla dolduruluyor; kullanıcı bu alana KENDİSİ bir şey yazarsa
+ * ("manuallyEdited") bir sonraki otomatik doldurma o alana artık
+ * dokunmuyor — yalnızca yeni bir enstrüman seçildiğinde sıfırlanıp
+ * yeniden otomatik dolduruluyor. Miktar/lot/adet veya maliyet
+ * alanlarından biri her değiştiğinde, ekle butonunun hemen üzerinde
+ * "Tahmini toplam tutar" canlı olarak gösteriliyor.
+ * ================================================================== */
+function bindVarligimAutoCost(cfg) {
+  const qtyEl = document.getElementById(cfg.qtyId);
+  const costEl = document.getElementById(cfg.costId);
+  const hintEl = document.getElementById(cfg.hintId);
+  if (!qtyEl || !costEl) return { notifyInstrumentChanged: async () => {}, recomputeHint: () => {} };
+  let manuallyEdited = false;
+  let fetchSeq = 0;
+
+  function recomputeHint() {
+    if (!hintEl) return;
+    const qty = parseFloat(qtyEl.value);
+    const cost = parseFloat(costEl.value);
+    if (!isNaN(qty) && qty > 0 && !isNaN(cost) && cost >= 0) {
+      hintEl.innerHTML = `<span class="msr">bolt</span> Tahmini toplam tutar: ${fmtTL(qty * cost)}`;
+      hintEl.classList.add('visible');
+    } else {
+      hintEl.classList.remove('visible');
+    }
+  }
+
+  function roundForCost(price) {
+    // Küçük birim fiyatlarda (bazı dövizler/kripto) anlamlı basamak
+    // sayısını korumak için ondalık hassasiyeti fiyatın büyüklüğüne göre
+    // ayarla — mobil/web'de zaten kullanılan gerçek fiyat, yalnızca
+    // gösterim/varsayılan-doldurma hassasiyeti ayarlanıyor.
+    if (price >= 100) return Math.round(price * 100) / 100;
+    if (price >= 1) return Math.round(price * 10000) / 10000;
+    return Math.round(price * 1e8) / 1e8;
+  }
+
+  costEl.addEventListener('input', () => { manuallyEdited = true; recomputeHint(); });
+  qtyEl.addEventListener('input', recomputeHint);
+
+  async function notifyInstrumentChanged() {
+    manuallyEdited = false;
+    const seq = ++fetchSeq;
+    let price = null;
+    try {
+      price = await cfg.fetchPrice();
+    } catch (e) {
+      price = null; // Sessizce yut — kullanıcı elle maliyet girebilir (mevcut davranış).
+    }
+    if (seq !== fetchSeq) return; // Araya yeni bir seçim girdi, bu sonucu at.
+    if (manuallyEdited) return;   // Fiyat gelene kadar kullanıcı elle yazdıysa dokunma.
+    if (price != null && isFinite(price) && price > 0) {
+      costEl.value = roundForCost(price);
+    }
+    recomputeHint();
+  }
+
+  function reset() {
+    manuallyEdited = false;
+    fetchSeq++;
+    recomputeHint();
+  }
+
+  return { notifyInstrumentChanged, recomputeHint, reset };
+}
+
+/* ==================================================================
  * GAYRİMENKUL
  * DÜZELTME (2026-09, tam parite denetimi): mobilde her gayrimenkul
  * kaydı düzenlenebilir (real_estate_screen.dart popup menüsü "Sil" +
@@ -607,6 +692,25 @@ function resolveVarligimCurrency(rawValue) {
   }) || null;
 }
 
+const varligimCurrencyAutoCost = bindVarligimAutoCost({
+  qtyId: 'newVarligimCurrencyAmount', costId: 'newVarligimCurrencyCost', hintId: 'varligimCurrencyCostHint',
+  fetchPrice: async () => {
+    const currency = resolveVarligimCurrency(document.getElementById('newVarligimCurrencySearch')?.value);
+    if (!currency) return null;
+    const q = await fetchPriceProxy(`type=currency&code=${encodeURIComponent(currency.code)}`);
+    return q.price;
+  }
+});
+let _varligimCurrencyLastResolvedCode = null;
+document.getElementById('newVarligimCurrencySearch')?.addEventListener('input', debounce(() => {
+  const currency = resolveVarligimCurrency(document.getElementById('newVarligimCurrencySearch').value);
+  const code = currency ? currency.code : null;
+  if (code !== _varligimCurrencyLastResolvedCode) {
+    _varligimCurrencyLastResolvedCode = code;
+    if (code) varligimCurrencyAutoCost.notifyInstrumentChanged();
+  }
+}, 300));
+
 async function loadVarligimCurrencyHoldings() {
   const { data, error } = await supa
     .from('currency_holdings')
@@ -717,6 +821,8 @@ document.getElementById('addVarligimCurrencyBtn').addEventListener('click', asyn
   searchInput.value = '';
   document.getElementById('newVarligimCurrencyAmount').value = '';
   document.getElementById('newVarligimCurrencyCost').value = '';
+  _varligimCurrencyLastResolvedCode = null;
+  varligimCurrencyAutoCost.reset();
   await loadVarligimCurrencyHoldings();
 });
 
@@ -746,6 +852,17 @@ function loadStockOptions() {
     select.appendChild(option);
   }
 }
+
+const stockAutoCost = bindVarligimAutoCost({
+  qtyId: 'newLot', costId: 'newCost', hintId: 'stockCostHint',
+  fetchPrice: async () => {
+    const symbol = document.getElementById('newStockSelect')?.value;
+    if (!symbol) return null;
+    const q = await fetchPriceProxy(`type=stock&symbol=${encodeURIComponent(symbol)}`);
+    return q.price;
+  }
+});
+document.getElementById('newStockSelect')?.addEventListener('change', () => stockAutoCost.notifyInstrumentChanged());
 
 function renderStockPortfolioSummary(data) {
   const el = document.getElementById('stockPortfolioSummary');
@@ -894,6 +1011,7 @@ document.getElementById('addBtn').addEventListener('click', async () => {
   select.value = '';
   document.getElementById('newLot').value = '';
   document.getElementById('newCost').value = '';
+  stockAutoCost.reset();
   loadHoldings();
 });
 
@@ -933,6 +1051,25 @@ function resolveCommodity(rawValue) {
       value.startsWith(`${name} —`) || value.includes(key) || value.includes(name);
   }) || null;
 }
+
+const commodityAutoCost = bindVarligimAutoCost({
+  qtyId: 'newCommodityAmount', costId: 'newCommodityCost', hintId: 'commodityCostHint',
+  fetchPrice: async () => {
+    const commodity = resolveCommodity(document.getElementById('newCommoditySearch')?.value);
+    if (!commodity) return null;
+    const q = await fetchPriceProxy(`type=commodity&key=${encodeURIComponent(commodity.key)}`);
+    return q.price;
+  }
+});
+let _commodityLastResolvedKey = null;
+document.getElementById('newCommoditySearch')?.addEventListener('input', debounce(() => {
+  const commodity = resolveCommodity(document.getElementById('newCommoditySearch').value);
+  const key = commodity ? commodity.key : null;
+  if (key !== _commodityLastResolvedKey) {
+    _commodityLastResolvedKey = key;
+    if (key) commodityAutoCost.notifyInstrumentChanged();
+  }
+}, 300));
 
 async function loadCommodityHoldings() {
   const { data, error } = await supa
@@ -1055,6 +1192,8 @@ document.getElementById('addCommodityBtn').addEventListener('click', async () =>
   searchInput.value = '';
   document.getElementById('newCommodityAmount').value = '';
   document.getElementById('newCommodityCost').value = '';
+  _commodityLastResolvedKey = null;
+  commodityAutoCost.reset();
   await loadCommodityHoldings();
 });
 
@@ -1109,6 +1248,17 @@ async function loadCryptoOptions() {
   });
   if (currentValue) select.value = currentValue;
 }
+
+const cryptoAutoCost = bindVarligimAutoCost({
+  qtyId: 'newCryptoAmount', costId: 'newCryptoCost', hintId: 'cryptoCostHint',
+  fetchPrice: async () => {
+    const cryptoId = document.getElementById('newCryptoSelect')?.value;
+    if (!cryptoId) return null;
+    const q = await fetchPriceProxy(`type=crypto-quote&id=${encodeURIComponent(cryptoId)}&vs=try`);
+    return q.price;
+  }
+});
+document.getElementById('newCryptoSelect')?.addEventListener('change', () => cryptoAutoCost.notifyInstrumentChanged());
 
 async function loadCryptoLivePrices(rows) {
   let prices = {};
@@ -1236,6 +1386,7 @@ document.getElementById('addCryptoBtn').addEventListener('click', async () => {
   select.value = '';
   document.getElementById('newCryptoAmount').value = '';
   document.getElementById('newCryptoCost').value = '';
+  cryptoAutoCost.reset();
   loadCryptoHoldings();
 });
 
@@ -1369,6 +1520,15 @@ let selectedFundForWeb = null;
 let fundLookupTimer = null;
 let fundLookupRequestId = 0;
 
+const fundAutoCost = bindVarligimAutoCost({
+  qtyId: 'newFundUnits', costId: 'newFundCost', hintId: 'fundCostHint',
+  fetchPrice: async () => {
+    if (!selectedFundForWeb) return null;
+    const q = await fetchPriceProxy(`type=fund&code=${encodeURIComponent(selectedFundForWeb.code)}`);
+    return q.price;
+  }
+});
+
 async function findFundByExactCode(rawCode) {
   const code = String(rawCode || '').trim().toLocaleUpperCase('tr-TR');
   if (!code) return null;
@@ -1406,6 +1566,7 @@ async function resolveFundCodeInput() {
     selectedFundForWeb = fund;
     nameInput.value = fund.name;
     hideMsg();
+    fundAutoCost.notifyInstrumentChanged();
   } catch (err) {
     if (requestId !== fundLookupRequestId) return;
     nameInput.value = '';
@@ -1419,6 +1580,7 @@ document.getElementById('newFundCode').addEventListener('input', () => {
   codeInput.value = String(codeInput.value || '').toLocaleUpperCase('tr-TR');
   selectedFundForWeb = null;
   document.getElementById('newFundName').value = '';
+  fundAutoCost.reset();
   fundLookupTimer = setTimeout(() => { resolveFundCodeInput(); }, 450);
 });
 
@@ -1460,6 +1622,7 @@ document.getElementById('addFundBtn').addEventListener('click', async () => {
   document.getElementById('newFundUnits').value = '';
   document.getElementById('newFundCost').value = '';
   selectedFundForWeb = null;
+  fundAutoCost.reset();
   await loadFundHoldings();
 });
 
@@ -1471,6 +1634,24 @@ document.getElementById('addFundBtn').addEventListener('click', async () => {
  * eskiden bunu hep 0 yazıyordu (bilinen düşük öncelikli hata). Yeni
  * "newViopCategory" seçim kutusuyla artık doğru değer yazılıyor.
  * ================================================================== */
+// VİOP sözleşme sembolü serbest metin olarak girildiği (kataloğa bağlı bir
+// seçim kutusu yok) için burada bir "seçim değişti" olayı yok — sembol tam
+// olarak mevcut bir sözleşmeyle eşleşirse (bkz. price-proxy getViopQuote,
+// AYNI tam-eşleşme mantığı liste/detay sayfalarında da kullanılıyor)
+// alandan çıkıldığında (blur) en iyi çaba ile güncel fiyat denenir;
+// eşleşmezse (yazım tamamlanmadıysa/sözleşme adı farklıysa) sessizce
+// hiçbir şey yapılmaz ve kullanıcı maliyeti elle girmeye devam edebilir.
+const viopAutoCost = bindVarligimAutoCost({
+  qtyId: 'newViopLot', costId: 'newViopCost', hintId: 'viopCostHint',
+  fetchPrice: async () => {
+    const symbol = document.getElementById('newViopSymbol')?.value.trim();
+    if (!symbol) return null;
+    const q = await fetchPriceProxy(`type=viop&symbol=${encodeURIComponent(symbol)}`);
+    return q.price;
+  }
+});
+document.getElementById('newViopSymbol')?.addEventListener('blur', () => viopAutoCost.notifyInstrumentChanged());
+
 async function loadViopHoldings() {
   const { data, error } = await supa
     .from('viop_holdings')
@@ -1611,6 +1792,7 @@ document.getElementById('addViopBtn').addEventListener('click', async () => {
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('newViopIsOption').value = 'false';
   document.getElementById('newViopCategory').value = '4';
+  viopAutoCost.reset();
   await loadViopHoldings();
 });
 

@@ -1059,3 +1059,87 @@ tbody tr:hover { background: var(--bg-elevated); }
   0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(29,190,130,.5); }
   50% { opacity: .55; box-shadow: 0 0 0 4px rgba(29,190,130,0); }
 }
+
+/* ============================================================
+   VARLIĞIM "EKLE" FORMLARI — GÜNCEL FİYATTAN OTOMATİK MALİYET
+   (2026-09, kullanıcı talebi: "hisse ekleme kısımında maliyet
+   kısmı güncel veri üzerinden otomatik doldurulsun ... bunu
+   varlığım kısmındaki bütün ekleme bölümlerine ayarla")
+   ============================================================ */
+.auto-cost-hint {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--secondary);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin: -2px 0 2px;
+}
+.auto-cost-hint .msr { font-size: 15px; vertical-align: -3px; }
+.auto-cost-hint.visible { display: flex; }
+
+/* ============================================================
+   MOBİL UYGULAMA İNDİRME ROZETLERİ (2026-09, kullanıcı talebi:
+   "web de her sayfada sabit görünecek appstore ve google play
+   mobil uygulama indirme butonu ekleyelim"). Uygulama henüz her
+   iki mağazada da YAYINDA DEĞİL (kullanıcı onayı) — bu yüzden
+   gerçek olmayan bir mağaza linki VERİLMEDİ; butonlar tıklanınca
+   dürüst bir "çok yakında" bilgisi gösterir. #authView / #appShell
+   dışında, body'nin doğrudan çocuğu olarak sabitlendiği için
+   uygulamanın HER ekranında (giriş dahil) aynı konumda görünür.
+   ============================================================ */
+#storeBadgeBar {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.store-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 8px 14px 8px 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.28);
+  color: var(--text);
+  transition: transform .12s ease, border-color .12s ease;
+}
+.store-badge:hover { transform: translateY(-1px); border-color: var(--secondary); }
+.store-badge svg { width: 20px; height: 20px; flex-shrink: 0; fill: var(--text); }
+.store-badge-text { display: flex; flex-direction: column; line-height: 1.15; text-align: left; }
+.store-badge-text small { font-size: 9.5px; color: var(--text-faint); font-weight: 600; }
+.store-badge-text strong { font-size: 12.5px; font-weight: 700; }
+.store-badge-toast {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  background: var(--secondary);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  animation: storeBadgeToastFade 2.2s ease forwards;
+}
+@keyframes storeBadgeToastFade {
+  0% { opacity: 0; transform: translateY(4px); }
+  12%, 78% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+@media (max-width: 640px) {
+  #storeBadgeBar { right: 10px; bottom: 10px; gap: 6px; }
+  .store-badge { padding: 7px 10px 7px 8px; }
+  .store-badge-text strong { font-size: 11.5px; }
+}
