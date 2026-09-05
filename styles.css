@@ -739,6 +739,16 @@ tbody tr:hover { background: var(--bg-elevated); }
 .kv-table td:first-child { color: var(--text-muted); }
 .kv-table td:last-child { text-align: right; font-weight: 600; }
 
+/* YENİ (2026-09, kullanıcı raporu: "ayrıntılı yıllık temettü gösterelim"):
+   hisse detayındaki "Temettü Geçmişi" bölümünde yıla göre gruplanmış
+   ödeme listesi. */
+.dividend-year-block { margin-bottom: 12px; }
+.dividend-year-block:last-child { margin-bottom: 0; }
+.dividend-year-title {
+  font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px;
+}
+.dividend-year-block .kv-table td:first-child { color: var(--text-muted); }
+
 /* ============================================================
    BÜLTEN (Haberler)
    ============================================================ */

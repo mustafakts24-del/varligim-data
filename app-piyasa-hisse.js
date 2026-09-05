@@ -724,6 +724,16 @@ async function openStockDetail(symbol) {
       bu sürüme dahil değildir — bkz. teslim raporu, bilinen sınırlamalar.
     </p>
 
+    <div class="detail-section-title">Temettü Geçmişi</div>
+    <div id="stockDividendBlock"><div class="empty" style="padding:14px 0;">Yükleniyor…</div></div>
+    <p style="font-size:11.5px; color:var(--text-faint); margin-top:6px;">
+      Kaynak: Yahoo Finance geçmiş kurumsal aksiyon (temettü ödeme) kayıtları.
+      "Temettü Verimi" satırı için birincil kaynak boşsa, buradaki gerçek
+      ödemelerden hesaplanan son 12 aylık verim otomatik olarak kullanılır.
+      Bu hisse için hiç ödeme kaydı yoksa, uydurma bir sayı göstermek yerine
+      dürüstçe "kayıt bulunamadı" yazılır.
+    </p>
+
     <div class="detail-section-title">Analist Tavsiyeleri</div>
     <div id="stockAnalystBlock"><div class="empty" style="padding:14px 0;">Yükleniyor…</div></div>
     `
@@ -747,6 +757,12 @@ async function openStockDetail(symbol) {
   const fxPromise = cachedFetch(`fund:${symbol}`, 6 * 3600 * 1000, () =>
     fetchPriceProxy(`type=stock-fundamentals&symbol=${encodeURIComponent(symbol)}`)).catch(() => null);
   const recPromise = fetchAnalystRecommendations(symbol).catch(() => null);
+  // YENİ (kullanıcı raporu: "temettü verimi yazan kısım hala boş ayrıntılı
+  // yıllık temettü gösterelim"): gerçek geçmiş temettü ödeme kayıtları +
+  // bunlardan hesaplanan trailing-12-ay verim (bkz. price-proxy'deki
+  // getStockDividendEvents yorumu — Yahoo v8/finance/chart, events=div).
+  const dividendsPromise = cachedFetch(`div:${symbol}`, 6 * 3600 * 1000, () =>
+    fetchPriceProxy(`type=stock-dividends&symbol=${encodeURIComponent(symbol)}`)).catch(() => null);
 
   bindChartRangeChips(document.getElementById('stockRangeChips'), '1A', async (rangeKey) => {
     const statsEl = document.getElementById('stockPeriodStats');
@@ -789,15 +805,24 @@ async function openStockDetail(symbol) {
   }
 
   const fx = await fxPromise;
+  const dividends = await dividendsPromise;
   if (fx) {
     const pct = v => v == null ? '—' : `%${fmtPercent(v * 100, 2)}`;
+    // DÜZELTME (kullanıcı raporu: "temettü verimi yazan kısım hala boş"):
+    // birincil kaynak (Yahoo v7/v10 veya İş Yatırım etiket taraması) boşsa,
+    // gerçek geçmiş temettü ödemelerinden (v8/finance/chart, events=div)
+    // hesaplanan son 12 aylık verim yedek olarak kullanılır — ikisi de
+    // yoksa dürüstçe "—" kalır, uydurma bir sayı üretilmez.
+    const dividendYieldMerged = fx.dividendYield != null
+      ? fx.dividendYield
+      : (dividends && dividends.trailingYield != null ? dividends.trailingYield : null);
     document.getElementById('stockFundamentalsTable').innerHTML = `
       <tr><td>F/K (Fiyat/Kazanç)</td><td>${naIfMissing(fx.trailingPE, v => fmtDecimal(v, 2))}</td></tr>
       <tr><td>PD/DD (Piyasa Değeri/Defter Değeri)</td><td>${naIfMissing(fx.priceToBook, v => fmtDecimal(v, 2))}</td></tr>
       <tr><td>FD/FAVÖK</td><td>${naIfMissing(fx.evEbitda, v => fmtDecimal(v, 2))}</td></tr>
       <tr><td>FD/Satışlar</td><td>${naIfMissing(fx.evSales, v => fmtDecimal(v, 2))}</td></tr>
       <tr><td>Piyasa Değeri</td><td>${naIfMissing(fx.marketCap, v => fmtTL(v))}</td></tr>
-      <tr><td>Temettü Verimi</td><td>${pct(fx.dividendYield)}</td></tr>
+      <tr><td>Temettü Verimi</td><td>${pct(dividendYieldMerged)}</td></tr>
       <tr><td>52 Hafta Aralığı</td><td>${naIfMissing(fx.fiftyTwoWeekLow, fmtNumber)} / ${naIfMissing(fx.fiftyTwoWeekHigh, fmtNumber)}</td></tr>
       <tr><td>Özkaynak Kârlılığı (ROE)</td><td>${pct(fx.returnOnEquity)}</td></tr>
       <tr><td>Net Kâr Marjı</td><td>${pct(fx.profitMargins)}</td></tr>
@@ -843,6 +868,40 @@ async function openStockDetail(symbol) {
       <tr><td>Kod</td><td>${escapeHtml(symbol)}</td></tr>
       <tr><td>Sektör</td><td>${escapeHtml(deriveSectorForSymbol(symbol) || '—')}</td></tr>
     `;
+  }
+
+  // YENİ (kullanıcı raporu: "ayrıntılı yıllık temettü gösterelim"): gerçek
+  // ödeme kayıtları yıla göre gruplanır (en yeni yıl en üstte), her yılın
+  // toplamı ve o yıl içindeki tek tek ödeme tarihleri/tutarları gösterilir.
+  // Bu bölüm fx'ten (Temel Oranlar) BAĞIMSIZDIR — fx başarısız olsa bile
+  // temettü geçmişi kendi kaynağından ayrıca gösterilebilir.
+  const dividendBlock = document.getElementById('stockDividendBlock');
+  if (dividendBlock) {
+    const events = (dividends && Array.isArray(dividends.events)) ? dividends.events : [];
+    if (events.length === 0) {
+      dividendBlock.innerHTML = `<div class="empty" style="padding:14px 0;">Bu hisse için temettü ödeme kaydı bulunamadı (Yahoo Finance geçmiş verisinde kurumsal aksiyon bilgisi yok ya da hisse hiç temettü dağıtmamış olabilir).</div>`;
+    } else {
+      const byYear = new Map();
+      events.forEach(ev => {
+        const year = new Date(ev.t).getFullYear();
+        if (!byYear.has(year)) byYear.set(year, []);
+        byYear.get(year).push(ev);
+      });
+      const years = Array.from(byYear.keys()).sort((a, b) => b - a);
+      dividendBlock.innerHTML = years.map(year => {
+        const yearEvents = byYear.get(year).slice().sort((a, b) => b.t - a.t);
+        const yearTotal = yearEvents.reduce((acc, e) => acc + e.amount, 0);
+        const rows = yearEvents.map(e =>
+          `<tr><td>${new Date(e.t).toLocaleDateString('tr-TR')}</td><td>${fmtNumber(e.amount)} ₺/hisse</td></tr>`
+        ).join('');
+        return `
+          <div class="dividend-year-block">
+            <div class="dividend-year-title">${year} — Toplam: ${fmtNumber(yearTotal)} ₺/hisse</div>
+            <table class="kv-table">${rows}</table>
+          </div>
+        `;
+      }).join('');
+    }
   }
 
   const rec = await recPromise;
