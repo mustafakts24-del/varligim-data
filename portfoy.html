@@ -9,7 +9,7 @@
   name="description"
   content="Varlığım hesabınızla giriş yapın; hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı web üzerinden yönetin."
 />
-<link rel="stylesheet" href="styles.css?v=20260904-7" />
+<link rel="stylesheet" href="styles.css?v=20260904-8" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -58,6 +58,11 @@
       <div class="nav-group">
         <div class="nav-item" data-page="home">
           <span class="msr">home</span> Ana Sayfa
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item" data-page="aianaliz">
+          <span class="msr">smart_toy</span> AI Teknik Analiz
         </div>
       </div>
       <div class="nav-group">
@@ -153,6 +158,55 @@
         <div class="home-section-title"><span class="msr">trending_up</span> Piyasa Hareketleri (BIST 100, işlem hacmine göre)</div>
         <div class="movers-list" id="moversList">
           <div class="empty" style="padding:14px 0;">Yükleniyor…</div>
+        </div>
+      </div>
+
+      <!-- AI TEKNİK ANALİZ -->
+      <div class="page" id="page-aianaliz">
+        <h1 class="page-title">🤖 AI Teknik Analiz</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:-8px 0 18px; max-width:680px;">
+          Bir hisse senedi, kripto para, forex, emtia veya endeks grafiğinin ekran görüntüsünü yükleyin;
+          yapay zeka görüntüyü inceleyip trend, destek/direnç, olası alım-satım bölgeleri, senaryolar ve
+          teknik skor içeren bir analiz üretsin. Bu bir yatırım tavsiyesi değildir.
+        </p>
+
+        <div class="calc-grid">
+          <div>
+            <div class="card">
+              <div class="ai-upload-zone" id="aiUploadZone" tabindex="0" role="button">
+                <span class="msr" style="font-size:38px;">add_photo_alternate</span>
+                <div style="font-weight:700; margin-top:6px;">Grafik Yükle</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+                  Dosya seçin veya sürükleyip bırakın · Ctrl+V ile yapıştırın
+                </div>
+                <div style="font-size:11px; color:var(--text-faint); margin-top:6px;">PNG · JPG · JPEG · WEBP</div>
+                <input type="file" id="aiFileInput" accept="image/png,image/jpeg,image/jpg,image/webp" style="display:none;">
+              </div>
+
+              <div id="aiPreviewWrap" style="display:none; margin-top:14px;">
+                <img id="aiPreviewImg" alt="Grafik önizleme" style="max-width:100%; border-radius:10px; display:block; border:1px solid var(--border);" />
+                <button class="btn outline small" id="aiChangeImageBtn" type="button" style="margin-top:10px;">Grafiği Değiştir</button>
+                <input type="text" id="aiNoteInput" class="full" placeholder="İsteğe bağlı not (ör. “BTC 4 saatlik grafik”)" style="margin-top:10px;">
+                <button class="btn primary full" id="aiAnalyzeBtn" type="button" style="margin-top:10px;">
+                  <span class="msr">smart_toy</span> ANALİZ ET
+                </button>
+              </div>
+
+              <div id="aiUploadMsg" class="ai-msg" style="display:none; margin-top:10px;"></div>
+            </div>
+
+            <div class="card" style="margin-top:16px;">
+              <div class="detail-section-title" style="margin-top:0;">Analiz Geçmişim</div>
+              <div id="aiHistoryList"><div class="empty">Henüz bir analiz yapılmadı.</div></div>
+            </div>
+          </div>
+
+          <div>
+            <div id="aiResultEmpty" class="card">
+              <div class="empty" style="padding:36px 10px;">Sonuçları görmek için soldan bir grafik yükleyip “Analiz Et”e basın.</div>
+            </div>
+            <div id="aiResultWrap" style="display:none;"></div>
+          </div>
         </div>
       </div>
 
@@ -980,7 +1034,7 @@
   </button>
 </div>
 
-<script src="app-core.js?v=20260903-3"></script>
+<script src="app-core.js?v=20260903-4"></script>
 <script src="app-logos.js?v=20260904"></script>
 <script src="app-charts.js?v=20260904-4"></script>
 <script src="bist-stocks-data.js?v=20260902"></script>
@@ -997,5 +1051,6 @@
 <script src="app-interest.js?v=20260902"></script>
 <script src="app-butce.js?v=20260902"></script>
 <script src="app-varligim.js?v=20260905"></script>
+<script src="app-ai-analiz.js?v=20260906"></script>
 </body>
 </html>

@@ -621,6 +621,7 @@ document.getElementById('signOutBtn').addEventListener('click', async () => {
  * ------------------------------------------------------------------ */
 const PAGE_TITLES = {
   home: 'Ana Sayfa',
+  aianaliz: 'AI Teknik Analiz',
   varliklar: 'Varlıklar',
   emtia: 'Emtialar',
   hisse: 'Hisse Senetleri',

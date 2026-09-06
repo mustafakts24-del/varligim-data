@@ -750,6 +750,81 @@ tbody tr:hover { background: var(--bg-elevated); }
 .dividend-year-block .kv-table td:first-child { color: var(--text-muted); }
 
 /* ============================================================
+   AI TEKNİK ANALİZ (YENİ, 2026-09)
+   ============================================================ */
+.ai-upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 34px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.ai-upload-zone:hover, .ai-upload-zone:focus-visible { border-color: var(--accent, #7047EB); outline: none; }
+.ai-upload-zone.dragover { border-color: var(--accent, #7047EB); background: var(--bg-elevated); }
+
+.ai-msg { border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; }
+.ai-msg.error { background: var(--negative-bg); color: var(--negative); }
+.ai-msg.success { background: var(--positive-bg); color: var(--positive); }
+
+.chip.warn { color: var(--warning, #f0a020); background: color-mix(in srgb, var(--warning, #f0a020) 16%, transparent); }
+
+.ai-buy-assessment { border-left: 4px solid var(--border); }
+.ai-buy-assessment.pos { border-left-color: var(--positive); }
+.ai-buy-assessment.warn { border-left-color: var(--warning, #f0a020); }
+.ai-buy-assessment.neg { border-left-color: var(--negative); }
+
+.ai-zone-card {
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: var(--bg-elevated);
+  border-left: 3px solid var(--border);
+}
+.ai-zone-card.pos { border-left-color: var(--positive); }
+.ai-zone-card.neg { border-left-color: var(--negative); }
+.ai-zone-range { font-weight: 700; font-size: 13.5px; }
+.ai-zone-rationale { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+
+.ai-indicator-row { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.ai-indicator-row:last-child { border-bottom: none; }
+.ai-indicator-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .3px; }
+.ai-indicator-text { font-size: 13px; margin-top: 3px; }
+.ai-indicator-text.empty-note { color: var(--text-faint); font-style: italic; }
+
+.ai-score-row { display: grid; grid-template-columns: 90px 1fr 56px; align-items: center; gap: 10px; margin-bottom: 8px; }
+.ai-score-label { font-size: 12.5px; color: var(--text-muted); }
+.ai-score-bar { height: 8px; border-radius: 4px; background: var(--bg-elevated); overflow: hidden; }
+.ai-score-fill { height: 100%; border-radius: 4px; }
+.ai-score-value { font-size: 12px; font-weight: 700; text-align: right; }
+
+.ai-scenario-card { border-radius: var(--radius-sm); padding: 12px; margin-bottom: 10px; background: var(--bg-elevated); border-left: 3px solid var(--border); }
+.ai-scenario-card.pos { border-left-color: var(--positive); }
+.ai-scenario-card.warn { border-left-color: var(--warning, #f0a020); }
+.ai-scenario-card.neg { border-left-color: var(--negative); }
+.ai-scenario-title { font-weight: 700; margin-bottom: 6px; }
+.ai-scenario-row { font-size: 12.5px; margin-top: 3px; }
+
+.ai-disclaimer { font-size: 12px; color: var(--text-muted); background: var(--bg-elevated); }
+
+.ai-chat-messages { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; margin-top: 10px; }
+.ai-chat-bubble { border-radius: var(--radius-sm); padding: 9px 12px; font-size: 13px; max-width: 85%; }
+.ai-chat-bubble.user { align-self: flex-end; background: var(--accent, #7047EB); color: #fff; }
+.ai-chat-bubble.assistant { align-self: flex-start; background: var(--bg-elevated); }
+.ai-chat-bubble.loading { opacity: .6; font-style: italic; }
+
+.ai-history-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 4px; border-bottom: 1px solid var(--border); cursor: pointer;
+}
+.ai-history-item:last-child { border-bottom: none; }
+.ai-history-item:hover { background: var(--bg-elevated); }
+
+@media (max-width: 640px) {
+  .ai-upload-zone { padding: 26px 12px; }
+}
+
+/* ============================================================
    BÜLTEN (Haberler)
    ============================================================ */
 .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
