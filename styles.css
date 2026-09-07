@@ -729,6 +729,18 @@ tbody tr:hover { background: var(--bg-elevated); }
 }
 .stat-mini .lbl { font-size: 11.5px; color: var(--text-muted); margin-bottom: 4px; }
 .stat-mini .val { font-size: 14px; font-weight: 700; }
+/* "Varlığım" sayfasındaki portföy özet kutucukları (Toplam Yatırılan /
+ * Güncel Değer / Kâr-Zarar) — kullanıcı talebiyle mor-mavi gradyan
+ * (butonlarla/hero ile aynı renk) verildi. Yalnızca `.portfolio-summary-box`
+ * ile işaretlenmiş `.stat-mini-grid`'leri etkiler; hisse/fon/kripto/emtia
+ * DETAY sayfalarındaki (52 hafta aralığı vb.) genel `.stat-mini` kutuları
+ * bu değişiklikten ETKİLENMEZ. */
+.portfolio-summary-box .stat-mini {
+  background: linear-gradient(135deg, var(--hero-grad-start), var(--hero-grad-end));
+}
+.portfolio-summary-box .stat-mini .lbl { color: rgba(255,255,255,0.85); }
+.portfolio-summary-box .stat-mini .val { color: #fff; }
+.portfolio-summary-box .stat-mini .val .pl-zero { color: rgba(255,255,255,0.85); }
 .detail-section-title {
   font-size: 13px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: .4px; margin: 20px 0 10px;
