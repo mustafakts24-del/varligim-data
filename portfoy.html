@@ -684,6 +684,7 @@
         <div class="varligim-section" id="varligimSection-nakit-doviz">
           <div class="card">
             <div class="section-title">Döviz Varlıkları</div>
+            <div class="stat-mini-grid" id="varligimCurrencyPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="varligimCurrencyTable">
               <thead><tr>
@@ -694,7 +695,6 @@
             </table>
             </div>
             <div id="varligimCurrencyEmptyState" class="empty" style="display:none;">Henüz döviz eklenmemiş.</div>
-            <div class="stat-mini-grid" id="varligimCurrencyPortfolioSummary" style="display:none; margin-top:10px;"></div>
             <div class="add-form">
               <div class="full section-title" style="margin:0;">Döviz ekle / güncelle</div>
               <input id="newVarligimCurrencySearch" class="full" list="varligimCurrencyOptions" autocomplete="off" placeholder="Döviz ara veya seç (örn. USD)" />
@@ -711,6 +711,7 @@
         <div class="varligim-section" id="varligimSection-emtia" style="display:none;">
           <div class="card">
             <div class="section-title">Emtia Varlıkları</div>
+            <div class="stat-mini-grid" id="commodityPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="commodityTable">
               <thead><tr>
@@ -721,7 +722,6 @@
             </table>
             </div>
             <div id="commodityEmptyState" class="empty" style="display:none;">Henüz emtia eklenmemiş.</div>
-            <div class="stat-mini-grid" id="commodityPortfolioSummary" style="display:none; margin-top:10px;"></div>
             <div class="add-form">
               <div class="full section-title" style="margin:0;">Emtia ekle / güncelle</div>
               <input id="newCommoditySearch" class="full" list="commodityOptions" autocomplete="off" placeholder="Emtia ara veya seç (örn. Altın)" />
@@ -741,6 +741,7 @@
               <span>Hisseler</span>
               <button class="btn outline small" id="clearAllStocksBtn" type="button">Tümünü Temizle</button>
             </div>
+            <div class="stat-mini-grid" id="stockPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="holdingsTable">
               <thead><tr>
@@ -751,7 +752,6 @@
             </table>
             </div>
             <div id="emptyState" class="empty" style="display:none;">Henüz hisse eklenmemiş.</div>
-            <div class="stat-mini-grid" id="stockPortfolioSummary" style="display:none; margin-top:10px;"></div>
             <div class="add-form">
               <div class="full section-title" style="margin:0;">Yeni hisse ekle</div>
               <select id="newStockSelect" class="full"><option value="">Hisse seç...</option></select>
@@ -770,6 +770,7 @@
               <span>Fon Varlıkları</span>
               <button class="btn outline small" id="clearAllFundsBtn" type="button">Tümünü Temizle</button>
             </div>
+            <div class="stat-mini-grid" id="fundPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="fundTable">
               <thead><tr>
@@ -780,7 +781,6 @@
             </table>
             </div>
             <div id="fundEmptyState" class="empty" style="display:none;">Henüz fon eklenmemiş.</div>
-            <div class="stat-mini-grid" id="fundPortfolioSummary" style="display:none; margin-top:10px;"></div>
             <div class="add-form">
               <div class="full section-title" style="margin:0;">Fon ekle / güncelle</div>
               <input id="newFundCode" class="full" type="text" autocomplete="off" maxlength="8" placeholder="Fon kodunu yaz (örn. GUM)" />
@@ -797,6 +797,7 @@
         <div class="varligim-section" id="varligimSection-kripto" style="display:none;">
           <div class="card">
             <div class="section-title">Kripto Varlıklar</div>
+            <div class="stat-mini-grid" id="cryptoPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="cryptoTable">
               <thead><tr>
@@ -807,7 +808,6 @@
             </table>
             </div>
             <div id="cryptoEmptyState" class="empty" style="display:none;">Henüz kripto eklenmemiş.</div>
-            <div class="stat-mini-grid" id="cryptoPortfolioSummary" style="display:none; margin-top:10px;"></div>
             <div class="add-form">
               <div class="full section-title" style="margin:0;">Yeni kripto ekle</div>
               <select id="newCryptoSelect" class="full"><option value="">Kripto seç...</option></select>
@@ -823,6 +823,7 @@
         <div class="varligim-section" id="varligimSection-viop" style="display:none;">
           <div class="card">
             <div class="section-title">VİOP Pozisyonların</div>
+            <div class="stat-mini-grid" id="viopPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="viopTable">
               <thead><tr>
@@ -833,7 +834,6 @@
             </table>
             </div>
             <div id="viopEmptyState" class="empty" style="display:none;">Henüz VİOP pozisyonu eklenmemiş.</div>
-            <div class="stat-mini-grid" id="viopPortfolioSummary" style="display:none; margin-top:10px;"></div>
             <div class="add-form">
               <div class="full section-title" style="margin:0;">VİOP pozisyonu ekle</div>
               <input id="newViopSymbol" class="full" type="text" autocomplete="off" placeholder="Sözleşme sembolü (örn. XU030)" />
@@ -861,6 +861,7 @@
         <div class="varligim-section" id="varligimSection-mevduat" style="display:none;">
           <div class="card">
             <div class="section-title">Mevduatlar</div>
+            <div class="stat-mini-grid" id="varligimDepositPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="varligimDepositTable">
               <thead><tr>
@@ -871,7 +872,6 @@
             </table>
             </div>
             <div id="varligimDepositEmptyState" class="empty" style="display:none;">Henüz mevduat eklenmemiş.</div>
-            <div class="stat-mini-grid" id="varligimDepositPortfolioSummary" style="display:none; margin-top:10px;"></div>
             <div class="add-form">
               <div class="full section-title" style="margin:0;" id="varligimDepositFormTitle">Mevduat ekle</div>
               <input id="newVarligimDepositBankName" class="full" type="text" autocomplete="off" placeholder="Banka adı" />
@@ -890,6 +890,7 @@
         <div class="varligim-section" id="varligimSection-gayrimenkul" style="display:none;">
           <div class="card">
             <div class="section-title">Gayrimenkul Varlıkları</div>
+            <div class="stat-mini-grid" id="realEstatePortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="realEstateTable">
               <thead><tr>
@@ -901,7 +902,6 @@
             </table>
             </div>
             <div id="realEstateEmptyState" class="empty" style="display:none;">Henüz gayrimenkul eklenmemiş.</div>
-            <div class="stat-mini-grid" id="realEstatePortfolioSummary" style="display:none; margin-top:10px;"></div>
             <div class="add-form">
               <div class="full section-title" style="margin:0;" id="realEstateFormTitle">Gayrimenkul ekle</div>
               <select id="newRealEstateType">
@@ -930,6 +930,7 @@
         <div class="varligim-section" id="varligimSection-arac" style="display:none;">
           <div class="card">
             <div class="section-title">Araç Varlıkları</div>
+            <div class="stat-mini-grid" id="vehiclePortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="vehicleTable">
               <thead><tr>
@@ -940,7 +941,6 @@
             </table>
             </div>
             <div id="vehicleEmptyState" class="empty" style="display:none;">Henüz araç eklenmemiş.</div>
-            <div class="stat-mini-grid" id="vehiclePortfolioSummary" style="display:none; margin-top:10px;"></div>
             <div class="add-form">
               <div class="full section-title" style="margin:0;" id="vehicleFormTitle">Araç ekle</div>
               <select id="newVehicleType">
@@ -968,6 +968,7 @@
         <div class="varligim-section" id="varligimSection-diger" style="display:none;">
           <div class="card">
             <div class="section-title">Diğer Varlıklar</div>
+            <div class="stat-mini-grid" id="otherAssetsPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="otherAssetsTable">
               <thead><tr>
@@ -978,7 +979,6 @@
             </table>
             </div>
             <div id="otherAssetsEmptyState" class="empty" style="display:none;">Henüz diğer varlık eklenmemiş.</div>
-            <div class="stat-mini-grid" id="otherAssetsPortfolioSummary" style="display:none; margin-top:10px;"></div>
             <div class="add-form">
               <div class="full section-title" style="margin:0;" id="otherAssetFormTitle">Diğer varlık ekle</div>
               <select id="newOtherAssetType">
