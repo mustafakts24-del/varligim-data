@@ -57,14 +57,25 @@ let fonFilterText = '';
 let fonActiveCategory = 'all';
 let fonFavoritesOnly = false;
 
+// DÜZELTME (2026-09, kullanıcı raporu: "yatırım fonları bilgileri
+// gelmiyor" — canlıda doğrulandı: istek 200 dönüyor ama funds:[] boş
+// geliyor, yani TEFAS tarafında bir sorun var, price-proxy'de değil).
+// price-proxy artık katalog boş kaldığında yanıta `_diag` (her deneme
+// için gerçek HTTP kodu/hata mesajı) ekliyor — kesin nedeni görmek için
+// konsola yazdırılıyor. Kullanıcı davranışında hiçbir değişiklik yok
+// (hâlâ dürüstçe boş liste + "alınamıyor" mesajı gösteriliyor).
 async function ensureFonCatalog() {
   if (fonCatalog.length > 0) return;
   try {
     const result = await cachedFetch('fund-catalog', 30 * 60 * 1000, () =>
       fetchPriceProxy('type=fund-catalog'));
     fonCatalog = (result && Array.isArray(result.funds)) ? result.funds : [];
+    if (fonCatalog.length === 0 && result && Array.isArray(result._diag)) {
+      console.warn('Fon kataloğu boş döndü — TEFAS teşhis bilgisi:', result._diag);
+    }
   } catch (e) {
     fonCatalog = [];
+    console.warn('Fon kataloğu isteği başarısız oldu:', e);
   }
 }
 
