@@ -172,6 +172,26 @@ async function loadDepositBankRates() {
   }
 }
 
+// DÜZELTME (2026-09, kullanıcı isteği: "ana paranın yan tarafına
+// isteyenin kendisinin belirleyeceği gün sayısı ekleme kutusu koy"):
+// BANK_DEPOSIT_TERM_PRESETS yalnızca 6 sabit vadeyi (32/46/55/92/181/
+// 365 gün) sunuyordu; kullanıcı örneğin "40 gün" gibi hazır bir
+// kutucukta olmayan bir vadeyi hesaplayamıyordu. Artık "Ana Para"nın
+// yanına serbest bir "Vade (gün)" sayı kutusu eklendi (bkz.
+// portfoy.html) — bu kutu HER ZAMAN o an geçerli olan vadeyi
+// (depositBankTermDays) gösterir/kontrol eder; hazır vade kutucukları
+// (chip) bu alanı hızlıca doldurmak için birer KISAYOL olarak kalmaya
+// devam ediyor, birbirini geçersiz kılmıyorlar.
+const DEPOSIT_BANK_MIN_DAYS = 1;
+const DEPOSIT_BANK_MAX_DAYS = 3650; // ~10 yıl — makul bir üst sınır
+
+function syncDepositBankCustomDaysInput() {
+  const input = document.getElementById('depositBankCustomDays');
+  if (input && document.activeElement !== input) {
+    input.value = depositBankTermDays;
+  }
+}
+
 function renderDepositBankTermChips() {
   const wrap = document.getElementById('depositBankTermChips');
   if (!wrap) return;
@@ -183,9 +203,28 @@ function renderDepositBankTermChips() {
       depositBankTermDays = parseInt(chip.dataset.days, 10);
       wrap.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
+      syncDepositBankCustomDaysInput();
       renderDepositBankList();
     });
   });
+}
+
+// Serbest "Vade (gün)" kutusundaki değeri okuyup geçerliyse
+// depositBankTermDays'i günceller, hazır vade kutucuklarının aktif
+// durumunu (varsa eşleşen bir tanesi) yeniden çizer ve listeyi
+// yeniden hesaplar. Geçersiz/boş girişte ÖNCEKİ geçerli vade
+// korunur — sessizce 0 gün ya da NaN ile hesap yapılmaz.
+function applyDepositBankCustomDays() {
+  const input = document.getElementById('depositBankCustomDays');
+  if (!input) return;
+  const parsed = parseInt(input.value, 10);
+  if (!Number.isFinite(parsed) || parsed < DEPOSIT_BANK_MIN_DAYS) {
+    return;
+  }
+  depositBankTermDays = Math.min(parsed, DEPOSIT_BANK_MAX_DAYS);
+  input.value = depositBankTermDays;
+  renderDepositBankTermChips();
+  renderDepositBankList();
 }
 
 function renderDepositBankList() {
@@ -397,8 +436,10 @@ function renderCreditBankList() {
  * ------------------------------------------------------------------ */
 function initInterestBankSections() {
   renderDepositBankTermChips();
+  syncDepositBankCustomDaysInput();
   document.getElementById('depositBankRefreshBtn')?.addEventListener('click', loadDepositBankRates);
   document.getElementById('depositBankPrincipal')?.addEventListener('input', debounce(renderDepositBankList, 300));
+  document.getElementById('depositBankCustomDays')?.addEventListener('input', debounce(applyDepositBankCustomDays, 300));
 
   document.getElementById('creditBankRefreshBtn')?.addEventListener('click', loadCreditBankRates);
   document.getElementById('creditBankAmount')?.addEventListener('input', debounce(() => {
