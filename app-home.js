@@ -220,13 +220,23 @@ async function loadExtraTickerGrid(containerId, tickers) {
   }));
 }
 
+// DÜZELTME (2026-09, kullanıcı raporu: "piyasa ve emtia verileri
+// görünmüyor" — DevTools konsolunda doğrulandı: CoinGecko bu sitenin
+// origin'inden gelen istekleri artık CORS ile engelliyor, "No
+// 'Access-Control-Allow-Origin' header is present"): bu fonksiyon
+// CoinGecko'ya DOĞRUDAN tarayıcıdan bağlanıyordu ve bu yüzden BTC/USD,
+// ETH/USD kutucukları kalıcı olarak "—" gösteriyordu (retry/last-known-
+// good mantığı bir CORS engelini aşamaz, çünkü HER deneme aynı şekilde
+// başarısız olur). Artık price-proxy (Supabase Edge Function) üzerindeki
+// `crypto-batch` ucundan geçiyor — sunucu tarafında CORS kısıtlaması
+// olmadığından AYNI CoinGecko verisi sorunsuz alınabiliyor. Dönüş şekli
+// ({price, changePercent}) DEĞİŞMEDİ, loadExtraTickerGrid'te ek bir
+// değişiklik gerekmiyor.
 async function fetchCryptoUsdQuote(id) {
-  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd&include_24hr_change=true`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  const price = data?.[id]?.usd;
-  const changePercent = data?.[id]?.usd_24h_change;
+  const data = await fetchPriceProxy(`type=crypto-batch&ids=${encodeURIComponent(id)}&vs=usd`);
+  const row = data?.prices?.[id];
+  const price = row?.usd;
+  const changePercent = row?.usd_24h_change;
   if (typeof price !== 'number') throw new Error('fiyat yok');
   return { price, changePercent: typeof changePercent === 'number' ? changePercent : null };
 }
