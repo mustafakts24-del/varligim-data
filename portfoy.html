@@ -440,9 +440,15 @@
             <span><span class="msr">account_balance</span> Güncel Banka Mevduat Oranları</span>
             <button class="btn outline small" id="depositBankRefreshBtn" type="button">Yenile</button>
           </div>
-          <div class="calc-inline-row">
-            <label for="depositBankPrincipal">Ana Para (₺)</label>
-            <input id="depositBankPrincipal" type="text" inputmode="decimal" class="amt-grouped" value="100.000" />
+          <div class="calc-inline-row" style="max-width:520px; display:flex; gap:16px; flex-wrap:wrap;">
+            <div style="flex:1 1 160px;">
+              <label for="depositBankPrincipal">Ana Para (₺)</label>
+              <input id="depositBankPrincipal" type="text" inputmode="decimal" class="amt-grouped" value="100.000" />
+            </div>
+            <div style="flex:1 1 120px;">
+              <label for="depositBankCustomDays">Vade (gün)</label>
+              <input id="depositBankCustomDays" type="number" inputmode="numeric" min="1" max="3650" step="1" value="92" />
+            </div>
           </div>
           <div class="chip-row" id="depositBankTermChips"></div>
           <div id="depositBankList"><div class="empty" style="padding:14px 0;">Yükleniyor…</div></div>
@@ -1056,7 +1062,7 @@
 <script src="app-bulten.js?v=20260902"></script>
 <script src="app-home.js?v=20260907-3"></script>
 <script src="app-varliklar.js?v=20260902"></script>
-<script src="app-interest.js?v=20260907"></script>
+<script src="app-interest.js?v=20260907-2"></script>
 <script src="app-butce.js?v=20260902"></script>
 <script src="app-varligim.js?v=20260907"></script>
 <script src="app-ai-analiz.js?v=20260906"></script>
