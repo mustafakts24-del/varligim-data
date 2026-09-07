@@ -2,9 +2,11 @@
  * app-piyasa-kripto.js
  * "Varlıklar → Kripto Paralar": piyasa değerine göre ilk 100 kripto
  * para (mobildeki crypto_screen.dart + crypto_detail_screen.dart'ın
- * web karşılığı — CoinGecko CORS-açık olduğu için Edge Function'a
- * gerek yok, mobille birebir aynı kaynak). Kullanıcının KENDİ kripto
- * portföyü "Varlığım" menüsünde (app-varligim.js).
+ * web karşılığı, mobille birebir aynı kaynak: CoinGecko). CoinGecko
+ * artık bu origin'den gelen tarayıcı isteklerini CORS ile engellediği
+ * için (2026-09 düzeltmesi) tüm istekler price-proxy Edge Function'ı
+ * üzerinden, dürüst bir doğrudan-CoinGecko yedeğiyle birlikte çekilir.
+ * Kullanıcının KENDİ kripto portföyü "Varlığım" menüsünde (app-varligim.js).
  * ================================================================== */
 
 // Mobil crypto_detail_screen.dart'taki _periods haritasıyla BİREBİR
@@ -102,8 +104,23 @@ async function fetchCryptoLivePrice(id, vs) {
 let kriptoMarketList = [];
 let kriptoFilterText = '';
 
+// DÜZELTME (2026-09, kullanıcı raporu: "piyasa ve emtia verileri
+// görünmüyor" — DevTools konsolunda doğrulandı): bu fonksiyonun tek yolu
+// CoinGecko'ya DOĞRUDAN tarayıcıdan bağlanmaktı ve hiç yedeği yoktu;
+// CoinGecko bu origin'den gelen istekleri CORS ile engelleyince ilk 100
+// kripto listesi hiç yüklenemiyordu. Yukarıdaki fetchCryptoOhlcSeries/
+// fetchCryptoLivePrice'daki AYNI desen uygulandı: önce price-proxy
+// (Supabase Edge Function, CORS kısıtlaması yok), o başarısız olursa
+// dürüst bir yedek olarak doğrudan CoinGecko denenir — hiçbir veri
+// uydurulmaz, ikisi de başarısız olursa çağıran taraf zaten "Kripto
+// piyasa verisi şu anda alınamıyor" mesajını gösteriyor.
 async function fetchKriptoMarkets() {
   return cachedFetch('crypto-markets-100', 60000, async () => {
+    try {
+      const result = await fetchPriceProxy('type=crypto-markets');
+      if (Array.isArray(result.coins)) return result.coins;
+    } catch (e) { /* aşağıdaki doğrudan CoinGecko yedeğine düş */ }
+
     const url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=try&order=market_cap_desc&per_page=100&page=1&price_change_percentage=24h';
     const res = await fetch(url);
     if (!res.ok) throw new Error(`CoinGecko hatası: HTTP ${res.status}`);
