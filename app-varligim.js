@@ -150,6 +150,20 @@ function startEditRealEstate(row) {
 
 document.getElementById('cancelRealEstateEditBtn').addEventListener('click', resetRealEstateForm);
 
+function renderRealEstatePortfolioSummary(data) {
+  const el = document.getElementById('realEstatePortfolioSummary');
+  if (!el) return;
+  if (!data || data.length === 0) { el.style.display = 'none'; return; }
+  const totalPurchase = data.reduce((sum, row) => sum + (Number(row.purchase_price) || 0), 0);
+  const totalCurrent = data.reduce((sum, row) => sum + (Number(row.current_value) || 0), 0);
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="stat-mini"><div class="lbl">Toplam Alış</div><div class="val">${fmtTL(totalPurchase)}</div></div>
+    <div class="stat-mini"><div class="lbl">Güncel Değer</div><div class="val">${fmtTL(totalCurrent)}</div></div>
+    <div class="stat-mini"><div class="lbl">Değer Değişimi</div><div class="val">${profitLossHtml(totalPurchase, totalCurrent)}</div></div>
+  `;
+}
+
 async function loadRealEstateHoldings() {
   const { data, error } = await supa
     .from('real_estate_holdings')
@@ -164,6 +178,7 @@ async function loadRealEstateHoldings() {
     showMsg('Gayrimenkul verileri yüklenemedi: ' + error.message, 'error');
     return;
   }
+  renderRealEstatePortfolioSummary(data);
   if (!data || data.length === 0) {
     emptyState.style.display = 'block';
     return;
@@ -287,6 +302,20 @@ function startEditVehicle(row) {
 
 document.getElementById('cancelVehicleEditBtn').addEventListener('click', resetVehicleForm);
 
+function renderVehiclePortfolioSummary(data) {
+  const el = document.getElementById('vehiclePortfolioSummary');
+  if (!el) return;
+  if (!data || data.length === 0) { el.style.display = 'none'; return; }
+  const totalPurchase = data.reduce((sum, row) => sum + (Number(row.purchase_price) || 0), 0);
+  const totalCurrent = data.reduce((sum, row) => sum + (Number(row.current_value) || 0), 0);
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="stat-mini"><div class="lbl">Toplam Alış</div><div class="val">${fmtTL(totalPurchase)}</div></div>
+    <div class="stat-mini"><div class="lbl">Güncel Değer</div><div class="val">${fmtTL(totalCurrent)}</div></div>
+    <div class="stat-mini"><div class="lbl">Değer Değişimi</div><div class="val">${profitLossHtml(totalPurchase, totalCurrent)}</div></div>
+  `;
+}
+
 async function loadVehicleHoldings() {
   const { data, error } = await supa
     .from('vehicle_holdings')
@@ -301,6 +330,7 @@ async function loadVehicleHoldings() {
     showMsg('Araç verileri yüklenemedi: ' + error.message, 'error');
     return;
   }
+  renderVehiclePortfolioSummary(data);
   if (!data || data.length === 0) {
     emptyState.style.display = 'block';
     return;
@@ -418,6 +448,20 @@ function startEditVarligimDeposit(row) {
 
 document.getElementById('cancelVarligimDepositEditBtn').addEventListener('click', resetVarligimDepositForm);
 
+function renderVarligimDepositSummary(data) {
+  const el = document.getElementById('varligimDepositPortfolioSummary');
+  if (!el) return;
+  if (!data || data.length === 0) { el.style.display = 'none'; return; }
+  const totalPrincipal = data.reduce((sum, row) => sum + (Number(row.principal) || 0), 0);
+  const totalCurrent = data.reduce((sum, row) => sum + depositCurrentValue(row), 0);
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="stat-mini"><div class="lbl">Toplam Anapara</div><div class="val">${fmtTL(totalPrincipal)}</div></div>
+    <div class="stat-mini"><div class="lbl">Güncel Değer</div><div class="val">${fmtTL(totalCurrent)}</div></div>
+    <div class="stat-mini"><div class="lbl">Net Faiz</div><div class="val">${profitLossHtml(totalPrincipal, totalCurrent)}</div></div>
+  `;
+}
+
 async function loadVarligimDeposits() {
   const { data, error } = await supa
     .from('deposit_holdings')
@@ -432,6 +476,7 @@ async function loadVarligimDeposits() {
     showMsg('Mevduat verileri yüklenemedi: ' + error.message, 'error');
     return;
   }
+  renderVarligimDepositSummary(data);
   if (!data || data.length === 0) {
     emptyState.style.display = 'block';
     return;
@@ -563,6 +608,26 @@ function startEditOtherAsset(row) {
 
 document.getElementById('cancelOtherAssetEditBtn').addEventListener('click', resetOtherAssetForm);
 
+function renderOtherAssetsPortfolioSummary(data) {
+  const el = document.getElementById('otherAssetsPortfolioSummary');
+  if (!el) return;
+  if (!data || data.length === 0) { el.style.display = 'none'; return; }
+  // Mobildeki/ana sayfadaki (app-home.js) ile aynı yaklaşım: "current_value"
+  // her satırda olabilir ama "purchase_price" bazı kayıtlarda boş bırakılmış
+  // olabilir — Kâr/Zarar kutusu YALNIZCA alış fiyatı bilinen satırları
+  // eşleştirerek hesaplanır (uydurma bir maliyet varsayılmaz).
+  const totalCurrent = data.reduce((sum, row) => sum + (Number(row.current_value) || 0), 0);
+  const investedRows = data.filter(row => row.purchase_price != null);
+  const totalPurchase = investedRows.reduce((sum, row) => sum + (Number(row.purchase_price) || 0), 0);
+  const valueKnown = investedRows.reduce((sum, row) => sum + (Number(row.current_value) || 0), 0);
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="stat-mini"><div class="lbl">Toplam Alış</div><div class="val">${fmtTL(totalPurchase)}</div></div>
+    <div class="stat-mini"><div class="lbl">Güncel Değer</div><div class="val">${fmtTL(totalCurrent)}</div></div>
+    <div class="stat-mini"><div class="lbl">Değer Değişimi</div><div class="val">${profitLossHtml(totalPurchase, valueKnown)}</div></div>
+  `;
+}
+
 async function loadOtherAssetHoldings() {
   const { data, error } = await supa
     .from('other_asset_holdings')
@@ -577,6 +642,7 @@ async function loadOtherAssetHoldings() {
     showMsg('Diğer varlık verileri yüklenemedi: ' + error.message, 'error');
     return;
   }
+  renderOtherAssetsPortfolioSummary(data);
   if (!data || data.length === 0) {
     emptyState.style.display = 'block';
     return;
@@ -711,6 +777,22 @@ document.getElementById('newVarligimCurrencySearch')?.addEventListener('input', 
   }
 }, 300));
 
+// DÜZELTME (2026-09, "mavi kutucuklar" — Hisse/Fon'daki gibi bir
+// toplam özet kutusu istendi): diğer 8 kategoride de (bu dahil)
+// aynı .stat-mini-grid deseni eklendi.
+function renderVarligimCurrencySummary(data) {
+  const el = document.getElementById('varligimCurrencyPortfolioSummary');
+  if (!el) return;
+  if (!data || data.length === 0) { el.style.display = 'none'; return; }
+  const invested = data.reduce((sum, row) => sum + (Number(row.amount) || 0) * (row.cost == null ? 0 : Number(row.cost)), 0);
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="stat-mini"><div class="lbl">Toplam Yatırılan</div><div class="val">${fmtTL(invested)}</div></div>
+    <div class="stat-mini"><div class="lbl">Güncel Değer</div><div class="val" id="varligimCurrencyPortfolioTotalValue">…</div></div>
+    <div class="stat-mini"><div class="lbl">Kâr/Zarar</div><div class="val" id="varligimCurrencyPortfolioTotalPl">…</div></div>
+  `;
+}
+
 async function loadVarligimCurrencyHoldings() {
   const { data, error } = await supa
     .from('currency_holdings')
@@ -725,6 +807,7 @@ async function loadVarligimCurrencyHoldings() {
     showMsg('Döviz verileri yüklenemedi: ' + error.message, 'error');
     return;
   }
+  renderVarligimCurrencySummary(data);
   if (!data || data.length === 0) {
     emptyState.style.display = 'block';
     return;
@@ -754,6 +837,7 @@ async function loadVarligimCurrencyHoldings() {
 }
 
 async function loadVarligimCurrencyLivePrices(rows) {
+  let totalInvested = 0, totalValue = 0, anyKnown = false;
   await Promise.all(rows.map(async (row) => {
     const priceEl = document.getElementById(`varligim-currency-price-${row.currency_code}`);
     const valueEl = document.getElementById(`varligim-currency-value-${row.currency_code}`);
@@ -768,15 +852,27 @@ async function loadVarligimCurrencyLivePrices(rows) {
       if (row.cost != null) {
         const invested = amount * Number(row.cost);
         plEl.innerHTML = profitLossHtml(invested, currentValue);
-      } else {
-        plEl.textContent = '—';
+        totalInvested += invested;
       }
+      totalValue += currentValue;
+      anyKnown = true;
     } catch (e) {
       priceEl.textContent = '—';
       valueEl.textContent = '—';
       plEl.textContent = '—';
     }
   }));
+  const totalValueEl = document.getElementById('varligimCurrencyPortfolioTotalValue');
+  const totalPlEl = document.getElementById('varligimCurrencyPortfolioTotalPl');
+  if (totalValueEl && totalPlEl) {
+    if (anyKnown) {
+      totalValueEl.textContent = fmtTL(totalValue);
+      totalPlEl.innerHTML = profitLossHtml(totalInvested, totalValue);
+    } else {
+      totalValueEl.textContent = '—';
+      totalPlEl.textContent = '—';
+    }
+  }
 }
 
 async function deleteVarligimCurrencyHolding(currencyCode) {
@@ -1071,6 +1167,24 @@ document.getElementById('newCommoditySearch')?.addEventListener('input', debounc
   }
 }, 300));
 
+// DÜZELTME (2026-09, "mavi kutucuklar"): Emtia'da Ons Altın/Gümüş/
+// Platin/Paladyum USD cinsinden fiyatlanıyor -- diğer emtialar TL.
+// Toplamı hesaplarken USD kalemler canlı USD/TRY kuruyla TL'ye
+// çevrilir (mobildeki net_worth_refresh_service.dart'ın
+// _refreshCommodity'sindeki AYNI dönüşüm), yoksa toplam yanlış
+// (karışık para birimi) çıkardı.
+function renderCommoditySummary(data) {
+  const el = document.getElementById('commodityPortfolioSummary');
+  if (!el) return;
+  if (!data || data.length === 0) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="stat-mini"><div class="lbl">Toplam Yatırılan</div><div class="val" id="commodityPortfolioTotalInvested">…</div></div>
+    <div class="stat-mini"><div class="lbl">Güncel Değer</div><div class="val" id="commodityPortfolioTotalValue">…</div></div>
+    <div class="stat-mini"><div class="lbl">Kâr/Zarar</div><div class="val" id="commodityPortfolioTotalPl">…</div></div>
+  `;
+}
+
 async function loadCommodityHoldings() {
   const { data, error } = await supa
     .from('commodity_holdings')
@@ -1085,6 +1199,7 @@ async function loadCommodityHoldings() {
     showMsg('Emtia verileri yüklenemedi: ' + error.message, 'error');
     return;
   }
+  renderCommoditySummary(data);
   if (!data || data.length === 0) {
     emptyState.style.display = 'block';
     return;
@@ -1122,6 +1237,20 @@ async function loadCommodityHoldings() {
 }
 
 async function loadCommodityLivePrices(rows) {
+  // Herhangi bir USD kalem varsa (ons Altın/Gümüş/Platin/Paladyum),
+  // toplamı TL'ye çevirebilmek için canlı USD/TRY kuru TEK SEFER
+  // baştan çekilir (mobildeki net_worth_refresh_service.dart'ın
+  // _refreshCommodity'siyle aynı yaklaşım).
+  const hasUsdRow = rows.some(row => {
+    const marketItem = commodityMarketList.find(c => c.key === row.commodity_key);
+    return marketItem ? marketItem.currency === 'USD' : row.commodity_key === 'BRENT_USD';
+  });
+  let usdTryRate = null;
+  if (hasUsdRow) {
+    try { usdTryRate = (await fetchPriceProxy('type=currency&code=USD')).price; } catch (e) { usdTryRate = null; }
+  }
+
+  let totalInvested = 0, totalValue = 0, anyKnown = false, anySkipped = false;
   await Promise.all(rows.map(async (row) => {
     const priceEl = document.getElementById(`commodity-price-${row.commodity_key}`);
     const valueEl = document.getElementById(`commodity-value-${row.commodity_key}`);
@@ -1136,18 +1265,47 @@ async function loadCommodityLivePrices(rows) {
       const currentValue = amount * quote.price;
       priceEl.textContent = fmt(quote.price);
       valueEl.textContent = fmt(currentValue);
+      let investedTl = null;
       if (row.cost != null) {
         const invested = amount * Number(row.cost);
         plEl.innerHTML = profitLossHtml(invested, currentValue, fmt);
+        investedTl = isUsd ? (usdTryRate != null ? invested * usdTryRate : null) : invested;
       } else {
         plEl.textContent = '—';
       }
+      if (isUsd && usdTryRate == null) {
+        // USD kuru çekilemedi -- bu kalemi toplamdan (yanlış TL
+        // rakamı göstermemek için) dışarıda bırak, ama tabloda kendi
+        // USD değeri yine de görünür.
+        anySkipped = true;
+        return;
+      }
+      const currentValueTl = isUsd ? currentValue * usdTryRate : currentValue;
+      totalValue += currentValueTl;
+      anyKnown = true;
+      if (investedTl != null) totalInvested += investedTl;
     } catch (e) {
       priceEl.textContent = '—';
       valueEl.textContent = '—';
       plEl.textContent = '—';
     }
   }));
+
+  const totalInvestedEl = document.getElementById('commodityPortfolioTotalInvested');
+  const totalValueEl = document.getElementById('commodityPortfolioTotalValue');
+  const totalPlEl = document.getElementById('commodityPortfolioTotalPl');
+  if (totalInvestedEl && totalValueEl && totalPlEl) {
+    if (anyKnown) {
+      const suffix = anySkipped ? ' *' : '';
+      totalInvestedEl.textContent = fmtTL(totalInvested) + suffix;
+      totalValueEl.textContent = fmtTL(totalValue) + suffix;
+      totalPlEl.innerHTML = profitLossHtml(totalInvested, totalValue) + (anySkipped ? ' *' : '');
+    } else {
+      totalInvestedEl.textContent = '—';
+      totalValueEl.textContent = '—';
+      totalPlEl.textContent = '—';
+    }
+  }
 }
 
 async function deleteCommodityHolding(commodityKey) {
@@ -1267,6 +1425,7 @@ async function loadCryptoLivePrices(rows) {
   } catch (e) {
     // Toplu istek başarısız olduysa her satır aşağıda '—' gösterecek.
   }
+  let totalInvested = 0, totalValue = 0, anyKnown = false;
   for (const row of rows) {
     const priceEl = document.getElementById(`crypto-price-${row.crypto_id}`);
     const valueEl = document.getElementById(`crypto-value-${row.crypto_id}`);
@@ -1285,7 +1444,36 @@ async function loadCryptoLivePrices(rows) {
     priceEl.textContent = fmtTL(price);
     valueEl.textContent = fmtTL(currentValue);
     plEl.innerHTML = profitLossHtml(invested, currentValue);
+    totalInvested += invested;
+    totalValue += currentValue;
+    anyKnown = true;
   }
+  const totalValueEl = document.getElementById('cryptoPortfolioTotalValue');
+  const totalPlEl = document.getElementById('cryptoPortfolioTotalPl');
+  if (totalValueEl && totalPlEl) {
+    if (anyKnown) {
+      totalValueEl.textContent = fmtTL(totalValue);
+      totalPlEl.innerHTML = profitLossHtml(totalInvested, totalValue);
+    } else {
+      totalValueEl.textContent = '—';
+      totalPlEl.textContent = '—';
+    }
+  }
+}
+
+// DÜZELTME (2026-09, "mavi kutucuklar"): Hisse/Fon'daki gibi bir
+// toplam özet kutusu.
+function renderCryptoPortfolioSummary(data) {
+  const el = document.getElementById('cryptoPortfolioSummary');
+  if (!el) return;
+  if (!data || data.length === 0) { el.style.display = 'none'; return; }
+  const invested = data.reduce((sum, row) => sum + (Number(row.amount) || 0) * (Number(row.cost) || 0), 0);
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="stat-mini"><div class="lbl">Toplam Yatırılan</div><div class="val">${fmtTL(invested)}</div></div>
+    <div class="stat-mini"><div class="lbl">Güncel Değer</div><div class="val" id="cryptoPortfolioTotalValue">…</div></div>
+    <div class="stat-mini"><div class="lbl">Kâr/Zarar</div><div class="val" id="cryptoPortfolioTotalPl">…</div></div>
+  `;
 }
 
 async function loadCryptoHoldings() {
@@ -1302,6 +1490,7 @@ async function loadCryptoHoldings() {
     showMsg('Kripto verileri yüklenemedi: ' + error.message, 'error');
     return;
   }
+  renderCryptoPortfolioSummary(data);
   if (!data || data.length === 0) {
     emptyState.style.display = 'block';
     return;
@@ -1652,6 +1841,25 @@ const viopAutoCost = bindVarligimAutoCost({
 });
 document.getElementById('newViopSymbol')?.addEventListener('blur', () => viopAutoCost.notifyInstrumentChanged());
 
+// DÜZELTME (2026-09, "mavi kutucuklar"): Hisse/Fon'daki gibi bir
+// toplam özet kutusu. VİOP'ta maliyet isteğe bağlı olduğu için
+// yatırılan yalnızca maliyeti bilinen pozisyonlardan toplanır.
+function renderViopPortfolioSummary(data) {
+  const el = document.getElementById('viopPortfolioSummary');
+  if (!el) return;
+  if (!data || data.length === 0) { el.style.display = 'none'; return; }
+  const invested = data.reduce((sum, row) => {
+    if (row.cost == null) return sum;
+    return sum + (Number(row.lot) || 0) * Number(row.cost);
+  }, 0);
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="stat-mini"><div class="lbl">Toplam Yatırılan</div><div class="val">${fmtTL(invested)}</div></div>
+    <div class="stat-mini"><div class="lbl">Güncel Değer</div><div class="val" id="viopPortfolioTotalValue">…</div></div>
+    <div class="stat-mini"><div class="lbl">Kâr/Zarar</div><div class="val" id="viopPortfolioTotalPl">…</div></div>
+  `;
+}
+
 async function loadViopHoldings() {
   const { data, error } = await supa
     .from('viop_holdings')
@@ -1666,6 +1874,7 @@ async function loadViopHoldings() {
     showMsg('VİOP verileri yüklenemedi: ' + error.message, 'error');
     return;
   }
+  renderViopPortfolioSummary(data);
   if (!data || data.length === 0) {
     emptyState.style.display = 'block';
     return;
@@ -1721,6 +1930,7 @@ async function loadViopHoldings() {
 }
 
 async function loadViopLivePrices(rows) {
+  let totalInvested = 0, totalValue = 0, anyKnown = false;
   await Promise.all(rows.map(async (row) => {
     const symbol = row.symbol || '';
     const symKey = encodeURIComponent(symbol);
@@ -1737,15 +1947,27 @@ async function loadViopLivePrices(rows) {
       if (row.cost != null) {
         const invested = lot * Number(row.cost);
         plEl.innerHTML = profitLossHtml(invested, currentValue);
-      } else {
-        plEl.textContent = '—';
+        totalInvested += invested;
       }
+      totalValue += currentValue;
+      anyKnown = true;
     } catch (e) {
       priceEl.textContent = '—';
       valueEl.textContent = '—';
       plEl.textContent = '—';
     }
   }));
+  const totalValueEl = document.getElementById('viopPortfolioTotalValue');
+  const totalPlEl = document.getElementById('viopPortfolioTotalPl');
+  if (totalValueEl && totalPlEl) {
+    if (anyKnown) {
+      totalValueEl.textContent = fmtTL(totalValue);
+      totalPlEl.innerHTML = profitLossHtml(totalInvested, totalValue);
+    } else {
+      totalValueEl.textContent = '—';
+      totalPlEl.textContent = '—';
+    }
+  }
 }
 
 async function deleteViopHolding(symbol) {
