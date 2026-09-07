@@ -26,6 +26,14 @@
  * sınırlamadır (kaynak sitede bankaya/hesap türüne özel stopaj bilgisi
  * yok). Kesin net tutar için kullanıcı "Aktar" ile Hesaplayıcı'ya
  * geçip kendi stopaj oranını girer.
+ *
+ * DÜZELTME (2026-09): Türkiye Finans/Hayat Finans gibi katılım
+ * bankaları "faiz" değil "kâr payı" sunar (faizsiz bankacılık ilkesi).
+ * Kaynak site oranı aynı sayısal alanda döndürdüğü için hesap DOĞRUYDU,
+ * yalnızca etiket ("faiz"/"yıllık"/"aylık") yanıltıcıydı — bkz.
+ * PARTICIPATION_BANK_KEYWORDS/isParticipationBank(): katılım bankası
+ * tespit edilirse hem küçük bir "Katılım Bankası" rozeti hem de
+ * "kâr payı" etiketi gösteriliyor; sayı/hesap yöntemi DEĞİŞMEDİ.
  * ================================================================== */
 
 // Mobildeki _presetTerms [32, 46, 55, 92, 181] ile AYNI + kullanıcının
@@ -40,6 +48,35 @@ const BANK_DEPOSIT_TERM_PRESETS = [
   { days: 181, label: '6 ay' },
   { days: 365, label: '12 ay' }
 ];
+
+// DÜZELTME (2026-09, kullanıcı notu: "Türkiye Finans'ın 'faiz' değil
+// 'kâr payı' sunduğu" gözlemi doğru — Türkiye'deki katılım bankaları
+// faizsiz bankacılık ilkesi gereği "faiz" değil "kâr payı" (kira
+// sertifikası/murabaha temelli) sunar; teklifimgelsin.com kaynağı bu
+// oranları da AYNI sayısal alanda (offer.minRate/maxRate) döndürdüğü
+// için sayı DOĞRU ama etiket ("faiz"/"yıllık"/"aylık") yanıltıcıydı.
+// Kaynak, banka türünü (mevduat/katılım) ayrı bir alan olarak
+// vermediğinden, BDDK'nin güncel katılım bankası listesindeki 9
+// bankanın adı/marka adı burada elle eşleştiriliyor (uydurma değil,
+// kamuya açık ve değişmesi çok nadir bir liste). Yeni bir katılım
+// bankası kurulursa buraya eklenmesi gerekir.
+const PARTICIPATION_BANK_KEYWORDS = [
+  'katılım',       // "... Katılım Bankası" ibaresi geçen TÜM isimleri yakalar
+                    // (Kuveyt Türk Katılım Bankası, Vakıf Katılım, Ziraat
+                    // Katılım, Emlak Katılım, T.O.M. Katılım, Dünya Katılım,
+                    // Albaraka Türk Katılım Bankası)
+  'türkiye finans', // marka adında "Katılım" geçmiyor (kaynakta kısaltılmış
+                    // "Türkiye Finans" olarak listeleniyor)
+  'hayat finans',   // aynı şekilde marka adında "Katılım" geçmiyor
+  'albaraka',       // kısaltılmış "Albaraka Türk" olarak listelenme ihtimaline karşı
+  'kuveyt türk'     // kısaltılmış "Kuveyt Türk" olarak listelenme ihtimaline karşı
+];
+
+function isParticipationBank(bankName) {
+  if (!bankName) return false;
+  const n = String(bankName).toLocaleLowerCase('tr');
+  return PARTICIPATION_BANK_KEYWORDS.some(k => n.includes(k));
+}
 
 // Mobildeki LoanType enum'unda SADECE ihtiyac/tasit/konut var —
 // "Ticari Kredi" ne mobilde ne de teklifimgelsin.com kaynağında
@@ -163,24 +200,30 @@ function renderDepositBankList() {
   listEl.innerHTML = sorted.map((offer, idx) => {
     const rate = bankAverageRate(offer);
     // Basit vade faizi — mevcut Hesaplayıcı kartındaki (calcDepositBtn)
-    // AYNI formül: brüt kazanç = anapara × oran × (gün/365).
+    // AYNI formül: brüt kazanç = anapara × oran × (gün/365). Katılım
+    // bankaları için de kaynak AYNI sayısal alanı (kâr payı oranı)
+    // döndürdüğünden aynı orantısal formül kullanılıyor — teklifimgelsin.com
+    // ayrı bir murabaha/kâr payı formülü sunmuyor, bu yüzden yeni bir
+    // hesap yöntemi UYDURULMADI, yalnızca ETİKET düzeltildi (bkz. altta).
     const grossEarning = principal * (rate / 100) * (depositBankTermDays / 365);
     const maturityBalance = principal + grossEarning;
     const amountRange = bankAmountRangeText(offer);
+    const isKatilim = isParticipationBank(offer.bankName);
+    const katilimBadge = isKatilim ? ` <span class="chip neu" style="margin-left:6px;vertical-align:1px;">Katılım Bankası</span>` : '';
     return `
       <div class="bank-offer-row">
         <div class="bank-logo-cell">${bankLogoImg(offer, 28)}</div>
         <div>
-          <div class="bank-name">${escapeHtml(offer.bankName)}</div>
+          <div class="bank-name">${escapeHtml(offer.bankName)}${katilimBadge}</div>
           <div class="bank-sub">${amountRange ? escapeHtml(amountRange) : 'Tutar bilgisi yok'}</div>
         </div>
         <div>
           <div class="bank-name">${bankRateRangeText(offer)}</div>
-          <div class="bank-sub">yıllık</div>
+          <div class="bank-sub">${isKatilim ? 'yıllık kâr payı' : 'yıllık faiz'}</div>
         </div>
         <div>
           <div class="bank-name">${fmtTL(grossEarning)}</div>
-          <div class="bank-sub">tahmini kazanç (brüt)</div>
+          <div class="bank-sub">${isKatilim ? 'tahmini kâr payı (brüt)' : 'tahmini kazanç (brüt)'}</div>
         </div>
         <button type="button" class="bank-offer-select" data-deposit-idx="${idx}">Hesaplayıcıya Aktar</button>
       </div>`;
@@ -302,19 +345,24 @@ function renderCreditBankList() {
     const monthlyRate = bankAverageRate(offer) / 100;
     // Hızlı önizleme taksiti: MEVCUT annuityPayment() (app-varliklar.js,
     // saf anüite formülü) — ayrı bir hesap motoru YOK, aynı fonksiyon.
+    // Katılım bankası finansmanı (murabaha) için de kaynak AYNI aylık
+    // oranı verdiğinden aynı formül kullanılıyor; yalnızca ETİKET
+    // ("faiz" yerine "kâr payı") düzeltildi.
     const quickInstallment = (principal > 0 && months > 0)
       ? annuityPayment(principal, monthlyRate, months) : null;
     const amountRange = bankAmountRangeText(offer);
+    const isKatilim = isParticipationBank(offer.bankName);
+    const katilimBadge = isKatilim ? ` <span class="chip neu" style="margin-left:6px;vertical-align:1px;">Katılım Bankası</span>` : '';
     return `
       <div class="bank-offer-row">
         <div class="bank-logo-cell">${bankLogoImg(offer, 28)}</div>
         <div>
-          <div class="bank-name">${escapeHtml(offer.bankName)}</div>
+          <div class="bank-name">${escapeHtml(offer.bankName)}${katilimBadge}</div>
           <div class="bank-sub">${amountRange ? escapeHtml(amountRange) : 'Tutar bilgisi yok'}</div>
         </div>
         <div>
           <div class="bank-name">${bankRateRangeText(offer)}</div>
-          <div class="bank-sub">aylık</div>
+          <div class="bank-sub">${isKatilim ? 'aylık kâr payı' : 'aylık faiz'}</div>
         </div>
         <div>
           <div class="bank-name">${quickInstallment != null ? fmtTL(quickInstallment) : '—'}</div>
