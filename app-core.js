@@ -119,13 +119,31 @@ function formatGroupedInputText(digitsOnly) {
   return d.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
+// DÜZELTME (2026-09, kullanıcı raporu: "veriler doğru değil" — Güncel
+// Banka Mevduat Oranları widget'ında 100.000 TL anapara + %44 oranla
+// "tahmini kazanç" ₺44.000 yerine ₺44,00 gösteriyordu; kök neden burada
+// bulundu, KAPSAMI SADECE BU WIDGET DEĞİL): eski hızlı-yol regex'i
+// (`\d+(\.\d+)?`) "nokta/virgül YOK düz sayı" kuralını YANLIŞ uyguluyordu
+// — Türkçe binlik ayıracıyla yazılmış "100.000" gibi bir metni de
+// (TEK bir nokta içerdiği için) "geçerli ondalıklı sayı" sanıp
+// Number("100.000") = 100 döndürüyordu (JS'te "." ondalık ayıracıdır).
+// Bu, 1.000–999.999 TL arasındaki HER tutarı (binlik ayıracı TEK nokta
+// içerdiği için) 1000 kat küçük okutuyordu — yalnızca bu widget'ta değil,
+// `parseGroupedAmount` kullanan HER alanda (mevduat/gayrimenkul/araç/
+// diğer varlıklar anapara-alış-güncel değer, bütçe tutarı, kredi/mevduat
+// hesaplayıcıları). 1.000.000 TL ve üzeri tutarlar (birden fazla nokta
+// içerdiği için) bu hataya YAKALANMIYORDU — sorun yalnızca bu aralıkla
+// sınırlıydı. Düzeltme: hızlı yol artık YALNIZCA nokta/virgül İÇERMEYEN
+// düz tam sayı metinlerini kabul ediyor (yorumdaki asıl niyetle uyumlu);
+// nokta içeren her metin artık doğru şekilde "binlik ayıracı" olarak
+// işleniyor (aşağıdaki temizleme yoluna düşüyor).
 function parseGroupedAmount(text) {
   if (text == null) return NaN;
   const raw = String(text).trim();
   if (!raw) return NaN;
-  // Zaten düz sayısal bir metin (programatik `input.value = 500000`
+  // Zaten düz bir TAM SAYI metni (programatik `input.value = 500000`
   // ataması gibi, nokta/virgül YOK) gelirse dokunmadan çözülür.
-  if (/^-?\d+(\.\d+)?$/.test(raw)) return Number(raw);
+  if (/^-?\d+$/.test(raw)) return Number(raw);
   const cleaned = raw.replace(/\./g, '').replace(',', '.');
   return Number(cleaned);
 }
