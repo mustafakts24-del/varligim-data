@@ -1,596 +1,1064 @@
-/* ==================================================================
- * app-home.js
- * Ana Sayfa: Toplam Net Varlık hero kartı, kategori özet kartları,
- * Piyasalar mini bölümü ve aylık bütçe özeti.
- * Tüm hesaplamalar mevcut Supabase tabloları ve price-proxy
- * uç noktaları üzerinden, eski loadSummary() mantığı genişletilerek
- * yapılır (kural: mevcut hesaplama mantığını bozma).
- * ================================================================== */
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Varlığım — Web Paneli</title>
+<link rel="icon" type="image/png" href="app-logo.png" />
+<meta
+  name="description"
+  content="Varlığım hesabınızla giriş yapın; hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı web üzerinden yönetin."
+/>
+<link rel="stylesheet" href="styles.css?v=20260907-3" />
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
 
-const CATEGORY_META = {
-  hisse: { label: 'Hisse Portföyü', icon: 'candlestick_chart', color: 'var(--cat-stock)' },
-  kripto: { label: 'Kripto', icon: 'currency_bitcoin', color: 'var(--cat-crypto)' },
-  doviz: { label: 'Döviz', icon: 'currency_exchange', color: 'var(--cat-cash)' },
-  emtia: { label: 'Emtia', icon: 'diamond', color: 'var(--cat-commodity)' },
-  fon: { label: 'Fonlar', icon: 'donut_small', color: 'var(--cat-fund)' },
-  gayrimenkul: { label: 'Gayrimenkul', icon: 'home_work', color: 'var(--cat-realestate)' },
-  arac: { label: 'Araç', icon: 'directions_car', color: 'var(--cat-vehicle)' },
-  mevduat: { label: 'Mevduat', icon: 'savings', color: 'var(--cat-deposit)' },
-  diger: { label: 'Diğer Varlıklar', icon: 'category', color: 'var(--cat-other)' },
-  viop: { label: 'VİOP', icon: 'show_chart', color: 'var(--cat-viop)' },
-  gelir: { label: 'Aylık Gelir', icon: 'trending_up', color: 'var(--cat-budget)' },
-  gider: { label: 'Aylık Gider', icon: 'trending_down', color: 'var(--negative)' },
-  tasarruf: { label: 'Tasarruf', icon: 'savings', color: 'var(--secondary)' }
-};
-
-// KULLANICI RAPORU #3: Ana Sayfa'daki bu özet kartların (Hisse Portföyü,
-// Kripto, Döviz, Emtia, Fonlar, Gayrimenkul, Araç, Mevduat, Diğer
-// Varlıklar, VİOP, Aylık Gelir/Gider/Tasarruf) hiçbiri tıklanabilir
-// değildi. Her kart artık kendi kategorisinin bulunduğu "Varlığım" alt
-// sekmesini (veya Gelir/Gider/Tasarruf için "Bütçe" sayfasını) açar —
-// bkz. HOME_STAT_CARD_TARGETS + document-level click delegasyonu altta.
-const HOME_STAT_CARD_TARGETS = {
-  hisse: { page: 'varligim', subtab: 'hisse' },
-  kripto: { page: 'varligim', subtab: 'kripto' },
-  doviz: { page: 'varligim', subtab: 'nakit-doviz' },
-  emtia: { page: 'varligim', subtab: 'emtia' },
-  fon: { page: 'varligim', subtab: 'fon' },
-  gayrimenkul: { page: 'varligim', subtab: 'gayrimenkul' },
-  arac: { page: 'varligim', subtab: 'arac' },
-  mevduat: { page: 'varligim', subtab: 'mevduat' },
-  diger: { page: 'varligim', subtab: 'diger' },
-  viop: { page: 'varligim', subtab: 'viop' },
-  gelir: { page: 'butce' },
-  gider: { page: 'butce' },
-  tasarruf: { page: 'butce' },
-};
-
-function statCardHtml(key, value, pl) {
-  const meta = CATEGORY_META[key];
-  const plHtml = pl == null
-    ? `<span class="chip neu">—</span>`
-    : profitLossHtml(pl.invested, pl.value);
-  return `
-    <div class="stat-card" data-cat-key="${key}" role="button" tabindex="0" style="cursor:pointer;">
-      <div class="stat-card-top">
-        <div class="stat-icon" style="background:${meta.color};"><span class="msr">${meta.icon}</span></div>
-        <div class="stat-name">${meta.label}</div>
-      </div>
-      <div class="stat-value">${fmtTL(value)}</div>
-      <div class="stat-change">${plHtml}</div>
+<!-- ============================================================
+     GİRİŞ EKRANI
+     ============================================================ -->
+<div id="authView">
+  <div class="auth-card">
+    <div class="brand-row">
+      <div class="brand-badge"><img src="app-logo.png" alt="Varlığım" onerror="this.parentElement.innerHTML='V';" /></div>
+      <div class="name" style="font-weight:700; font-size:18px;">Varlığım</div>
     </div>
-  `;
-}
-
-function goToVarligimSubtab(subtabKey) {
-  showPage('varligim');
-  if (!subtabKey) return;
-  // showPage() senkron olarak DOM'u günceller; alt sekme butonu
-  // sayfa geçişinden hemen sonra DOM'da hazır olur.
-  const chip = document.querySelector(`#page-varligim .subtab-chip[data-subtab="${subtabKey}"]`);
-  if (chip) chip.click();
-}
-
-document.addEventListener('click', (e) => {
-  const card = e.target.closest('.stat-card[data-cat-key]');
-  if (!card) return;
-  const target = HOME_STAT_CARD_TARGETS[card.dataset.catKey];
-  if (!target) return;
-  if (target.subtab) {
-    goToVarligimSubtab(target.subtab);
-  } else {
-    showPage(target.page);
-  }
-});
-
-async function computeYahooBackedCategory(rows, priceParamFn, amountField, costField) {
-  let value = 0;
-  let investedKnown = 0;
-  let valueKnown = 0;
-  await Promise.all(rows.map(async row => {
-    try {
-      const quote = await fetchPriceProxy(priceParamFn(row));
-      const amount = Number(row[amountField]) || 0;
-      const price = quote.price;
-      const rowValue = amount * price;
-      value += rowValue;
-      const cost = row[costField];
-      if (cost != null) {
-        investedKnown += amount * Number(cost);
-        valueKnown += rowValue;
-      }
-    } catch (e) {}
-  }));
-  return { value, invested: investedKnown, valueKnown };
-}
-
-/* ------------------------------------------------------------------
- * FAZ 11 EKLEMELERİ: hızlı gezinme kutuları, genişletilmiş piyasa/
- * emtia mini bölümleri, "Piyasa Hareketleri" ve varlık dağılım grafiği.
- * Mobildeki home_screen.dart'ta OLMAYAN ama kullanıcının bu çalışma
- * için AÇIKÇA istediği ek bölümler: gelir/gider/tasarruf özeti (zaten
- * yukarıdaki statGrid'de vardı) ve varlık dağılım grafiği (aşağıda).
- * "AI Analiz" banner'ı ve "Toplam Net Borç" kartı bilinçli olarak
- * eklenmedi (mobilde de fonksiyonel değil / borç verisi senkron değil).
- * ------------------------------------------------------------------ */
-const HOME_QUICK_LINKS = [
-  { page: 'varligim', icon: 'account_balance_wallet', label: 'Varlığım' },
-  { page: 'varliklar', icon: 'storefront', label: 'Varlıklar' },
-  { page: 'butce', icon: 'savings', label: 'Bütçe' },
-  { page: 'bulten', icon: 'newspaper', label: 'Bülten' }
-];
-
-// "Piyasa Hareketleri" için örneklem: BIST'in en büyük/likit hisseleri
-// (tam BIST100 üyelik listesi bu sürümde doğrulanamadığı için "BIST100"
-// olarak iddia edilmiyor — dürüstlük kuralı). Tek istekte (stock-batch)
-// toplu çekilip işlem hacmine (fiyat × hacim) göre sıralanır.
-const HOME_LIQUID_STOCK_SAMPLE = [
-  'THYAO','TUPRS','BIMAS','GARAN','YKBNK','ISCTR','KCHOL','SAHOL','SISE','EREGL',
-  'FROTO','TOASO','TCELL','TAVHL','PETKM','ENKAI','SASA','MGROS','ASELS','AKBNK',
-  'PGSUS','KOZAL','TTKOM','VAKBN','HALKB','ARCLK','EKGYO','TTRAK','ULKER','DOAS',
-  'KONTR','SOKM','VESTL','AEFES','CCOLA','ALARK','AGHOL','KOZAA','ISMEN','GUBRF',
-  'HEKTS','OYAKC','TSKB','SKBNK','KRDMD','ODAS','ASTOR','CIMSA','AKSEN','MAVI',
-  'ENJSA','ANHYT','TKFEN','BRSAN','CWENE','QUAGR','GESAN'
-];
-
-function renderHomeQuickGrid() {
-  const grid = document.getElementById('homeQuickGrid');
-  if (!grid) return;
-  grid.innerHTML = HOME_QUICK_LINKS.map(l => `
-    <div class="home-quick-box" data-goto="${l.page}">
-      <span class="msr">${l.icon}</span>
-      <div class="lbl">${escapeHtml(l.label)}</div>
+    <h1>Portföyüme giriş yap</h1>
+    <p class="page-lead" style="margin-top:6px;">
+      Varlığım uygulamasındaki hesabınla giriş yaparak tüm
+      varlıklarını web üzerinden de yönetebilirsin.
+    </p>
+    <div class="tab-row">
+      <div class="tab active" data-tab="login">Giriş Yap</div>
+      <div class="tab" data-tab="signup">Hesap Oluştur</div>
     </div>
-  `).join('');
-  grid.querySelectorAll('[data-goto]').forEach(box => {
-    box.addEventListener('click', () => showPage(box.dataset.goto));
-  });
-}
+    <div id="msg"></div>
+    <form id="authForm">
+      <label for="email">E-posta</label>
+      <input id="email" type="email" required autocomplete="email" />
+      <label for="password">Şifre</label>
+      <input id="password" type="password" required autocomplete="current-password" minlength="6" />
+      <button class="btn primary full" type="submit" id="authSubmitBtn">Giriş Yap</button>
+    </form>
+  </div>
+</div>
 
-// DÜZELTME (2026-09, hata raporu #12): önceden bu fonksiyon HER
-// çağrıldığında (kullanıcı Ana Sayfa'ya her dönüşünde) grid'in tüm
-// içeriğini "…" iskeletiyle SIFIRDAN kuruyordu — bu da önceden gösterilen
-// gerçek değerlerin bir an için kaybolup yeniden "…" göstermesine (ekran
-// titremesi/kaybolma hissi) neden oluyordu. Artık iskelet yalnızca İLK
-// kurulumda (grid'in `data-built` işareti yoksa) oluşturuluyor; sonraki
-// her çağrıda MEVCUT değerler ekranda kalmaya devam eder, yalnızca arka
-// planda taze veri gelince o hücreler güncellenir (stale-while-revalidate).
-async function loadExtraTickerGrid(containerId, tickers) {
-  const grid = document.getElementById(containerId);
-  if (!grid) return;
-  if (grid.dataset.built !== '1') {
-    grid.innerHTML = tickers.map(t => `
-      <div class="ticker-box">
-        <div class="ticker-name">${escapeHtml(t.name)}</div>
-        <div class="ticker-value" id="ticker2-value-${t.id}">…</div>
-        <div id="ticker2-chip-${t.id}"><span class="chip neu">…</span></div>
+<!-- ============================================================
+     UYGULAMA KABUĞU
+     ============================================================ -->
+<div id="appShell" style="display:none;">
+  <div id="sidebarOverlay"></div>
+  <aside id="sidebar">
+    <div class="brand-row">
+      <div class="brand-badge"><img src="app-logo.png" alt="Varlığım" onerror="this.parentElement.innerHTML='V';" /></div>
+      <div class="name">Varlığım</div>
+    </div>
+    <nav>
+      <div class="nav-group">
+        <div class="nav-item" data-page="home">
+          <span class="msr">home</span> Ana Sayfa
+        </div>
       </div>
-    `).join('');
-    grid.dataset.built = '1';
-  }
-  await Promise.all(tickers.map(async t => {
-    const valueEl = document.getElementById(`ticker2-value-${t.id}`);
-    const chipEl = document.getElementById(`ticker2-chip-${t.id}`);
-    try {
-      const quote = await t.fetcher();
-      valueEl.textContent = t.fmt(quote.price);
-      chipEl.innerHTML = changeChipHtml(quote.changePercent);
-    } catch (e) {
-      valueEl.textContent = '—';
-      chipEl.innerHTML = `<span class="chip neu">—</span>`;
-    }
-  }));
-}
-
-async function fetchCryptoUsdQuote(id) {
-  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd&include_24hr_change=true`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  const price = data?.[id]?.usd;
-  const changePercent = data?.[id]?.usd_24h_change;
-  if (typeof price !== 'number') throw new Error('fiyat yok');
-  return { price, changePercent: typeof changePercent === 'number' ? changePercent : null };
-}
-
-async function fetchViop30Quote() {
-  const result = await cachedFetch('viop-list', 30000, () => fetchPriceProxy('type=viop-list'));
-  const contracts = result.contracts || [];
-  const match = contracts.find(c => c.category === 'index' && /XU ?030|BIST ?30/i.test(c.underlying || c.symbol || ''));
-  if (!match) throw new Error('VİOP30 sözleşmesi bulunamadı');
-  return { price: match.price, changePercent: match.changePercent };
-}
-
-async function loadHomeMarketSections() {
-  await loadExtraTickerGrid('tickerGrid', [
-    { id: 'usdtry', name: 'USD/TRY', fmt: fmtTLPrecise, fetcher: () => fetchPriceProxy('type=currency&code=USD') },
-    { id: 'eurtry', name: 'EUR/TRY', fmt: fmtTLPrecise, fetcher: () => fetchPriceProxy('type=currency&code=EUR') },
-    { id: 'btcusd', name: 'BTC/USD', fmt: fmtUSD, fetcher: () => fetchCryptoUsdQuote('bitcoin') },
-    { id: 'ethusd', name: 'ETH/USD', fmt: fmtUSD, fetcher: () => fetchCryptoUsdQuote('ethereum') },
-    { id: 'bist100', name: 'BIST 100', fmt: fmtNumber, fetcher: () => fetchPriceProxy('type=stock&symbol=XU100') },
-    { id: 'viop30', name: 'VİOP30 (yakın vade)', fmt: fmtNumber, fetcher: fetchViop30Quote }
-  ]);
-
-  await loadExtraTickerGrid('tickerGridEmtia', [
-    { id: 'goldgr', name: 'Gram Altın', fmt: fmtTLPrecise, fetcher: () => fetchPriceProxy('type=commodity&key=GOLD') },
-    { id: 'goldons', name: 'Ons Altın', fmt: fmtUSD, fetcher: () => fetchPriceProxy('type=commodity&key=GOLD_ONS_USD') },
-    { id: 'silvergr', name: 'Gümüş (gram)', fmt: fmtTLPrecise, fetcher: () => fetchPriceProxy('type=commodity&key=SILVER') },
-    { id: 'brent', name: 'Brent Petrol (varil)', fmt: fmtTL, fetcher: () => fetchPriceProxy('type=commodity&key=BRENT') }
-  ]);
-}
-
-async function loadHomeMovers() {
-  const listEl = document.getElementById('moversList');
-  if (!listEl) return;
-  try {
-    const result = await cachedFetch('stock-batch-home', 60000, () =>
-      fetchPriceProxy(`type=stock-batch&symbols=${HOME_LIQUID_STOCK_SAMPLE.join(',')}`));
-    const quotes = (result.quotes || []).filter(q => q.price != null && q.volume != null);
-    quotes.sort((a, b) => (b.price * b.volume) - (a.price * a.volume));
-    const top5 = quotes.slice(0, 5);
-    if (top5.length === 0) {
-      listEl.innerHTML = `<div class="empty" style="padding:14px 0;">Veri alınamadı.</div>`;
-      return;
-    }
-    // DÜZELTME (2026-09, tam parite denetimi): bu satırlar tıklanamıyordu
-    // (mobilde ana sayfadaki "Piyasa Hareketleri" satırına dokununca ilgili
-    // hissenin detay ekranı açılır) — artık aynı davranış web'de de var.
-    listEl.innerHTML = top5.map(q => `
-      <div class="movers-row" data-symbol="${escapeHtml(q.symbol)}" style="cursor:pointer;">
-        <div class="sym">${escapeHtml(q.symbol)}</div>
-        <div>${fmtTL(q.price)}</div>
-        ${changeChipHtml(q.changePercent)}
+      <div class="nav-group">
+        <div class="nav-item" data-page="aianaliz">
+          <span class="msr">smart_toy</span> AI Teknik Analiz
+        </div>
       </div>
-    `).join('');
-    listEl.querySelectorAll('.movers-row[data-symbol]').forEach(row => {
-      row.addEventListener('click', () => {
-        if (typeof openStockDetail === 'function') openStockDetail(row.dataset.symbol);
-      });
-    });
-  } catch (e) {
-    listEl.innerHTML = `<div class="empty" style="padding:14px 0;">Veri alınamadı.</div>`;
-  }
-}
+      <div class="nav-group">
+        <div class="nav-item" id="navVarliklarToggle">
+          <span class="msr">account_balance_wallet</span> Varlıklar
+          <span class="msr chev">expand_more</span>
+        </div>
+        <div class="nav-submenu" id="submenuVarliklar">
+          <div class="nav-subitem" data-page="emtia"><span class="msr">diamond</span> Emtialar</div>
+          <div class="nav-subitem" data-page="hisse"><span class="msr">candlestick_chart</span> Hisse Senetleri</div>
+          <div class="nav-subitem" data-page="fon"><span class="msr">donut_small</span> Yatırım Fonları</div>
+          <div class="nav-subitem" data-page="kripto"><span class="msr">currency_bitcoin</span> Kripto Paralar</div>
+          <div class="nav-subitem" data-page="doviz"><span class="msr">currency_exchange</span> Döviz</div>
+          <div class="nav-subitem" data-page="faiz"><span class="msr">percent</span> Faiz</div>
+          <div class="nav-subitem" data-page="kredi"><span class="msr">calculate</span> Kredi Hesaplama</div>
+          <div class="nav-subitem" data-page="viop"><span class="msr">show_chart</span> VİOP Aktif Vade</div>
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item" data-page="butce"><span class="msr">savings</span> Bütçe</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item" data-page="favoriler"><span class="msr">star</span> Favoriler</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item" data-page="varligim"><span class="msr">account_balance</span> Varlığım</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item" data-page="bulten"><span class="msr">newspaper</span> Bülten</div>
+      </div>
+    </nav>
+    <div id="sidebarFooter">
+      <div class="email" id="userEmail"></div>
+      <button class="btn outline small" id="signOutBtn" style="width:100%;">Çıkış yap</button>
+    </div>
+  </aside>
 
-const ASSET_DISTRIBUTION_COLORS = {
-  hisse: '#5B6EF5', kripto: '#2AA9E0', doviz: '#3984F6', emtia: '#7047EB',
-  fon: '#9B3FF0', gayrimenkul: '#6D5BD0', arac: '#3EA0D9', mevduat: '#4C6FE7',
-  diger: '#64748B', viop: '#22D3EE'
-};
+  <div id="main">
+    <header id="topbar">
+      <button id="hamburgerBtn"><span class="msr">menu</span></button>
+      <div id="topbarTitle">Ana Sayfa</div>
+    </header>
+    <div id="content">
 
-// Donut'un merkezine "TOPLAM NET VARLIK" + TL tutarını çizen Chart.js
-// eklentisi (yalnızca bu grafik örneğine bağlanır — global Chart.js
-// davranışını etkilemez, kural 15: mevcut tasarım/diğer grafikler bozulmaz).
-function assetDistributionCenterTextPlugin(totalLabel, totalValueText) {
-  return {
-    id: 'assetDistributionCenterText',
-    afterDraw(chart) {
-      const { ctx, chartArea } = chart;
-      if (!chartArea) return;
-      const cx = (chartArea.left + chartArea.right) / 2;
-      const cy = (chartArea.top + chartArea.bottom) / 2;
-      ctx.save();
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted') || '#94A3B8';
-      ctx.font = '600 10px system-ui, sans-serif';
-      ctx.fillText(totalLabel, cx, cy - 10);
-      ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text') || '#F1F5F9';
-      ctx.font = '700 15px system-ui, sans-serif';
-      ctx.fillText(totalValueText, cx, cy + 9);
-      ctx.restore();
-    }
-  };
-}
+      <!-- ANA SAYFA -->
+      <div class="page active" id="page-home">
+        <div class="hero-card">
+          <div class="hero-label">TOPLAM NET VARLIK</div>
+          <div class="hero-value" id="heroTotal">…</div>
+          <div class="hero-updated" id="heroUpdated"></div>
+        </div>
 
-function renderAssetDistributionChart(cards) {
-  const canvas = document.getElementById('assetDistributionChart');
-  const legendEl = document.getElementById('assetDistributionLegend');
-  if (!canvas || typeof Chart === 'undefined') return;
-  // Sıfır/negatif değerli kategoriler grafikte gösterilmez (kural: sadece
-  // gerçek, mevcut varlıklar; boş dilim yok).
-  const dist = cards.filter(c => ASSET_DISTRIBUTION_COLORS[c.key] && c.value > 0);
-  if (_chartInstances['assetDistributionChart']) {
-    _chartInstances['assetDistributionChart'].destroy();
-    delete _chartInstances['assetDistributionChart'];
-  }
-  if (dist.length === 0) {
-    legendEl.innerHTML = `<div class="empty" style="padding:10px 0;">Henüz varlık eklenmemiş.</div>`;
-    return;
-  }
-  const total = dist.reduce((s, c) => s + c.value, 0);
-  _chartInstances['assetDistributionChart'] = new Chart(canvas.getContext('2d'), {
-    type: 'doughnut',
-    data: {
-      labels: dist.map(c => CATEGORY_META[c.key].label),
-      datasets: [{
-        data: dist.map(c => c.value),
-        backgroundColor: dist.map(c => ASSET_DISTRIBUTION_COLORS[c.key]),
-        borderWidth: 0
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          enabled: true,
-          callbacks: {
-            label: (item) => {
-              const c = dist[item.dataIndex];
-              const pct = total > 0 ? (c.value / total) * 100 : 0;
-              return `${CATEGORY_META[c.key].label}: ${fmtTL(c.value)} (%${fmtPercent(pct, 1)})`;
-            }
-          }
-        }
-      },
-      cutout: '65%'
-    },
-    plugins: [assetDistributionCenterTextPlugin('TOPLAM NET VARLIK', fmtTL(total))]
-  });
-  legendEl.innerHTML = dist
-    .sort((a, b) => b.value - a.value)
-    .map(c => {
-      const pct = total > 0 ? (c.value / total) * 100 : 0;
-      return `
-      <div style="display:flex; align-items:center; gap:8px; padding:6px 0;">
-        <span style="width:10px; height:10px; border-radius:50%; background:${ASSET_DISTRIBUTION_COLORS[c.key]}; flex-shrink:0;"></span>
-        <span style="flex:1;">${escapeHtml(CATEGORY_META[c.key].label)}</span>
-        <span style="color:var(--text-muted); font-weight:600; margin-right:6px;">${fmtTL(c.value)}</span>
-        <span style="color:var(--text-muted); min-width:42px; text-align:right;">%${fmtPercent(pct, 1)}</span>
-      </div>`;
-    }).join('');
-}
+        <div class="home-quick-grid" id="homeQuickGrid"></div>
 
-// DÜZELTME (2026-09, hata raporu #12): "ana sayfa menüler arasında
-// gezinirken sürekli kayboluyor" — kök neden, showPage()'in HER Ana
-// Sayfa ziyaretinde loadHomePage()'i yeniden çağırması VE bu fonksiyonun
-// en başta hero toplamı/kartları/ticker'ları "…"/boş içeriğe sıfırlayıp
-// SONRA veriyi yeniden çekmesiydi — bu da her dönüşte kısa bir an için
-// tüm Ana Sayfa'nın kaybolup yeniden belirmesine (titreme) neden
-// oluyordu. Düzeltme: ilk yüklemeden SONRA bu sıfırlama adımı atlanır;
-// önceki gerçek değerler ekranda kalmaya devam eder, veri arka planda
-// sessizce tazelenir ve hazır olunca YERİNDE güncellenir. Kullanıcı bir
-// yenilemenin gerçekten olduğunu görebilsin diye "CANLI" göstergesi
-// yenileme sürerken kısa bir süre vurgulanır (bkz. heroUpdated/#liveDot).
-let homePageEverLoaded = false;
+        <div class="stat-grid" id="statGrid"></div>
 
-async function loadHomePage() {
-  const totalEl = document.getElementById('heroTotal');
-  const updatedEl = document.getElementById('heroUpdated');
-  const statGrid = document.getElementById('statGrid');
-  const tickerGrid = document.getElementById('tickerGrid');
-  const liveDot = document.getElementById('homeLiveIndicator');
-  if (!totalEl || !statGrid) return;
+        <div class="home-top-row">
+          <div class="card">
+            <div class="section-title"><span class="msr">donut_large</span> Varlık Dağılımı</div>
+            <div style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
+              <div class="chart-wrap" style="width:220px; height:220px; flex:0 0 auto;"><canvas id="assetDistributionChart"></canvas></div>
+              <div id="assetDistributionLegend" style="flex:1; min-width:180px; font-size:13px;"></div>
+            </div>
+          </div>
+          <div class="card fx-card">
+            <div class="section-title"><span class="msr">currency_exchange</span> Döviz Çevirici</div>
+            <p class="fx-hint">İki para birimi seç, herhangi birine tutar gir; diğeri anında hesaplanır.</p>
+            <div class="fx-rate-badge" id="homeDovizConverterRateLabel"><span class="msr" style="font-size:14px; vertical-align:-2px;">bolt</span> Kur yükleniyor…</div>
+            <div class="fx-convert-row">
+              <div class="fx-field">
+                <div class="fx-input-wrap">
+                  <input id="homeDovizConverterFromAmount" type="text" inputmode="decimal" class="fx-has-select" />
+                  <select id="homeDovizConverterFromCode" class="fx-suffix-select"></select>
+                </div>
+              </div>
+              <button type="button" class="fx-swap" id="homeDovizConverterSwapBtn" aria-label="Para birimlerini değiştir"><span class="msr">sync_alt</span></button>
+              <div class="fx-field">
+                <div class="fx-input-wrap">
+                  <input id="homeDovizConverterToAmount" type="text" inputmode="decimal" class="fx-has-select" />
+                  <select id="homeDovizConverterToCode" class="fx-suffix-select"></select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  if (!homePageEverLoaded) {
-    totalEl.textContent = '…';
-    statGrid.innerHTML = '';
-    tickerGrid.innerHTML = '';
-  }
-  if (liveDot) liveDot.classList.add('refreshing');
-  renderHomeQuickGrid();
+        <div class="home-section-title"><span class="msr">query_stats</span> Piyasalar</div>
+        <div class="ticker-grid" id="tickerGrid"></div>
 
-  const [
-    stockRes, cryptoRes, currencyRes, commodityRes, fundRes,
-    viopRes, realEstateRes, vehicleRes, otherAssetsRes, depositRes, budgetRes
-  ] = await Promise.all([
-    supa.from('stock_holdings').select('*').is('deleted_at', null),
-    supa.from('crypto_holdings').select('*').is('deleted_at', null),
-    supa.from('currency_holdings').select('*').is('deleted_at', null),
-    supa.from('commodity_holdings').select('*').is('deleted_at', null),
-    supa.from('fund_holdings').select('*').is('deleted_at', null),
-    supa.from('viop_holdings').select('*').is('deleted_at', null),
-    supa.from('real_estate_holdings').select('*').is('deleted_at', null),
-    supa.from('vehicle_holdings').select('*').is('deleted_at', null),
-    supa.from('other_asset_holdings').select('*').is('deleted_at', null),
-    supa.from('deposit_holdings').select('*').is('deleted_at', null),
-    supa.from('budget_transactions').select('*').is('deleted_at', null)
-  ]);
+        <div class="home-section-title"><span class="msr">diamond</span> Emtialar</div>
+        <div class="ticker-grid" id="tickerGridEmtia"></div>
 
-  const cards = [];
+        <div class="home-section-title"><span class="msr">trending_up</span> Piyasa Hareketleri (BIST 100, işlem hacmine göre)</div>
+        <div class="movers-list" id="moversList">
+          <div class="empty" style="padding:14px 0;">Yükleniyor…</div>
+        </div>
+      </div>
 
-  // PERFORMANS (kullanıcı raporu: "veri akışını hızlandır" — #127):
-  // HİSSE/DÖVİZ/EMTİA/FON/VİOP/KRİPTO kategorilerinin her biri kendi
-  // fiyat isteklerini ZATEN Promise.all ile paralel çekiyordu, ama bu
-  // 6 kategorinin KENDİSİ birbiri ardına (sıralı await) çalışıyordu —
-  // toplam süre 6 kategorinin süresinin TOPLAMI oluyordu (~yavaş ana
-  // sayfa yüklemesi). Şimdi hepsi TEK bir Promise.all içinde birlikte
-  // başlatılıyor; toplam süre artık en YAVAŞ kategorinin süresine eşit.
-  // Gayrimenkul/Araç/Mevduat/Diğer Varlıklar zaten ağ isteği yapmadığı
-  // (yalnızca yerel toplama) için senkron bırakıldı.
-  async function computeHisseCard() {
-    const r = await computeYahooBackedCategory(
-      stockRes.data || [], row => `type=stock&symbol=${encodeURIComponent(row.symbol)}`, 'lot', 'cost'
-    );
-    return { key: 'hisse', value: r.value, invested: r.invested, valueKnown: r.valueKnown };
-  }
+      <!-- AI TEKNİK ANALİZ -->
+      <div class="page" id="page-aianaliz">
+        <h1 class="page-title">🤖 AI Teknik Analiz</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:-8px 0 18px; max-width:680px;">
+          Bir hisse senedi, kripto para, forex, emtia veya endeks grafiğinin ekran görüntüsünü yükleyin;
+          yapay zeka görüntüyü inceleyip trend, destek/direnç, olası alım-satım bölgeleri, senaryolar ve
+          teknik skor içeren bir analiz üretsin. Bu bir yatırım tavsiyesi değildir.
+        </p>
 
-  async function computeKriptoCard() {
-    const rows = cryptoRes.data || [];
-    let value = 0, invested = 0;
-    try {
-      const prices = await fetchCryptoPricesTry(rows.map(r => r.crypto_id));
-      for (const row of rows) {
-        const price = prices[row.crypto_id];
-        if (price) {
-          const amount = Number(row.amount) || 0;
-          value += amount * price;
-          if (row.cost != null) invested += amount * Number(row.cost);
-        }
-      }
-    } catch (e) {}
-    return { key: 'kripto', value, invested, valueKnown: value };
-  }
+        <div class="calc-grid">
+          <div>
+            <div class="card">
+              <div class="ai-upload-zone" id="aiUploadZone" tabindex="0" role="button">
+                <span class="msr" style="font-size:38px;">add_photo_alternate</span>
+                <div style="font-weight:700; margin-top:6px;">Grafik Yükle</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+                  Dosya seçin veya sürükleyip bırakın · Ctrl+V ile yapıştırın
+                </div>
+                <div style="font-size:11px; color:var(--text-faint); margin-top:6px;">PNG · JPG · JPEG · WEBP</div>
+                <input type="file" id="aiFileInput" accept="image/png,image/jpeg,image/jpg,image/webp" style="display:none;">
+              </div>
 
-  async function computeDovizCard() {
-    const r = await computeYahooBackedCategory(
-      currencyRes.data || [], row => `type=currency&code=${encodeURIComponent(row.currency_code)}`, 'amount', 'cost'
-    );
-    return { key: 'doviz', value: r.value, invested: r.invested, valueKnown: r.valueKnown };
-  }
+              <div id="aiPreviewWrap" style="display:none; margin-top:14px;">
+                <img id="aiPreviewImg" alt="Grafik önizleme" style="max-width:100%; border-radius:10px; display:block; border:1px solid var(--border);" />
+                <button class="btn outline small" id="aiChangeImageBtn" type="button" style="margin-top:10px;">Grafiği Değiştir</button>
+                <input type="text" id="aiNoteInput" class="full" placeholder="İsteğe bağlı not (ör. “BTC 4 saatlik grafik”)" style="margin-top:10px;">
+                <button class="btn primary full" id="aiAnalyzeBtn" type="button" style="margin-top:10px;">
+                  <span class="msr">smart_toy</span> ANALİZ ET
+                </button>
+              </div>
 
-  async function computeEmtiaCard() {
-    const rows = commodityRes.data || [];
-    let value = 0, investedKnown = 0, valueKnown = 0, usdTry = null;
-    await Promise.all(rows.map(async row => {
-      try {
-        const quote = await fetchPriceProxy(`type=commodity&key=${encodeURIComponent(row.commodity_key)}`);
-        let priceTry = quote.price;
-        if (row.commodity_key === 'BRENT_USD') {
-          if (usdTry == null) {
-            const usdQuote = await fetchPriceProxy('type=currency&code=USD');
-            usdTry = usdQuote.price;
-          }
-          priceTry = quote.price * usdTry;
-        }
-        const amount = Number(row.amount) || 0;
-        const rowValue = amount * priceTry;
-        value += rowValue;
-        if (row.cost != null) {
-          const costTry = row.commodity_key === 'BRENT_USD' ? Number(row.cost) * usdTry : Number(row.cost);
-          investedKnown += amount * costTry;
-          valueKnown += rowValue;
-        }
-      } catch (e) {}
-    }));
-    return { key: 'emtia', value, invested: investedKnown, valueKnown };
-  }
+              <div id="aiUploadMsg" class="ai-msg" style="display:none; margin-top:10px;"></div>
+            </div>
 
-  async function computeFonCard() {
-    const r = await computeYahooBackedCategory(
-      fundRes.data || [], row => `type=fund&code=${encodeURIComponent(row.code)}`, 'units', 'cost'
-    );
-    return { key: 'fon', value: r.value, invested: r.invested, valueKnown: r.valueKnown };
-  }
+            <div class="card" style="margin-top:16px;">
+              <div class="detail-section-title" style="margin-top:0;">Analiz Geçmişim</div>
+              <div id="aiHistoryList"><div class="empty">Henüz bir analiz yapılmadı.</div></div>
+            </div>
+          </div>
 
-  async function computeViopCard() {
-    const r = await computeYahooBackedCategory(
-      viopRes.data || [], row => `type=viop&symbol=${encodeURIComponent(row.symbol)}`, 'lot', 'cost'
-    );
-    return { key: 'viop', value: r.value, invested: r.invested, valueKnown: r.valueKnown };
-  }
+          <div>
+            <div id="aiResultEmpty" class="card">
+              <div class="empty" style="padding:36px 10px;">Sonuçları görmek için soldan bir grafik yükleyip “Analiz Et”e basın.</div>
+            </div>
+            <div id="aiResultWrap" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
 
-  const [hisseCard, kriptoCard, dovizCard, emtiaCard, fonCard, viopCard] = await Promise.all([
-    computeHisseCard(), computeKriptoCard(), computeDovizCard(),
-    computeEmtiaCard(), computeFonCard(), computeViopCard(),
-  ]);
+      <!-- VARLIKLAR (HUB) -->
+      <div class="page" id="page-varliklar">
+        <h1 class="page-title">Varlıklar</h1>
+        <p class="page-lead">Aşağıdaki kategorilerden birine tıklayarak ilgili piyasa sayfasını aç.</p>
+        <div class="varliklar-hub-grid">
+          <div class="varliklar-hub-card" data-page="emtia" style="--vhc-color:#7047EB;">
+            <div class="vhc-icon"><span class="msr">diamond</span></div>
+            <div class="vhc-title">Emtialar</div>
+            <div class="vhc-desc">Altın, gümüş, petrol ve diğer emtia fiyatları</div>
+          </div>
+          <div class="varliklar-hub-card" data-page="hisse" style="--vhc-color:#5B6EF5;">
+            <div class="vhc-icon"><span class="msr">show_chart</span></div>
+            <div class="vhc-title">Hisse Senetleri</div>
+            <div class="vhc-desc">BIST hisseleri, endeksler ve sektör verileri</div>
+          </div>
+          <div class="varliklar-hub-card" data-page="fon" style="--vhc-color:#9B3FF0;">
+            <div class="vhc-icon"><span class="msr">donut_small</span></div>
+            <div class="vhc-title">Yatırım Fonları</div>
+            <div class="vhc-desc">TEFAS fonları, getiri ve risk bilgileri</div>
+          </div>
+          <div class="varliklar-hub-card" data-page="kripto" style="--vhc-color:#3984F6;">
+            <div class="vhc-icon"><span class="msr">currency_bitcoin</span></div>
+            <div class="vhc-title">Kripto Paralar</div>
+            <div class="vhc-desc">Bitcoin, Ethereum ve diğer kripto paralar</div>
+          </div>
+          <div class="varliklar-hub-card" data-page="doviz" style="--vhc-color:#F0A020;">
+            <div class="vhc-icon"><span class="msr">currency_exchange</span></div>
+            <div class="vhc-title">Döviz</div>
+            <div class="vhc-desc">Canlı döviz kurları, grafik ve çevirici</div>
+          </div>
+          <div class="varliklar-hub-card" data-page="faiz" style="--vhc-color:#2AA9E0;">
+            <div class="vhc-icon"><span class="msr">account_balance</span></div>
+            <div class="vhc-title">Faiz ve Kredi Hesaplama</div>
+            <div class="vhc-desc">Mevduat, kredi ve faiz hesaplamaları</div>
+          </div>
+          <div class="varliklar-hub-card" data-page="viop" style="--vhc-color:#22D3EE;">
+            <div class="vhc-icon"><span class="msr">candlestick_chart</span></div>
+            <div class="vhc-title">VİOP Aktif Vade</div>
+            <div class="vhc-desc">Vadeli işlem sözleşmeleri ve aktif vadeler</div>
+          </div>
+        </div>
+      </div>
 
-  cards.push(hisseCard);
-  cards.push(kriptoCard);
-  cards.push(dovizCard);
-  cards.push(emtiaCard);
-  cards.push(fonCard);
+      <!-- EMTİA (PİYASA) -->
+      <div class="page" id="page-emtia">
+        <h1 class="page-title">Emtialar</h1>
+        <p class="page-lead">Güncel emtia fiyatları. Kendi emtia varlıkların için <strong>Varlığım</strong> menüsünü kullan.</p>
+        <div class="card">
+          <div class="table-wrap">
+          <table id="emtiaMarketTable">
+            <thead><tr>
+              <th></th><th></th><th>Emtia</th><th class="num">Fiyat</th><th class="num">Değişim</th><th></th>
+            </tr></thead>
+            <tbody id="emtiaMarketBody"></tbody>
+          </table>
+          </div>
+          <div id="emtiaMarketEmptyState" class="empty" style="display:none;">Veri alınamadı.</div>
+        </div>
+      </div>
 
-  // ---- GAYRİMENKUL ----
-  {
-    const rows = realEstateRes.data || [];
-    const value = rows.reduce((s, r) => s + (Number(r.current_value) || 0), 0);
-    const invested = rows.reduce((s, r) => s + (Number(r.purchase_price) || 0), 0);
-    cards.push({ key: 'gayrimenkul', value, invested, valueKnown: value });
-  }
+      <!-- HİSSE (PİYASA) -->
+      <div class="page" id="page-hisse">
+        <h1 class="page-title">Hisse Senetleri</h1>
+        <p class="page-lead">BIST endeksleri, sektör endeksleri ve tüm hisse senetleri. Kendi hisse varlıkların için <strong>Varlığım</strong> menüsünü kullan.</p>
 
-  // ---- ARAÇ ----
-  {
-    const rows = vehicleRes.data || [];
-    const value = rows.reduce((s, r) => s + (Number(r.current_value) || 0), 0);
-    const invested = rows.reduce((s, r) => s + (Number(r.purchase_price) || 0), 0);
-    cards.push({ key: 'arac', value, invested, valueKnown: value });
-  }
+        <div class="section-title">Ana Endeksler</div>
+        <div class="index-grid" id="bistIndexGrid"></div>
 
-  // ---- MEVDUAT ----
-  {
-    const rows = depositRes.data || [];
-    const value = rows.reduce((s, r) => s + depositCurrentValue(r), 0);
-    const invested = rows.reduce((s, r) => s + (Number(r.principal) || 0), 0);
-    cards.push({ key: 'mevduat', value, invested, valueKnown: value });
-  }
+        <div class="section-title">Sektör Endeksleri</div>
+        <div class="index-grid" id="bistSectorGrid"></div>
 
-  // ---- DİĞER VARLIKLAR ----
-  {
-    const rows = otherAssetsRes.data || [];
-    const value = rows.reduce((s, r) => s + (Number(r.current_value) || 0), 0);
-    const investedRows = rows.filter(r => r.purchase_price != null);
-    const invested = investedRows.reduce((s, r) => s + (Number(r.purchase_price) || 0), 0);
-    const valueKnown = investedRows.reduce((s, r) => s + (Number(r.current_value) || 0), 0);
-    cards.push({ key: 'diger', value, invested, valueKnown });
-  }
+        <div class="section-title" style="margin-top:22px;">Tüm Hisseler</div>
+        <div class="card">
+          <div class="market-toolbar">
+            <input type="search" id="hisseSearchInput" placeholder="Hisse kodu veya şirket adı ara..." />
+            <span id="hisseCatalogSource" style="font-size:11.5px; color:var(--text-faint);"></span>
+          </div>
+          <div class="chip-row" id="hisseMoverChips">
+            <div class="filter-chip active" data-mover="all">Tümü</div>
+            <div class="filter-chip" data-mover="gainers">Yükselenler</div>
+            <div class="filter-chip" data-mover="losers">Düşenler</div>
+            <div class="filter-chip" data-mover="volume">Yüksek Hacim</div>
+          </div>
+          <div class="table-wrap">
+          <table id="hisseMarketTable">
+            <thead><tr>
+              <th></th><th></th><th>Hisse</th><th class="num">Fiyat</th><th class="num">Değişim</th><th></th>
+            </tr></thead>
+            <tbody id="hisseMarketBody"></tbody>
+          </table>
+          </div>
+          <div id="hisseMarketEmptyState" class="empty" style="display:none;">Sonuç bulunamadı.</div>
+          <div class="load-more-row"><button class="btn outline small" id="hisseLoadMoreBtn" type="button" style="display:none;">Daha fazla göster</button></div>
+        </div>
+      </div>
 
-  cards.push(viopCard);
+      <!-- FON (PİYASA) -->
+      <div class="page" id="page-fon">
+        <h1 class="page-title">Yatırım Fonları</h1>
+        <p class="page-lead">TEFAS'taki tüm fonlar. Kendi fon varlıkların için <strong>Varlığım</strong> menüsünü kullan.</p>
+        <div class="card">
+          <div class="market-toolbar">
+            <input type="search" id="fonSearchInput" placeholder="Fon kodu, adı veya kurucu ara..." />
+          </div>
+          <div class="chip-row" id="fonCategoryChips">
+            <div class="filter-chip active" data-cat="all">Tüm Fonlar</div>
+            <div class="filter-chip" data-cat="Hisse Senedi">Hisse Senedi</div>
+            <div class="filter-chip" data-cat="Değişken">Değişken</div>
+            <div class="filter-chip" data-cat="Para Piyasası">Para Piyasası</div>
+            <div class="filter-chip" data-cat="Borçlanma Araçları">Borçlanma Araçları</div>
+            <div class="filter-chip" data-cat="Kıymetli Madenler">Kıymetli Maden</div>
+            <div class="filter-chip" data-cat="Fon Sepeti">Fon Sepeti</div>
+            <div class="filter-chip" data-cat="Katılım">Katılım</div>
+            <div class="filter-chip" data-cat="Emeklilik">Emeklilik</div>
+            <div class="filter-chip" data-cat="Serbest">Serbest</div>
+            <div class="filter-chip" data-cat="Garantili">Garantili</div>
+            <div class="filter-chip" data-cat="Karma">Karma</div>
+            <div class="filter-chip" data-cat="Gayrimenkul">Gayrimenkul</div>
+            <div class="filter-chip" data-cat="Girişim Sermayesi">Girişim Sermayesi</div>
+            <div class="filter-chip" data-cat="Kira Sertifikaları">Kira Sertifikaları</div>
+            <div class="filter-chip" id="fonFavoritesOnlyChip"><span class="msr" style="font-size:14px; vertical-align:-2px;">star</span> Sadece Favorilerim</div>
+          </div>
+          <div class="table-wrap">
+          <table id="fonMarketTable">
+            <thead><tr>
+              <th></th><th></th><th>Fon</th><th class="num">Fiyat</th><th></th>
+            </tr></thead>
+            <tbody id="fonMarketBody"></tbody>
+          </table>
+          </div>
+          <div id="fonMarketEmptyState" class="empty" style="display:none;">Sonuç bulunamadı.</div>
+          <div class="load-more-row"><button class="btn outline small" id="fonLoadMoreBtn" type="button" style="display:none;">Daha fazla göster</button></div>
+        </div>
+      </div>
 
-  // ---- BÜTÇE (bu ayki gelir / gider / tasarruf) ----
-  {
-    const rows = budgetRes.data || [];
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    let income = 0, expense = 0;
-    for (const row of rows) {
-      const txDate = new Date(row.transaction_date);
-      const appliesThisMonth = row.is_recurring
-        ? txDate < monthEnd
-        : (txDate >= monthStart && txDate < monthEnd);
-      if (!appliesThisMonth) continue;
-      const amount = Number(row.amount) || 0;
-      if (row.type === 'Gelir') income += amount;
-      else if (row.type === 'Gider') expense += amount;
-    }
-    cards.push({ key: 'gelir', value: income, invested: null, valueKnown: null });
-    cards.push({ key: 'gider', value: expense, invested: null, valueKnown: null });
-    cards.push({ key: 'tasarruf', value: income - expense, invested: null, valueKnown: null });
-  }
+      <!-- KRİPTO (PİYASA) -->
+      <div class="page" id="page-kripto">
+        <h1 class="page-title">Kripto Paralar</h1>
+        <p class="page-lead">Piyasa değerine göre ilk 100 kripto para. Kendi kripto varlıkların için <strong>Varlığım</strong> menüsünü kullan.</p>
+        <div class="card">
+          <div class="market-toolbar">
+            <input type="search" id="kriptoSearchInput" placeholder="Kripto adı veya sembol ara..." />
+          </div>
+          <div class="table-wrap">
+          <table id="kriptoMarketTable">
+            <thead><tr>
+              <th></th><th></th><th>Kripto</th><th class="num">Fiyat</th><th class="num">Değişim (24s)</th><th></th>
+            </tr></thead>
+            <tbody id="kriptoMarketBody"></tbody>
+          </table>
+          </div>
+          <div id="kriptoMarketEmptyState" class="empty" style="display:none;">Sonuç bulunamadı.</div>
+        </div>
+      </div>
 
-  // Toplam Borç: senkronize bir Supabase tablosu olmadığı için (borçlar
-  // yalnızca cihaz-içi yerel depoda tutuluyor), kural 11 gereği burada
-  // GERÇEK OLMAYAN bir tutar gösterilmiyor; kart eklenmiyor.
+      <!-- DÖVİZ (PİYASA) -->
+      <div class="page" id="page-doviz">
+        <h1 class="page-title">Döviz</h1>
+        <p class="page-lead">Canlı döviz kurları ve çevirici. Kendi döviz varlıkların için <strong>Varlığım</strong> menüsünü kullan.</p>
+        <div class="card">
+          <div class="market-toolbar">
+            <input type="search" id="dovizSearchInput" placeholder="Döviz kodu veya adı ara..." />
+          </div>
+          <div class="table-wrap">
+          <table id="dovizMarketTable">
+            <thead><tr>
+              <th></th><th></th><th>Döviz</th><th class="num">Kur</th><th class="num">Değişim</th><th></th>
+            </tr></thead>
+            <tbody id="dovizMarketBody"></tbody>
+          </table>
+          </div>
+          <div id="dovizMarketEmptyState" class="empty" style="display:none;">Sonuç bulunamadı.</div>
+        </div>
+        <div class="card fx-card">
+          <div class="section-title"><span class="msr">currency_exchange</span> Döviz Çevirici</div>
+          <p class="fx-hint">İki para birimi seç, herhangi birine tutar gir; diğeri anında hesaplanır.</p>
+          <div class="fx-rate-badge" id="dovizConverterRateLabel"><span class="msr" style="font-size:14px; vertical-align:-2px;">bolt</span> Kur yükleniyor…</div>
+          <div class="fx-convert-row">
+            <div class="fx-field">
+              <div class="fx-input-wrap">
+                <input id="dovizConverterFromAmount" type="text" inputmode="decimal" class="fx-has-select" />
+                <select id="dovizConverterFromCode" class="fx-suffix-select"></select>
+              </div>
+            </div>
+            <button type="button" class="fx-swap" id="dovizConverterSwapBtn" aria-label="Para birimlerini değiştir"><span class="msr">sync_alt</span></button>
+            <div class="fx-field">
+              <div class="fx-input-wrap">
+                <input id="dovizConverterToAmount" type="text" inputmode="decimal" class="fx-has-select" />
+                <select id="dovizConverterToCode" class="fx-suffix-select"></select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  const grandTotal = ['hisse', 'kripto', 'doviz', 'emtia', 'fon', 'gayrimenkul', 'arac', 'mevduat', 'diger', 'viop']
-    .map(k => cards.find(c => c.key === k)?.value || 0)
-    .reduce((a, b) => a + b, 0);
+      <!-- FAİZ -->
+      <div class="page" id="page-faiz">
+        <h1 class="page-title">Faiz (Mevduat) Hesaplayıcı</h1>
+        <p class="page-lead">Anapara, oran ve vadeyi gir; vade sonu net getiriyi hesapla. Alttaki liste mevcut mevduat kayıtlarını gösterir.</p>
+        <div class="calc-grid">
+          <div class="card">
+            <div class="section-title"><span class="msr">calculate</span> Hesaplayıcı</div>
+            <label for="calcDepositPrincipal">Anapara (₺)</label>
+            <input id="calcDepositPrincipal" type="text" inputmode="decimal" class="amt-grouped" placeholder="örn. 100.000" />
+            <label for="calcDepositRate">Yıllık faiz oranı (%)</label>
+            <input id="calcDepositRate" type="number" step="any" min="0" placeholder="örn. 48" />
+            <label for="calcDepositWithholding">Stopaj oranı (%)</label>
+            <input id="calcDepositWithholding" type="number" step="any" min="0" value="17.5" />
+            <label for="calcDepositStart">Başlangıç tarihi</label>
+            <input id="calcDepositStart" type="date" />
+            <label for="calcDepositMaturity">Vade tarihi</label>
+            <input id="calcDepositMaturity" type="date" />
+            <button class="btn primary full" id="calcDepositBtn" type="button">Hesapla</button>
+          </div>
+          <div class="card">
+            <div class="section-title"><span class="msr">insights</span> Sonuç</div>
+            <div id="calcDepositResults">
+              <div class="placeholder-box">
+                <span class="msr">calculate</span>
+                Sonucu görmek için hesapla'ya bas.
+              </div>
+            </div>
+          </div>
+        </div>
 
-  totalEl.textContent = fmtTL(grandTotal);
-  if (updatedEl) {
-    updatedEl.innerHTML = `
-      <span class="live-indicator" id="homeLiveIndicator"><span class="dot"></span>CANLI</span>
-      · Son güncelleme: ${new Date().toLocaleTimeString('tr-TR')}
-    `;
-  }
+        <div class="card">
+          <div class="section-title" style="justify-content:space-between;">
+            <span><span class="msr">account_balance</span> Güncel Banka Mevduat Oranları</span>
+            <button class="btn outline small" id="depositBankRefreshBtn" type="button">Yenile</button>
+          </div>
+          <div class="calc-inline-row">
+            <label for="depositBankPrincipal">Ana Para (₺)</label>
+            <input id="depositBankPrincipal" type="text" inputmode="decimal" class="amt-grouped" value="100.000" />
+          </div>
+          <div class="chip-row" id="depositBankTermChips"></div>
+          <div id="depositBankList"><div class="empty" style="padding:14px 0;">Yükleniyor…</div></div>
+        </div>
 
-  statGrid.innerHTML = cards.map(c => {
-    const pl = (c.invested != null && c.invested > 0) ? { invested: c.invested, value: c.valueKnown } : null;
-    return statCardHtml(c.key, c.value, pl);
-  }).join('');
+        <div class="card">
+          <div class="section-title">Mevcut Mevduat Kayıtların</div>
+          <div class="table-wrap">
+          <table id="depositTable">
+            <thead><tr>
+              <th>Banka</th><th class="num">Anapara</th><th class="num">Faiz</th>
+              <th class="num">Vade</th><th class="num">Güncel Değer</th><th class="num">Net Faiz</th><th></th>
+            </tr></thead>
+            <tbody id="depositBody"></tbody>
+          </table>
+          </div>
+          <div id="depositEmptyState" class="empty" style="display:none;">Henüz mevduat eklenmemiş.</div>
+          <div class="add-form">
+            <div class="full section-title" style="margin:0;" id="faizDepositFormTitle">Mevduat kaydı ekle</div>
+            <input id="newDepositBankName" class="full" type="text" autocomplete="off" placeholder="Banka adı" />
+            <input id="newDepositPrincipal" type="text" inputmode="decimal" class="amt-grouped" placeholder="Anapara (₺)" />
+            <input id="newDepositAnnualRate" type="number" step="any" min="0" placeholder="Yıllık faiz oranı (%)" />
+            <input id="newDepositWithholdingRate" type="number" step="any" min="0" placeholder="Stopaj oranı (%)" />
+            <input id="newDepositStartDate" type="date" />
+            <input id="newDepositMaturityDate" type="date" />
+            <button class="btn primary full" id="addDepositBtn" type="button">Ekle</button>
+            <button class="btn outline full" id="cancelFaizDepositEditBtn" type="button" style="display:none;">İptal</button>
+          </div>
+        </div>
+      </div>
 
-  // ---- VARLIK DAĞILIM GRAFİĞİ (FAZ 11, kullanıcının açıkça istediği ek) ----
-  renderAssetDistributionChart(cards.filter(c => ASSET_DISTRIBUTION_COLORS[c.key]));
+      <!-- KREDİ HESAPLAMA -->
+      <div class="page" id="page-kredi">
+        <h1 class="page-title">Kredi Hesaplama</h1>
+        <p class="page-lead">Bu araç yalnızca bir hesaplayıcıdır; hesabına herhangi bir kayıt eklemez.</p>
+        <div class="calc-grid">
+          <div class="card">
+            <div class="section-title"><span class="msr">calculate</span> Kredi Bilgileri</div>
+            <label for="loanAmount">Kredi tutarı (₺)</label>
+            <input id="loanAmount" type="text" inputmode="decimal" class="amt-grouped" placeholder="örn. 500.000" />
+            <label for="loanRate">Yıllık faiz oranı (%)</label>
+            <input id="loanRate" type="number" step="any" min="0" placeholder="örn. 3.5" />
+            <label for="loanTerm">Vade (ay)</label>
+            <input id="loanTerm" type="number" step="1" min="1" placeholder="örn. 36" />
+            <label for="loanType">Kredi türü</label>
+            <select id="loanType">
+              <option value="ihtiyac">İhtiyaç Kredisi (KKDF %15, BSMV %5)</option>
+              <option value="tasit">Taşıt Kredisi (KKDF %15, BSMV %5)</option>
+              <option value="konut">Konut Kredisi (KKDF %0, BSMV %5)</option>
+            </select>
+            <label for="loanFeeRate">Tahsis ücreti oranı (%)</label>
+            <input id="loanFeeRate" type="number" step="any" min="0" value="0.5" />
+            <button class="btn primary full" id="calcLoanBtn" type="button">Hesapla</button>
+          </div>
+          <div class="card">
+            <div class="section-title"><span class="msr">insights</span> Sonuç</div>
+            <div id="loanResults">
+              <div class="placeholder-box">
+                <span class="msr">calculate</span>
+                Sonucu görmek için hesapla'ya bas.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title" style="justify-content:space-between;">
+            <span><span class="msr">account_balance</span> Güncel Banka Kredi Oranları</span>
+            <button class="btn outline small" id="creditBankRefreshBtn" type="button">Yenile</button>
+          </div>
+          <div class="calc-inline-row">
+            <label for="creditBankAmount">Kredi tutarı (₺)</label>
+            <input id="creditBankAmount" type="text" inputmode="decimal" class="amt-grouped" value="500.000" />
+          </div>
+          <label for="creditBankType" style="margin-top:10px;">Kredi türü</label>
+          <select id="creditBankType">
+            <option value="ihtiyac">İhtiyaç Kredisi</option>
+            <option value="tasit">Taşıt Kredisi</option>
+            <option value="konut">Konut Kredisi</option>
+          </select>
+          <div class="chip-row" id="creditBankInstallmentChips" style="margin-top:10px;"></div>
+          <div id="creditBankBddkNotice" class="empty" style="display:none; padding:8px 0; font-size:12px; color:var(--warning, #F5A623);"></div>
+          <div id="creditBankList"><div class="empty" style="padding:14px 0;">Yükleniyor…</div></div>
+        </div>
 
-  // DÜZELTME (2026-09, kullanıcı talebi: "döviz çevirici... ana sayfada
-  // daire grafiğinin yan hizasına sabitle, ana sayfada görüntülensin"):
-  // app-piyasa-doviz.js'teki AYNI çevirici mantığı, ana sayfaya özel
-  // farklı element id'leriyle ikinci, bağımsız bir örnek olarak burada
-  // başlatılıyor (bkz. initDovizConverter'ın ids parametresi). Bu dosya
-  // portfoy.html'de app-piyasa-doviz.js'ten SONRA yüklendiği için
-  // fonksiyon burada zaten tanımlı olur; yine de tip kontrolüyle
-  // güvenceye alınıyor.
-  if (typeof initDovizConverter === 'function') {
-    initDovizConverter({
-      fromCode: 'homeDovizConverterFromCode',
-      fromAmount: 'homeDovizConverterFromAmount',
-      toCode: 'homeDovizConverterToCode',
-      toAmount: 'homeDovizConverterToAmount',
-      swapBtn: 'homeDovizConverterSwapBtn',
-      label: 'homeDovizConverterRateLabel'
-    });
-  }
+        <div class="card" id="loanScheduleCard" style="display:none;">
+          <div class="section-title" style="justify-content:space-between;">
+            <span><span class="msr">table_chart</span> Ödeme Planı</span>
+            <button class="btn outline small" id="toggleLoanScheduleBtn" type="button">Tümünü göster</button>
+          </div>
+          <div class="table-wrap">
+          <table id="loanScheduleTable">
+            <thead><tr>
+              <th class="num">#</th><th class="num">Taksit</th><th class="num">Anapara</th>
+              <th class="num">Faiz+Vergi</th><th class="num">Kalan Anapara</th>
+            </tr></thead>
+            <tbody id="loanScheduleBody"></tbody>
+          </table>
+          </div>
+        </div>
+      </div>
 
-  // ---- PİYASALAR / EMTİALAR mini bölümleri + Piyasa Hareketleri ----
-  await Promise.all([
-    loadHomeMarketSections(),
-    loadHomeMovers()
-  ]);
+      <!-- VİOP AKTİF VADE (PİYASA) -->
+      <div class="page" id="page-viop">
+        <h1 class="page-title">VİOP Aktif Vade</h1>
+        <p class="page-lead">Piyasadaki aktif vadeli işlem/opsiyon sözleşmeleri. Kendi VİOP pozisyonların için <strong>Varlığım</strong> menüsünü kullan.</p>
+        <div class="card">
+          <div class="chip-row" id="viopCategoryChips">
+            <div class="filter-chip active" data-cat="all">Tümü</div>
+            <div class="filter-chip" data-cat="equity">Hisse</div>
+            <div class="filter-chip" data-cat="index">Endeks</div>
+            <div class="filter-chip" data-cat="currency">Döviz</div>
+            <div class="filter-chip" data-cat="metal">Kıymetli Maden</div>
+            <div class="filter-chip" data-cat="other">Diğer</div>
+          </div>
+          <div class="table-wrap">
+          <table id="viopMarketTable">
+            <thead><tr>
+              <th></th><th></th><th>Sözleşme</th><th class="num">Fiyat</th><th class="num">Değişim</th><th class="num">Hacim (TL)</th><th></th>
+            </tr></thead>
+            <tbody id="viopMarketBody"></tbody>
+          </table>
+          </div>
+          <div id="viopMarketEmptyState" class="empty" style="display:none;">Veri alınamadı.</div>
+        </div>
+      </div>
 
-  homePageEverLoaded = true;
-}
+      <!-- BÜTÇE (yakında) -->
+      <div class="page" id="page-butce">
+        <h1 class="page-title">Bütçe</h1>
+        <p class="page-lead">Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
 
-registerPageLoader('home', loadHomePage);
+        <div class="card" style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+          <div class="section-title" style="margin:0;"><span class="msr">calendar_month</span> Ay</div>
+          <input id="budgetMonthInput" type="month" style="max-width:200px;" />
+        </div>
+
+        <div class="stat-grid" id="budgetSummaryGrid"></div>
+
+        <!-- KULLANICI RAPORU (ekstra kontrol, #126 parite denetimi): mobildeki
+             budget_calendar_screen.dart'ta olan aylık takvim görünümü web'de
+             yoktu. Veri zaten budget_transactions tablosunda mevcut olduğu
+             için yeni bir kaynak gerekmedi — sadece bu görünüm eklendi. -->
+        <div class="card">
+          <div class="section-title"><span class="msr">calendar_view_month</span> Aylık Takvim</div>
+          <div class="budget-calendar-weekdays">
+            <span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span>
+          </div>
+          <div class="budget-calendar-grid" id="budgetCalendarGrid"></div>
+          <div class="budget-calendar-legend">
+            <span class="budget-calendar-legend-item"><span class="dot pos"></span>Gelir</span>
+            <span class="budget-calendar-legend-item"><span class="dot neg"></span>Gider</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title" id="budgetFormTitle">İşlem ekle</div>
+          <div class="add-form">
+            <select id="budgetType">
+              <option value="Gider">Gider</option>
+              <option value="Gelir">Gelir</option>
+            </select>
+            <select id="budgetCategory"></select>
+            <input id="budgetTitle" class="full" type="text" autocomplete="off" placeholder="Başlık (örn. Market alışverişi)" />
+            <input id="budgetNote" class="full" type="text" autocomplete="off" placeholder="Not (isteğe bağlı)" />
+            <input id="budgetAmount" type="text" inputmode="decimal" class="amt-grouped" placeholder="Tutar (₺)" />
+            <input id="budgetDate" type="date" />
+            <label style="display:flex; align-items:center; gap:8px; margin:0; grid-column:1 / -1; color:var(--text-muted); font-size:13px;">
+              <input id="budgetRecurring" type="checkbox" style="width:auto;" />
+              Bu işlem her ay düzenli olarak tekrarlanıyor (ör. maaş, kira)
+            </label>
+            <button class="btn primary full" id="addBudgetBtn" type="button">Ekle</button>
+            <button class="btn outline full" id="cancelBudgetEditBtn" type="button" style="display:none;">İptal</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Bu Ayki İşlemler</div>
+          <div class="table-wrap">
+          <table id="budgetTable">
+            <thead><tr>
+              <th>Tarih</th><th>Tür</th><th>Kategori</th><th>Başlık</th>
+              <th class="num">Tutar</th><th></th>
+            </tr></thead>
+            <tbody id="budgetBody"></tbody>
+          </table>
+          </div>
+          <div id="budgetEmptyState" class="empty" style="display:none;">Bu ay için henüz işlem eklenmemiş.</div>
+        </div>
+      </div>
+
+      <!-- FAVORİLER -->
+      <div class="page" id="page-favoriler">
+        <h1 class="page-title">Favoriler</h1>
+        <p class="page-lead">Favorilere eklediğin enstrümanlar. Mobil uygulamayla otomatik senkronize.</p>
+        <input id="favoriSearchInput" type="text" autocomplete="off" placeholder="Favorilerde ara..." style="width:100%; margin-bottom:10px;" />
+        <div class="chip-row" id="favoriCategoryChips">
+          <div class="filter-chip active" data-cat="all">Tümü</div>
+          <div class="filter-chip" data-cat="hisse">Hisse Senetleri</div>
+          <div class="filter-chip" data-cat="endeks">Endeksler</div>
+          <div class="filter-chip" data-cat="emtia">Emtia</div>
+          <div class="filter-chip" data-cat="fon">Fonlar</div>
+          <div class="filter-chip" data-cat="kripto">Kripto</div>
+          <div class="filter-chip" data-cat="viop">VİOP</div>
+          <div class="filter-chip" data-cat="doviz">Döviz</div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+          <table id="favoriTable">
+            <thead><tr>
+              <th></th><th>Kategori</th><th>Enstrüman</th><th class="num">Fiyat</th><th class="num">Değişim</th><th></th>
+            </tr></thead>
+            <tbody id="favoriBody"></tbody>
+          </table>
+          </div>
+          <div id="favoriEmptyState" class="empty" style="display:none;">Henüz favori eklenmemiş. Piyasa sayfalarındaki ★ simgesine tıklayarak ekleyebilirsin.</div>
+        </div>
+      </div>
+
+      <!-- VARLIĞIM: kullanıcının kendi portföyü (10 kategori, mobildeki
+           net_worth_breakdown_screen.dart ile aynı sırada) -->
+      <div class="page" id="page-varligim">
+        <h1 class="page-title">Varlığım</h1>
+        <p class="page-lead">Tüm varlık kategorilerinin tek merkezde yönetimi. Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
+
+        <div class="subtab-row">
+          <div class="subtab-chip active" data-subtab="nakit-doviz">Nakit ve Döviz</div>
+          <div class="subtab-chip" data-subtab="emtia">Emtia Portföyü</div>
+          <div class="subtab-chip" data-subtab="hisse">Hisse Portföyü</div>
+          <div class="subtab-chip" data-subtab="fon">Yatırım Fonlarım</div>
+          <div class="subtab-chip" data-subtab="kripto">Kripto Paralarım</div>
+          <div class="subtab-chip" data-subtab="viop">VİOP'larım</div>
+          <div class="subtab-chip" data-subtab="mevduat">Mevduat</div>
+          <div class="subtab-chip" data-subtab="gayrimenkul">Gayrimenkullerim</div>
+          <div class="subtab-chip" data-subtab="arac">Araçlarım</div>
+          <div class="subtab-chip" data-subtab="diger">Diğer Varlıklarım</div>
+        </div>
+
+        <!-- NAKİT VE DÖVİZ -->
+        <div class="varligim-section" id="varligimSection-nakit-doviz">
+          <div class="card">
+            <div class="section-title">Döviz Varlıkları</div>
+            <div class="stat-mini-grid portfolio-summary-box" id="varligimCurrencyPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="table-wrap">
+            <table id="varligimCurrencyTable">
+              <thead><tr>
+                <th>Döviz</th><th class="num">Miktar</th><th class="num">Maliyet</th>
+                <th class="num">Güncel Kur</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="varligimCurrencyBody"></tbody>
+            </table>
+            </div>
+            <div id="varligimCurrencyEmptyState" class="empty" style="display:none;">Henüz döviz eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Döviz ekle / güncelle</div>
+              <input id="newVarligimCurrencySearch" class="full" list="varligimCurrencyOptions" autocomplete="off" placeholder="Döviz ara veya seç (örn. USD)" />
+              <datalist id="varligimCurrencyOptions"></datalist>
+              <input id="newVarligimCurrencyAmount" type="number" step="any" placeholder="Miktar" />
+              <input id="newVarligimCurrencyCost" type="number" step="any" placeholder="Birim maliyet (₺) - güncel kurdan otomatik dolar, istersen değiştir" />
+              <div class="full auto-cost-hint" id="varligimCurrencyCostHint"><span class="msr">bolt</span></div>
+              <button class="btn primary full" id="addVarligimCurrencyBtn" type="button">Ekle / Güncelle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMTİA PORTFÖYÜ -->
+        <div class="varligim-section" id="varligimSection-emtia" style="display:none;">
+          <div class="card">
+            <div class="section-title">Emtia Varlıkları</div>
+            <div class="stat-mini-grid portfolio-summary-box" id="commodityPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="table-wrap">
+            <table id="commodityTable">
+              <thead><tr>
+                <th>Emtia</th><th class="num">Miktar</th><th class="num">Maliyet</th>
+                <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="commodityBody"></tbody>
+            </table>
+            </div>
+            <div id="commodityEmptyState" class="empty" style="display:none;">Henüz emtia eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Emtia ekle / güncelle</div>
+              <input id="newCommoditySearch" class="full" list="commodityOptions" autocomplete="off" placeholder="Emtia ara veya seç (örn. Altın)" />
+              <datalist id="commodityOptions"></datalist>
+              <input id="newCommodityAmount" type="number" step="any" placeholder="Miktar" />
+              <input id="newCommodityCost" type="number" step="any" placeholder="Birim maliyet (₺) - güncel fiyattan otomatik dolar, istersen değiştir" />
+              <div class="full auto-cost-hint" id="commodityCostHint"><span class="msr">bolt</span></div>
+              <button class="btn primary full" id="addCommodityBtn" type="button">Ekle / Güncelle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- HİSSE PORTFÖYÜ -->
+        <div class="varligim-section" id="varligimSection-hisse" style="display:none;">
+          <div class="card">
+            <div class="section-title" style="justify-content:space-between;">
+              <span>Hisseler</span>
+              <button class="btn outline small" id="clearAllStocksBtn" type="button">Tümünü Temizle</button>
+            </div>
+            <div class="stat-mini-grid portfolio-summary-box" id="stockPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="table-wrap">
+            <table id="holdingsTable">
+              <thead><tr>
+                <th>Hisse</th><th class="num">Lot</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
+                <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="holdingsBody"></tbody>
+            </table>
+            </div>
+            <div id="emptyState" class="empty" style="display:none;">Henüz hisse eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Yeni hisse ekle</div>
+              <select id="newStockSelect" class="full"><option value="">Hisse seç...</option></select>
+              <input id="newLot" type="number" step="any" placeholder="Lot" />
+              <input id="newCost" type="number" step="any" placeholder="Maliyet (₺) - güncel fiyattan otomatik dolar, istersen değiştir" />
+              <div class="full auto-cost-hint" id="stockCostHint"><span class="msr">bolt</span></div>
+              <button class="btn primary full" id="addBtn" type="button">Ekle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- YATIRIM FONLARIM -->
+        <div class="varligim-section" id="varligimSection-fon" style="display:none;">
+          <div class="card">
+            <div class="section-title" style="justify-content:space-between;">
+              <span>Fon Varlıkları</span>
+              <button class="btn outline small" id="clearAllFundsBtn" type="button">Tümünü Temizle</button>
+            </div>
+            <div class="stat-mini-grid portfolio-summary-box" id="fundPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="table-wrap">
+            <table id="fundTable">
+              <thead><tr>
+                <th>Fon</th><th class="num">Adet</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
+                <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="fundBody"></tbody>
+            </table>
+            </div>
+            <div id="fundEmptyState" class="empty" style="display:none;">Henüz fon eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Fon ekle / güncelle</div>
+              <input id="newFundCode" class="full" type="text" autocomplete="off" maxlength="8" placeholder="Fon kodunu yaz (örn. GUM)" />
+              <input id="newFundName" class="full" type="text" autocomplete="off" placeholder="Fon adı otomatik bulunacak" readonly />
+              <input id="newFundUnits" type="number" step="any" placeholder="Adet" />
+              <input id="newFundCost" type="number" step="any" placeholder="Birim maliyet (₺) - güncel fiyattan otomatik dolar, istersen değiştir" />
+              <div class="full auto-cost-hint" id="fundCostHint"><span class="msr">bolt</span></div>
+              <button class="btn primary full" id="addFundBtn" type="button">Ekle / Güncelle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- KRİPTO PARALARIM -->
+        <div class="varligim-section" id="varligimSection-kripto" style="display:none;">
+          <div class="card">
+            <div class="section-title">Kripto Varlıklar</div>
+            <div class="stat-mini-grid portfolio-summary-box" id="cryptoPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="table-wrap">
+            <table id="cryptoTable">
+              <thead><tr>
+                <th>Kripto</th><th class="num">Miktar</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
+                <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="cryptoBody"></tbody>
+            </table>
+            </div>
+            <div id="cryptoEmptyState" class="empty" style="display:none;">Henüz kripto eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">Yeni kripto ekle</div>
+              <select id="newCryptoSelect" class="full"><option value="">Kripto seç...</option></select>
+              <input id="newCryptoAmount" type="number" step="any" placeholder="Miktar" />
+              <input id="newCryptoCost" type="number" step="any" placeholder="Birim maliyet (₺) - güncel fiyattan otomatik dolar, istersen değiştir" />
+              <div class="full auto-cost-hint" id="cryptoCostHint"><span class="msr">bolt</span></div>
+              <button class="btn primary full" id="addCryptoBtn" type="button">Ekle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- VİOP'LARIM -->
+        <div class="varligim-section" id="varligimSection-viop" style="display:none;">
+          <div class="card">
+            <div class="section-title">VİOP Pozisyonların</div>
+            <div class="stat-mini-grid portfolio-summary-box" id="viopPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="table-wrap">
+            <table id="viopTable">
+              <thead><tr>
+                <th>Sözleşme</th><th class="num">Lot</th><th class="num">Maliyet</th><th class="num">Yatırılan</th>
+                <th class="num">Güncel Fiyat</th><th class="num">Güncel Değer</th><th class="num">Kâr/Zarar</th><th></th>
+              </tr></thead>
+              <tbody id="viopBody"></tbody>
+            </table>
+            </div>
+            <div id="viopEmptyState" class="empty" style="display:none;">Henüz VİOP pozisyonu eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;">VİOP pozisyonu ekle</div>
+              <input id="newViopSymbol" class="full" type="text" autocomplete="off" placeholder="Sözleşme sembolü (örn. XU030)" />
+              <input id="newViopUnderlying" type="text" autocomplete="off" placeholder="Dayanak varlık (isteğe bağlı)" />
+              <select id="newViopCategory">
+                <option value="0">Hisse</option>
+                <option value="1">Endeks</option>
+                <option value="2">Döviz</option>
+                <option value="3">Kıymetli Maden</option>
+                <option value="4" selected>Diğer</option>
+              </select>
+              <select id="newViopIsOption">
+                <option value="false">Vadeli İşlem</option>
+                <option value="true">Opsiyon</option>
+              </select>
+              <input id="newViopLot" type="number" step="any" placeholder="Lot" />
+              <input id="newViopCost" type="number" step="any" placeholder="Birim maliyet (₺) - isteğe bağlı, sözleşme tam eşleşirse güncel fiyattan otomatik dolar" />
+              <div class="full auto-cost-hint" id="viopCostHint"><span class="msr">bolt</span></div>
+              <button class="btn primary full" id="addViopBtn" type="button">Ekle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MEVDUAT -->
+        <div class="varligim-section" id="varligimSection-mevduat" style="display:none;">
+          <div class="card">
+            <div class="section-title">Mevduatlar</div>
+            <div class="stat-mini-grid portfolio-summary-box" id="varligimDepositPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="table-wrap">
+            <table id="varligimDepositTable">
+              <thead><tr>
+                <th>Banka</th><th class="num">Anapara</th><th class="num">Faiz</th>
+                <th class="num">Vade</th><th class="num">Güncel Değer</th><th class="num">Net Faiz</th><th></th>
+              </tr></thead>
+              <tbody id="varligimDepositBody"></tbody>
+            </table>
+            </div>
+            <div id="varligimDepositEmptyState" class="empty" style="display:none;">Henüz mevduat eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;" id="varligimDepositFormTitle">Mevduat ekle</div>
+              <input id="newVarligimDepositBankName" class="full" type="text" autocomplete="off" placeholder="Banka adı" />
+              <input id="newVarligimDepositPrincipal" type="text" inputmode="decimal" class="amt-grouped" placeholder="Anapara (₺)" />
+              <input id="newVarligimDepositAnnualRate" type="number" step="any" min="0" placeholder="Yıllık faiz oranı (%)" />
+              <input id="newVarligimDepositWithholdingRate" type="number" step="any" min="0" placeholder="Stopaj oranı (%)" />
+              <input id="newVarligimDepositStartDate" type="date" />
+              <input id="newVarligimDepositMaturityDate" type="date" />
+              <button class="btn primary full" id="addVarligimDepositBtn" type="button">Ekle</button>
+              <button class="btn outline full" id="cancelVarligimDepositEditBtn" type="button" style="display:none;">İptal</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAYRİMENKUL -->
+        <div class="varligim-section" id="varligimSection-gayrimenkul" style="display:none;">
+          <div class="card">
+            <div class="section-title">Gayrimenkul Varlıkları</div>
+            <div class="stat-mini-grid portfolio-summary-box" id="realEstatePortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="table-wrap">
+            <table id="realEstateTable">
+              <thead><tr>
+                <th>Varlık</th><th>Konum</th><th class="num">Alış</th>
+                <th class="num">Güncel</th><th class="num">Aylık Kira</th>
+                <th class="num">Değer Değişimi</th><th class="num">Kira Getirisi</th><th></th>
+              </tr></thead>
+              <tbody id="realEstateBody"></tbody>
+            </table>
+            </div>
+            <div id="realEstateEmptyState" class="empty" style="display:none;">Henüz gayrimenkul eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;" id="realEstateFormTitle">Gayrimenkul ekle</div>
+              <select id="newRealEstateType">
+                <option value="Konut">Konut</option>
+                <option value="Arsa">Arsa</option>
+                <option value="İş Yeri">İş Yeri</option>
+                <option value="Tarla">Tarla</option>
+                <option value="Dükkan">Dükkan</option>
+                <option value="Ofis">Ofis</option>
+                <option value="Diğer">Diğer</option>
+              </select>
+              <input id="newRealEstateTitle" type="text" autocomplete="off" placeholder="Başlık (örn. Yazlık ev)" />
+              <input id="newRealEstateCity" type="text" autocomplete="off" placeholder="Şehir" />
+              <input id="newRealEstateDistrict" type="text" autocomplete="off" placeholder="İlçe" />
+              <input id="newRealEstatePurchasePrice" type="text" inputmode="decimal" class="amt-grouped" placeholder="Alış fiyatı (₺)" />
+              <input id="newRealEstateCurrentValue" type="text" inputmode="decimal" class="amt-grouped" placeholder="Güncel değer (₺)" />
+              <input id="newRealEstateMonthlyRent" type="text" inputmode="decimal" class="amt-grouped" placeholder="Aylık kira (₺) - isteğe bağlı" />
+              <input id="newRealEstatePurchaseDate" type="date" />
+              <button class="btn primary full" id="addRealEstateBtn" type="button">Ekle</button>
+              <button class="btn outline full" id="cancelRealEstateEditBtn" type="button" style="display:none;">İptal</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ARAÇ -->
+        <div class="varligim-section" id="varligimSection-arac" style="display:none;">
+          <div class="card">
+            <div class="section-title">Araç Varlıkları</div>
+            <div class="stat-mini-grid portfolio-summary-box" id="vehiclePortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="table-wrap">
+            <table id="vehicleTable">
+              <thead><tr>
+                <th>Araç</th><th>Plaka</th><th class="num">Yıl</th>
+                <th class="num">Alış</th><th class="num">Güncel</th><th class="num">Değer Değişimi</th><th></th>
+              </tr></thead>
+              <tbody id="vehicleBody"></tbody>
+            </table>
+            </div>
+            <div id="vehicleEmptyState" class="empty" style="display:none;">Henüz araç eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;" id="vehicleFormTitle">Araç ekle</div>
+              <select id="newVehicleType">
+                <option value="Otomobil">Otomobil</option>
+                <option value="Motosiklet">Motosiklet</option>
+                <option value="Ticari Araç">Ticari Araç</option>
+                <option value="Karavan">Karavan</option>
+                <option value="Tekne">Tekne</option>
+                <option value="Diğer">Diğer</option>
+              </select>
+              <input id="newVehicleBrand" type="text" autocomplete="off" placeholder="Marka" />
+              <input id="newVehicleModel" type="text" autocomplete="off" placeholder="Model" />
+              <input id="newVehicleModelYear" type="number" step="1" placeholder="Model yılı" />
+              <input id="newVehiclePlate" type="text" autocomplete="off" placeholder="Plaka" />
+              <input id="newVehiclePurchasePrice" type="text" inputmode="decimal" class="amt-grouped" placeholder="Alış fiyatı (₺)" />
+              <input id="newVehicleCurrentValue" type="text" inputmode="decimal" class="amt-grouped" placeholder="Güncel değer (₺)" />
+              <input id="newVehiclePurchaseDate" type="date" />
+              <button class="btn primary full" id="addVehicleBtn" type="button">Ekle</button>
+              <button class="btn outline full" id="cancelVehicleEditBtn" type="button" style="display:none;">İptal</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DİĞER VARLIKLAR -->
+        <div class="varligim-section" id="varligimSection-diger" style="display:none;">
+          <div class="card">
+            <div class="section-title">Diğer Varlıklar</div>
+            <div class="stat-mini-grid portfolio-summary-box" id="otherAssetsPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="table-wrap">
+            <table id="otherAssetsTable">
+              <thead><tr>
+                <th>Varlık</th><th>Açıklama</th><th class="num">Alış</th>
+                <th class="num">Güncel</th><th></th>
+              </tr></thead>
+              <tbody id="otherAssetsBody"></tbody>
+            </table>
+            </div>
+            <div id="otherAssetsEmptyState" class="empty" style="display:none;">Henüz diğer varlık eklenmemiş.</div>
+            <div class="add-form">
+              <div class="full section-title" style="margin:0;" id="otherAssetFormTitle">Diğer varlık ekle</div>
+              <select id="newOtherAssetType">
+                <option value="Saat">Saat</option>
+                <option value="Mücevher">Mücevher</option>
+                <option value="Koleksiyon">Koleksiyon</option>
+                <option value="Elektronik">Elektronik</option>
+                <option value="Sanat Eseri">Sanat Eseri</option>
+                <option value="Şirket Ortaklığı">Şirket Ortaklığı</option>
+                <option value="Değerli Eşya">Değerli Eşya</option>
+                <option value="Diğer" selected>Diğer</option>
+              </select>
+              <input id="newOtherAssetTitle" type="text" autocomplete="off" placeholder="Başlık (örn. Rolex Submariner)" />
+              <input id="newOtherAssetDescription" class="full" type="text" autocomplete="off" placeholder="Açıklama (isteğe bağlı)" />
+              <input id="newOtherAssetPurchasePrice" type="text" inputmode="decimal" class="amt-grouped" placeholder="Alış değeri (₺)" />
+              <input id="newOtherAssetCurrentValue" type="text" inputmode="decimal" class="amt-grouped" placeholder="Güncel değer (₺)" />
+              <input id="newOtherAssetPurchaseDate" type="date" />
+              <button class="btn primary full" id="addOtherAssetBtn" type="button">Ekle</button>
+              <button class="btn outline full" id="cancelOtherAssetEditBtn" type="button" style="display:none;">İptal</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BÜLTEN -->
+      <div class="page" id="page-bulten">
+        <h1 class="page-title">Bülten</h1>
+        <p class="page-lead">Piyasa özeti ve finans haberleri (mobil ile aynı kaynaklar).</p>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+          <input id="bultenSearchInput" type="text" autocomplete="off" placeholder="Haber ara..." style="flex:1; min-width:200px;" />
+          <span id="bultenLastUpdated" style="font-size:12px; color:var(--text-faint);"></span>
+        </div>
+        <div class="chip-row" id="bultenCategoryChips">
+          <div class="filter-chip active" data-cat="all">Tümü</div>
+          <div class="filter-chip" data-cat="ekonomi">Ekonomi</div>
+          <div class="filter-chip" data-cat="borsa">Borsa</div>
+          <div class="filter-chip" data-cat="emtia">Emtia</div>
+          <div class="filter-chip" data-cat="doviz">Döviz</div>
+          <div class="filter-chip" data-cat="kap">KAP</div>
+        </div>
+        <div id="bultenEmptyState" class="empty" style="display:none;">Haberler şu anda alınamıyor.</div>
+        <div class="news-grid" id="bultenGrid"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MOBİL UYGULAMA İNDİRME ROZETLERİ (sabit, her ekranda görünür)
+     ============================================================ -->
+<div id="storeBadgeBar">
+  <button type="button" class="store-badge" id="appStoreBadgeBtn" aria-label="App Store'dan indir">
+    <svg viewBox="0 0 24 24"><path d="M16.365 1.43c0 1.14-.415 2.06-1.246 2.76-.833.706-1.723 1.09-2.67 1.02-.13-1.09.32-2.06 1.16-2.79.83-.73 1.85-1.18 2.756-1.03zM19.6 17.05c-.36.86-.79 1.65-1.29 2.38-.7 1.02-1.28 1.73-1.73 2.12-.7.66-1.44 1-2.24 1.02-.57.01-1.26-.16-2.06-.5-.8-.34-1.53-.5-2.19-.5-.69 0-1.44.16-2.26.5-.82.35-1.48.53-2 .55-.76.03-1.52-.32-2.27-1.06-.5-.44-1.1-1.18-1.82-2.24-.78-1.13-1.42-2.45-1.92-3.95-.55-1.63-.82-3.2-.82-4.72 0-1.74.375-3.24 1.13-4.5.59-1.02 1.375-1.82 2.36-2.4.98-.58 2.04-.88 3.19-.9.6 0 1.4.19 2.4.55.99.36 1.63.55 1.91.55.21 0 .92-.21 2.11-.63 1.13-.39 2.08-.55 2.87-.49 2.12.17 3.71 1.01 4.77 2.52-1.9 1.15-2.84 2.76-2.82 4.83.02 1.62.6 2.97 1.75 4.02.52.5 1.1.88 1.75 1.15-.14.41-.29.8-.45 1.18z"/></svg>
+    <span class="store-badge-text"><small>Çok Yakında</small><strong>App Store</strong></span>
+  </button>
+  <button type="button" class="store-badge" id="googlePlayBadgeBtn" aria-label="Google Play'den indir">
+    <svg viewBox="0 0 24 24"><path d="M3.6 2.3c-.34.33-.55.85-.55 1.5v16.4c0 .65.2 1.17.55 1.5l.1.08L13.3 12v-.23L3.7 2.22l-.1.08z"/><path d="M16.55 15.25l-3.25-3.25V11.7l3.26-3.26 3.6 2.06c1.03.6 1.03 1.6 0 2.2l-3.6 2.06z" opacity=".7"/><path d="M13.3 12l3.25 3.25-9.85 5.6c-.35.2-.75.17-1.05-.03L13.3 12z"/><path d="M13.3 12L5.65 3.18c.3-.2.7-.23 1.05-.03l9.85 5.6L13.3 12z" opacity=".85"/></svg>
+    <span class="store-badge-text"><small>Çok Yakında</small><strong>Google Play</strong></span>
+  </button>
+</div>
+
+<script src="app-core.js?v=20260903-4"></script>
+<script src="app-logos.js?v=20260904"></script>
+<script src="app-charts.js?v=20260904-4"></script>
+<script src="bist-stocks-data.js?v=20260902"></script>
+<script src="app-piyasa-emtia.js?v=20260903-2"></script>
+<script src="app-piyasa-hisse.js?v=20260905-2"></script>
+<script src="app-piyasa-fon.js?v=20260902"></script>
+<script src="app-piyasa-kripto.js?v=20260903-4"></script>
+<script src="app-piyasa-doviz.js?v=20260904-2"></script>
+<script src="app-piyasa-viop.js?v=20260902"></script>
+<script src="app-favoriler.js?v=20260903-2"></script>
+<script src="app-bulten.js?v=20260902"></script>
+<script src="app-home.js?v=20260907"></script>
+<script src="app-varliklar.js?v=20260902"></script>
+<script src="app-interest.js?v=20260902"></script>
+<script src="app-butce.js?v=20260902"></script>
+<script src="app-varligim.js?v=20260907"></script>
+<script src="app-ai-analiz.js?v=20260906"></script>
+</body>
+</html>
