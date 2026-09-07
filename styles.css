@@ -741,6 +741,15 @@ tbody tr:hover { background: var(--bg-elevated); }
 .portfolio-summary-box .stat-mini .lbl { color: rgba(255,255,255,0.85); }
 .portfolio-summary-box .stat-mini .val { color: #fff; }
 .portfolio-summary-box .stat-mini .val .pl-zero { color: rgba(255,255,255,0.85); }
+/* Mor-mavi zemin üzerinde site genelindeki koyu yeşil (--positive: #1DBE82)
+ * yeterince net ayırt edilmiyordu — kullanıcı talebiyle SADECE bu
+ * kutucuklarda daha açık/parlak bir yeşile çevrildi (site genelindeki
+ * --positive değişkeni ve diğer sayfalardaki yeşil metinler ETKİLENMEDİ). */
+.portfolio-summary-box .stat-mini .pl-pos { color: #6EE7B7; }
+/* Kullanıcı talebiyle: kırmızı (negatif) ton da bu kutucuklarda biraz
+ * daha koyulaştırıldı (site genelindeki --negative: #FF525D yerine,
+ * yalnızca bu kapsamda). Diğer sayfalardaki kırmızı metinler ETKİLENMEDİ. */
+.portfolio-summary-box .stat-mini .pl-neg { color: #E63946; }
 .detail-section-title {
   font-size: 13px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: .4px; margin: 20px 0 10px;
