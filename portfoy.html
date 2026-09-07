@@ -9,7 +9,7 @@
   name="description"
   content="Varlığım hesabınızla giriş yapın; hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı web üzerinden yönetin."
 />
-<link rel="stylesheet" href="styles.css?v=20260904-8" />
+<link rel="stylesheet" href="styles.css?v=20260907" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -684,7 +684,7 @@
         <div class="varligim-section" id="varligimSection-nakit-doviz">
           <div class="card">
             <div class="section-title">Döviz Varlıkları</div>
-            <div class="stat-mini-grid" id="varligimCurrencyPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="stat-mini-grid portfolio-summary-box" id="varligimCurrencyPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="varligimCurrencyTable">
               <thead><tr>
@@ -711,7 +711,7 @@
         <div class="varligim-section" id="varligimSection-emtia" style="display:none;">
           <div class="card">
             <div class="section-title">Emtia Varlıkları</div>
-            <div class="stat-mini-grid" id="commodityPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="stat-mini-grid portfolio-summary-box" id="commodityPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="commodityTable">
               <thead><tr>
@@ -741,7 +741,7 @@
               <span>Hisseler</span>
               <button class="btn outline small" id="clearAllStocksBtn" type="button">Tümünü Temizle</button>
             </div>
-            <div class="stat-mini-grid" id="stockPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="stat-mini-grid portfolio-summary-box" id="stockPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="holdingsTable">
               <thead><tr>
@@ -770,7 +770,7 @@
               <span>Fon Varlıkları</span>
               <button class="btn outline small" id="clearAllFundsBtn" type="button">Tümünü Temizle</button>
             </div>
-            <div class="stat-mini-grid" id="fundPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="stat-mini-grid portfolio-summary-box" id="fundPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="fundTable">
               <thead><tr>
@@ -797,7 +797,7 @@
         <div class="varligim-section" id="varligimSection-kripto" style="display:none;">
           <div class="card">
             <div class="section-title">Kripto Varlıklar</div>
-            <div class="stat-mini-grid" id="cryptoPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="stat-mini-grid portfolio-summary-box" id="cryptoPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="cryptoTable">
               <thead><tr>
@@ -823,7 +823,7 @@
         <div class="varligim-section" id="varligimSection-viop" style="display:none;">
           <div class="card">
             <div class="section-title">VİOP Pozisyonların</div>
-            <div class="stat-mini-grid" id="viopPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="stat-mini-grid portfolio-summary-box" id="viopPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="viopTable">
               <thead><tr>
@@ -861,7 +861,7 @@
         <div class="varligim-section" id="varligimSection-mevduat" style="display:none;">
           <div class="card">
             <div class="section-title">Mevduatlar</div>
-            <div class="stat-mini-grid" id="varligimDepositPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="stat-mini-grid portfolio-summary-box" id="varligimDepositPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="varligimDepositTable">
               <thead><tr>
@@ -890,7 +890,7 @@
         <div class="varligim-section" id="varligimSection-gayrimenkul" style="display:none;">
           <div class="card">
             <div class="section-title">Gayrimenkul Varlıkları</div>
-            <div class="stat-mini-grid" id="realEstatePortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="stat-mini-grid portfolio-summary-box" id="realEstatePortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="realEstateTable">
               <thead><tr>
@@ -930,7 +930,7 @@
         <div class="varligim-section" id="varligimSection-arac" style="display:none;">
           <div class="card">
             <div class="section-title">Araç Varlıkları</div>
-            <div class="stat-mini-grid" id="vehiclePortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="stat-mini-grid portfolio-summary-box" id="vehiclePortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="vehicleTable">
               <thead><tr>
@@ -968,7 +968,7 @@
         <div class="varligim-section" id="varligimSection-diger" style="display:none;">
           <div class="card">
             <div class="section-title">Diğer Varlıklar</div>
-            <div class="stat-mini-grid" id="otherAssetsPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
+            <div class="stat-mini-grid portfolio-summary-box" id="otherAssetsPortfolioSummary" style="display:none; margin-bottom:10px;"></div>
             <div class="table-wrap">
             <table id="otherAssetsTable">
               <thead><tr>
