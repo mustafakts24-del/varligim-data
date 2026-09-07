@@ -233,6 +233,22 @@ function solveMonthlyIrr(netProceeds, payment, months) {
 
 let lastLoanSchedule = [];
 let loanScheduleExpanded = false;
+let lastLoanScheduleIsKatilim = false;
+
+// DÜZELTME (2026-09, "Ödeme Planını Göster" katılım bankası etiketi):
+// Bu değişken, "Güncel Banka Kredi Oranları" listesindeki bir bankanın
+// "Ödeme Planını Göster" butonuna tıklandığında app-interest.js
+// tarafından o bankanın adına ayarlanıyor (bkz. app-interest.js).
+// Kullanıcı formu kendisi elle düzenlerse (aşağıdaki input dinleyicileri)
+// sıfırlanıyor — böylece "Hesapla" manuel kullanıldığında her zaman
+// nötr/genel "faiz" terminolojisine dönülüyor, eski bir bankanın
+// etiketi yanlışlıkla asılı kalmıyor.
+let loanFormBankName = '';
+['loanAmount', 'loanRate', 'loanTerm', 'loanType', 'loanFeeRate'].forEach(id => {
+  const el = document.getElementById(id);
+  el?.addEventListener('input', () => { loanFormBankName = ''; });
+  el?.addEventListener('change', () => { loanFormBankName = ''; });
+});
 
 function renderLoanSchedule() {
   const tbody = document.getElementById('loanScheduleBody');
@@ -253,6 +269,8 @@ function renderLoanSchedule() {
   } else {
     toggleBtn.style.display = 'none';
   }
+  const headerEl = document.getElementById('loanScheduleInterestHeader');
+  if (headerEl) headerEl.textContent = lastLoanScheduleIsKatilim ? 'Kâr Payı+Vergi' : 'Faiz+Vergi';
 }
 
 document.getElementById('toggleLoanScheduleBtn').addEventListener('click', () => {
@@ -293,6 +311,19 @@ document.getElementById('calcLoanBtn').addEventListener('click', () => {
   lastLoanSchedule = schedule;
   loanScheduleExpanded = false;
 
+  // DÜZELTME (2026-09, katılım bankası etiketi): "Ödeme Planını Göster"
+  // ile bir katılım bankası seçildiyse (loanFormBankName ayarlanmışsa),
+  // rakamlar/hesap AYNI kalıyor — yalnızca "faiz" yerine "kâr payı"
+  // sözcüğü gösteriliyor (bkz. 16. tur'daki web/mobil kâr payı düzeltmesi,
+  // aynı isParticipationBank() ile aynı 9 katılım bankası tespiti).
+  const isKatilim = typeof isParticipationBank === 'function' && loanFormBankName
+    ? isParticipationBank(loanFormBankName) : false;
+  lastLoanScheduleIsKatilim = isKatilim;
+  const interestTaxLabel = isKatilim ? 'Toplam kâr payı + vergi' : 'Toplam faiz + vergi';
+  const katilimBadge = isKatilim
+    ? `<div class="calc-result-row"><span class="lbl">Banka türü</span><span class="val"><span class="chip neu">${escapeHtml(loanFormBankName)} — Katılım Bankası</span></span></div>`
+    : '';
+
   const totalRepayment = payment * months;
   const totalInterestTax = totalRepayment - principal;
   const allocationFee = principal * (feeRate / 100);
@@ -301,9 +332,10 @@ document.getElementById('calcLoanBtn').addEventListener('click', () => {
   const annualCostRate = (Math.pow(1 + monthlyIrr, 12) - 1) * 100;
 
   resultsEl.innerHTML = `
+    ${katilimBadge}
     <div class="calc-result-row"><span class="lbl">Aylık taksit tutarı</span><span class="val">${fmtTL(payment)}</span></div>
     <div class="calc-result-row"><span class="lbl">Toplam geri ödeme</span><span class="val">${fmtTL(totalRepayment)}</span></div>
-    <div class="calc-result-row"><span class="lbl">Toplam faiz + vergi</span><span class="val pl-neg">${fmtTL(totalInterestTax)}</span></div>
+    <div class="calc-result-row"><span class="lbl">${interestTaxLabel}</span><span class="val pl-neg">${fmtTL(totalInterestTax)}</span></div>
     <div class="calc-result-row"><span class="lbl">Tahsis ücreti (yaklaşık)</span><span class="val">${fmtTL(allocationFee)}</span></div>
     <div class="calc-result-row"><span class="lbl">Yıllık Maliyet Oranı (YMO)</span><span class="val">%${fmtPercent(annualCostRate, 2)}</span></div>
   `;
