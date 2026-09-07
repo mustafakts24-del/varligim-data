@@ -176,10 +176,9 @@ function escapeHtml(s) {
 
 /* ------------------------------------------------------------------
  * CANLI FİYAT YARDIMCILARI
- * Hisse/Döviz/Emtia/Fon/VİOP fiyatları tarayıcıdan doğrudan
- * çekilemediği için (CORS), mevcut `price-proxy` Edge Function'ı
- * üzerinden çekilir. Kripto için CoinGecko'nun genel API'si
- * doğrudan çağrılabildiği için ayrı bir yardımcı kullanılır.
+ * Hisse/Döviz/Emtia/Fon/VİOP/Kripto fiyatlarının TAMAMI tarayıcıdan
+ * doğrudan çekilemediği için (CORS — CoinGecko da dahil, bkz. 2026-09
+ * düzeltmesi) mevcut `price-proxy` Edge Function'ı üzerinden çekilir.
  * ------------------------------------------------------------------ */
 async function fetchPriceProxy(params) {
   const url = `${SUPABASE_URL}/functions/v1/price-proxy?${params}`;
@@ -196,17 +195,27 @@ async function fetchPriceProxy(params) {
   return data;
 }
 
+// DÜZELTME (2026-09, kullanıcı raporu: "veriler gelmiyor" / "piyasa ve
+// emtia verileri görünmüyor" — DevTools konsolunda doğrulandı): bu
+// fonksiyon CoinGecko'ya DOĞRUDAN tarayıcıdan bağlanıyordu ve CoinGecko
+// artık bu sitenin origin'inden (GitHub Pages) gelen istekleri CORS ile
+// engelliyor ("No 'Access-Control-Allow-Origin' header is present" —
+// net::ERR_FAILED), bu da kullanıcının KRİPTO PORTFÖY DEĞERİNİN hiç
+// hesaplanamamasına yol açıyordu (Kripto Paralarım sekmesi + ana sayfa
+// TOPLAM NET VARLIK). Artık price-proxy (Supabase Edge Function)
+// üzerindeki yeni `crypto-batch` ucundan geçiyor — sunucu tarafında CORS
+// kısıtlaması olmadığı için AYNI CoinGecko verisi sorunsuz alınabiliyor.
+// Fonksiyonun imzası/döndürdüğü veri şekli (id -> TRY fiyatı) DEĞİŞMEDİ,
+// bu yüzden bu fonksiyonu çağıran hiçbir yer güncellenmesi gerekmiyor.
 async function fetchCryptoPricesTry(ids) {
   const uniqueIds = [...new Set(ids)].filter(Boolean);
   if (uniqueIds.length === 0) return {};
-  const url = 'https://api.coingecko.com/api/v3/simple/price?ids=' +
-    encodeURIComponent(uniqueIds.join(',')) + '&vs_currencies=try';
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Kripto fiyat hatası: HTTP ${res.status}`);
-  const data = await res.json();
+  const data = await fetchPriceProxy('type=crypto-batch&ids=' +
+    encodeURIComponent(uniqueIds.join(',')) + '&vs=try');
+  const prices = (data && data.prices) || {};
   const result = {};
   for (const id of uniqueIds) {
-    const price = data && data[id] && data[id].try;
+    const price = prices[id] && prices[id].try;
     if (typeof price === 'number' && price > 0) result[id] = price;
   }
   return result;
