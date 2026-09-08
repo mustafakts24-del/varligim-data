@@ -9,7 +9,7 @@
   name="description"
   content="Varlığım hesabınızla giriş yapın; hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı web üzerinden yönetin."
 />
-<link rel="stylesheet" href="styles.css?v=20260907-3" />
+<link rel="stylesheet" href="styles.css?v=20260908" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -63,6 +63,7 @@
       <div class="nav-group">
         <div class="nav-item" data-page="aianaliz">
           <span class="msr">smart_toy</span> AI Teknik Analiz
+          <span class="nav-premium-badge">PREMIUM</span>
         </div>
       </div>
       <div class="nav-group">
@@ -164,11 +165,13 @@
       <!-- AI TEKNİK ANALİZ -->
       <div class="page" id="page-aianaliz">
         <h1 class="page-title">🤖 AI Teknik Analiz</h1>
-        <p style="color:var(--text-muted); font-size:13px; margin:-8px 0 18px; max-width:680px;">
+        <p style="color:var(--text-muted); font-size:13px; margin:-8px 0 14px; max-width:680px;">
           Bir hisse senedi, kripto para, forex, emtia veya endeks grafiğinin ekran görüntüsünü yükleyin;
           yapay zeka görüntüyü inceleyip trend, destek/direnç, olası alım-satım bölgeleri, senaryolar ve
           teknik skor içeren bir analiz üretsin. Bu bir yatırım tavsiyesi değildir.
         </p>
+
+        <div class="ai-usage-bar" id="aiUsageBar"></div>
 
         <div class="calc-grid">
           <div>
@@ -207,6 +210,13 @@
             </div>
             <div id="aiResultWrap" style="display:none;"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- PREMIUM -->
+      <div class="page" id="page-premium">
+        <div id="premiumPageBody">
+          <div class="empty" style="padding:40px 0;">Yükleniyor…</div>
         </div>
       </div>
 
@@ -1048,7 +1058,7 @@
   </button>
 </div>
 
-<script src="app-core.js?v=20260907-2"></script>
+<script src="app-core.js?v=20260908"></script>
 <script src="app-logos.js?v=20260904"></script>
 <script src="app-charts.js?v=20260904-4"></script>
 <script src="bist-stocks-data.js?v=20260902"></script>
@@ -1065,6 +1075,7 @@
 <script src="app-interest.js?v=20260907-3"></script>
 <script src="app-butce.js?v=20260902"></script>
 <script src="app-varligim.js?v=20260907"></script>
-<script src="app-ai-analiz.js?v=20260906"></script>
+<script src="app-ai-analiz.js?v=20260908"></script>
+<script src="app-premium.js?v=20260908"></script>
 </body>
 </html>
