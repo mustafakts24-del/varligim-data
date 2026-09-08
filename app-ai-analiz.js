@@ -81,9 +81,61 @@ async function aiCallFunction(body) {
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(data?.error || 'AI analiz servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
+    const err = new Error(data?.error || 'AI analiz servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
+    // Backend'in 402 TRIAL_EXHAUSTED gibi makine-okunabilir hata kodları
+    // (bkz. ai-chart-analysis/index.ts) buraya taşınır — çağıran kod,
+    // Türkçe mesaj metnini eşleştirmeye çalışmadan (kırılgan olurdu)
+    // doğrudan `e.code` ile davranış değiştirebilir (ör. Premium sayfasına
+    // yönlendirme).
+    if (data?.code) err.code = data.code;
+    throw err;
   }
   return data;
+}
+
+// ============================================================
+// Premium / Ücretsiz Deneme Hakkı — durum rozeti (2026-09)
+// ============================================================
+// Gerçek değer HER ZAMAN backend'den (Edge Function → ai_usage tablosu)
+// okunur; burada hiçbir yerde "3" veya "premium" sabit/varsayılan olarak
+// YAZILMAZ (kural: madde 3/12/13). Sonuç, hem "AI Teknik Analiz"
+// sayfasındaki sayaç hem de gelecekte başka sayfalar için tek bir
+// önbellekte (aiUsageCache) tutulur.
+let aiUsageCache = null;
+
+function aiRenderUsageBar(usage) {
+  const el = document.getElementById('aiUsageBar');
+  if (!el) return;
+  aiUsageCache = usage;
+  if (!usage) { el.innerHTML = ''; return; }
+
+  if (usage.isPremium) {
+    el.innerHTML = `<span class="premium-badge-lg">👑 Premium</span>`;
+    return;
+  }
+
+  const remaining = usage.freeTrialRemaining;
+  const exhausted = remaining <= 0;
+  el.innerHTML = `
+    <span class="ai-trial-counter${exhausted ? ' exhausted' : ''}">
+      <span class="msr" style="font-size:15px; vertical-align:-3px;">smart_toy</span>
+      ${exhausted ? 'Ücretsiz analiz hakkın bitti' : `Ücretsiz AI Analiz Hakkın: ${remaining}/${usage.freeTrialTotal}`}
+    </span>
+    ${exhausted ? `<button class="ai-premium-cta-btn" id="aiGoPremiumBtn" type="button">👑 Premium'a Geç</button>` : ''}
+  `;
+  const goBtn = document.getElementById('aiGoPremiumBtn');
+  if (goBtn) goBtn.addEventListener('click', () => showPage('premium'));
+}
+
+async function aiLoadUsageStatus() {
+  try {
+    const usage = await aiCallFunction({ action: 'usage_status' });
+    aiRenderUsageBar(usage);
+  } catch (e) {
+    // Durum alınamazsa sessizce geç — asıl analiz akışının güvenliği
+    // zaten backend'de (Edge Function, her "analyze" çağrısında) ayrıca
+    // ve bağımsız olarak korunuyor; bu yalnızca bir ARAYÜZ göstergesidir.
+  }
 }
 
 // ============================================================
@@ -210,8 +262,17 @@ async function aiRunAnalysis() {
       aiShowMsg('Bu görüntü daha önce analiz edilmişti — kayıtlı sonuç gösteriliyor.', 'success');
     }
     aiLoadHistory();
+    // Deneme hakkı (varsa) backend'de düşürüldüğü için sayaç güncel
+    // gerçek değeri yansıtsın diye tazelenir (kural: asla frontend'de
+    // tahmin/azaltma yapılmaz — her zaman backend'den okunur).
+    aiLoadUsageStatus();
   } catch (e) {
-    aiShowMsg(e.message || 'AI analiz servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.', 'error');
+    if (e.code === 'TRIAL_EXHAUSTED') {
+      aiShowMsg(e.message || 'Ücretsiz analiz hakkın bitti. Premium\'a geçebilirsin.', 'error');
+      aiLoadUsageStatus();
+    } else {
+      aiShowMsg(e.message || 'AI analiz servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.', 'error');
+    }
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = '<span class="msr">smart_toy</span> ANALİZ ET'; }
   }
@@ -605,6 +666,7 @@ function aiWirePageOnce() {
 function loadAiAnalizPage() {
   aiWirePageOnce();
   aiLoadHistory();
+  aiLoadUsageStatus();
 }
 
 registerPageLoader('aianaliz', loadAiAnalizPage);
