@@ -611,6 +611,24 @@ document.querySelectorAll('#authView .tab').forEach(tab => {
 });
 
 /* ------------------------------------------------------------------
+ * DÜZELTME (2026-09, kullanıcı raporu: "giriş bilgilerini geçince
+ * ekran açılmıyor"): Supabase hata mesajları İNGİLİZCE geliyordu
+ * (ör. "Invalid login credentials") ve doğrudan gösteriliyordu — bu
+ * yüzden bir hata olduğunda kullanıcı bunu fark etmemiş/anlamamış
+ * olabilir. Mobil uygulamadaki login_screen.dart _translateAuthError
+ * ile BİREBİR aynı çeviri haritası web'e de eklendi.
+ * ------------------------------------------------------------------ */
+function translateAuthError(message) {
+  const lower = (message || '').toLowerCase();
+  if (lower.includes('invalid login credentials')) return 'E-posta veya şifre hatalı.';
+  if (lower.includes('email not confirmed')) return 'E-posta adresini henüz doğrulamadın. Gelen kutunu (ve spam klasörünü) kontrol et.';
+  if (lower.includes('user already registered')) return 'Bu e-posta adresiyle zaten bir hesap var.';
+  if (lower.includes('password')) return 'Şifre geçersiz veya yeterince güçlü değil.';
+  if (lower.includes('email')) return 'E-posta adresi geçersiz.';
+  return message || 'Bir hata oluştu.';
+}
+
+/* ------------------------------------------------------------------
  * GİRİŞ / KAYIT
  * ------------------------------------------------------------------ */
 document.getElementById('authForm').addEventListener('submit', async (e) => {
@@ -630,7 +648,7 @@ document.getElementById('authForm').addEventListener('submit', async (e) => {
       showMsg('Hesap oluşturuldu. E-postana gelen onay linkine tıkladıktan sonra giriş yapabilirsin.', 'success');
     }
   } catch (err) {
-    showMsg(err.message || 'Bir hata oluştu.', 'error');
+    showMsg(translateAuthError(err.message), 'error');
   } finally {
     btn.disabled = false;
   }
