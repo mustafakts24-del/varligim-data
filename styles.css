@@ -1368,3 +1368,70 @@ tbody tr:hover { background: var(--bg-elevated); }
   .store-badge { padding: 7px 10px 7px 8px; }
   .store-badge-text strong { font-size: 11.5px; }
 }
+
+/* ============================================================
+   MİSAFİR KULLANIM + ÜYELİK SİSTEMİ (2026-09)
+   #authView artık zorunlu tam sayfa değil, istendiğinde açılıp
+   kapanan bir üst katman (overlay) — bu yüzden konumu fixed'e alınıp
+   bir kapatma butonu eklendi. Aşağıdaki diğer tüm kurallar YENİ ve
+   izole sınıflar/id'ler kullanır; mevcut hiçbir kural değiştirilmedi.
+   ============================================================ */
+
+#authView {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+}
+
+#authView .auth-card {
+  position: relative;
+}
+
+.auth-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-close-btn:hover { color: var(--text); }
+
+#guestPromptOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(8, 12, 24, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.guest-prompt-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 26px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+
+.ai-guest-gate {
+  text-align: center;
+  padding: 44px 20px;
+  margin-bottom: 16px;
+}
+
+#sidebarGuestFooter .email { margin-bottom: 10px; }
