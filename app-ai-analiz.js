@@ -663,7 +663,47 @@ function aiWirePageOnce() {
   });
 }
 
+// ============================================================
+// Misafir/girişsiz kullanıcı kapısı (2026-09, misafir kullanım sistemi)
+// Giriş yapmamış kullanıcı AI Teknik Analiz'i hiç kullanamaz — bu sayfa
+// açıldığında yükleme/analiz arayüzü yerine bir "hesap oluştur" kartı
+// gösterilir. Mevcut AI kullanım/Premium sistemi (usage_status, 3
+// ücretsiz hak, Edge Function gate) HİÇ değişmedi; burada yalnızca
+// misafirin bu akışa girişi engelleniyor.
+// ============================================================
+let aiGateWired = false;
+
+function aiWireGateOnce() {
+  if (aiGateWired) return;
+  aiGateWired = true;
+  const reason = {
+    title: 'AI Teknik Analiz için ücretsiz hesabını oluştur',
+    lead: 'İlk kez kayıt olan kullanıcılara 3 ücretsiz AI Teknik Analiz hakkı veriyoruz. Devam etmek için giriş yap ya da hesap oluştur.'
+  };
+  document.getElementById('aiGateLoginBtn')?.addEventListener('click', () => {
+    if (typeof window.openAuthOverlay === 'function') window.openAuthOverlay('login', reason);
+  });
+  document.getElementById('aiGateSignupBtn')?.addEventListener('click', () => {
+    if (typeof window.openAuthOverlay === 'function') window.openAuthOverlay('signup', reason);
+  });
+}
+
 function loadAiAnalizPage() {
+  const gate = document.getElementById('aiGuestGate');
+  const calcGrid = document.getElementById('aiCalcGrid');
+  const usageBar = document.getElementById('aiUsageBar');
+  const isGuest = typeof window.isGuestSessionMode === 'function' ? window.isGuestSessionMode() : false;
+
+  if (isGuest) {
+    aiWireGateOnce();
+    if (gate) gate.style.display = 'block';
+    if (calcGrid) calcGrid.style.display = 'none';
+    if (usageBar) usageBar.innerHTML = '';
+    return;
+  }
+
+  if (gate) gate.style.display = 'none';
+  if (calcGrid) calcGrid.style.display = '';
   aiWirePageOnce();
   aiLoadHistory();
   aiLoadUsageStatus();
