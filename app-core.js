@@ -760,33 +760,20 @@ document.getElementById('sidebarOverlay').addEventListener('click', closeMobileS
 
 /* ------------------------------------------------------------------
  * OTURUM DURUMU
+ * DÜZELTME (2026-09, misafir kullanım + üyelik sistemi): web artık
+ * giriş yapmadan da kullanılabildiği için (misafir modu), bu olayın
+ * gerçek mantığı app-guest.js'teki handleSessionChange()'e taşındı —
+ * orada oturum 'guest' / 'authenticated' modları arasında yönetilir,
+ * misafir verisi hesaba aktarım teklifi sorulur ve giriş/kayıt katmanı
+ * (overlay) açılıp kapatılır. Bu dosya yalnızca ince bir delege.
  * ------------------------------------------------------------------ */
 supa.auth.onAuthStateChange((_event, session) => {
-  if (session && session.user) {
-    authView.style.display = 'none';
-    appShell.style.display = 'flex';
-    userEmailEl.textContent = session.user.email || '';
-
-    // Seçim listelerini/kataloglarını bir kez doldur.
-    if (typeof loadStockOptions === 'function') loadStockOptions();
-    if (typeof loadCryptoOptions === 'function') loadCryptoOptions();
-    if (typeof loadCommodityOptions === 'function') loadCommodityOptions();
-    loadFavorites();
-
-    // DÜZELTME (2026-09, kullanıcı raporu: tarayıcı geri tuşu çalışmıyor):
-    // önceki satır yanlışlıkla PAGE_TITLES[initialPage] (başlık METNİ,
-    // örn. "Yatırım Fonları") döndürüyordu ve bunu showPage'e sayfa KİMLİĞİ
-    // olarak veriyordu — showPage içindeki geçerlilik kontrolü (satır
-    // ~532) bunu tanımadığı için her zaman 'home'a düşülüyordu. Yani
-    // #hisse/#fon/vb. gibi bir sayfada sayfayı yenilemek/geri gitmek her
-    // zaman Ana Sayfa'ya dönüyordu. showPage kendi içinde zaten geçersiz
-    // pageId'leri 'home'a düşürdüğü için doğrudan initialPage verilmesi
-    // yeterli ve doğru.
-    const initialPage = (window.location.hash || '').replace('#', '') || 'home';
-    showPage(initialPage);
+  if (typeof handleSessionChange === 'function') {
+    handleSessionChange(_event, session);
   } else {
-    authView.style.display = '';
-    appShell.style.display = 'none';
+    // app-guest.js beklenmedik şekilde yüklenmediyse bile uygulama
+    // kilitlenmesin diye düşük seviye bir yedek.
+    appShell.style.display = 'flex';
   }
 });
 
