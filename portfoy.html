@@ -7,9 +7,9 @@
 <link rel="icon" type="image/png" href="app-logo.png" />
 <meta
   name="description"
-  content="Varlığım hesabınızla giriş yapın; hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı web üzerinden yönetin."
+  content="Varlığım ile hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı üye olmadan deneyin; verilerinizi kaydetmek için istediğiniz zaman ücretsiz hesap oluşturun."
 />
-<link rel="stylesheet" href="styles.css?v=20260908" />
+<link rel="stylesheet" href="styles.css?v=20260909" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -18,14 +18,15 @@
 <!-- ============================================================
      GİRİŞ EKRANI
      ============================================================ -->
-<div id="authView">
+<div id="authView" style="display:none;">
   <div class="auth-card">
+    <button type="button" id="authCloseBtn" class="auth-close-btn" title="Kapat" aria-label="Kapat">&times;</button>
     <div class="brand-row">
       <div class="brand-badge"><img src="app-logo.png" alt="Varlığım" onerror="this.parentElement.innerHTML='V';" /></div>
       <div class="name" style="font-weight:700; font-size:18px;">Varlığım</div>
     </div>
-    <h1>Portföyüme giriş yap</h1>
-    <p class="page-lead" style="margin-top:6px;">
+    <h1 id="authViewTitle">Portföyüme giriş yap</h1>
+    <p class="page-lead" id="authViewLead" style="margin-top:6px;">
       Varlığım uygulamasındaki hesabınla giriş yaparak tüm
       varlıklarını web üzerinden de yönetebilirsin.
     </p>
@@ -47,7 +48,7 @@
 <!-- ============================================================
      UYGULAMA KABUĞU
      ============================================================ -->
-<div id="appShell" style="display:none;">
+<div id="appShell">
   <div id="sidebarOverlay"></div>
   <aside id="sidebar">
     <div class="brand-row">
@@ -96,8 +97,16 @@
       </div>
     </nav>
     <div id="sidebarFooter">
-      <div class="email" id="userEmail"></div>
-      <button class="btn outline small" id="signOutBtn" style="width:100%;">Çıkış yap</button>
+      <!-- Kayıtlı kullanıcı durumu -->
+      <div id="sidebarAuthedFooter" style="display:none;">
+        <div class="email" id="userEmail"></div>
+        <button class="btn outline small" id="signOutBtn" style="width:100%;">Çıkış yap</button>
+      </div>
+      <!-- Misafir durumu (2026-09, misafir kullanım sistemi) -->
+      <div id="sidebarGuestFooter" style="display:none;">
+        <div class="email" style="margin-bottom:10px;">Misafir olarak geziniyorsun</div>
+        <button class="btn primary small" id="sidebarLoginBtn" style="width:100%;">Giriş Yap / Kayıt Ol</button>
+      </div>
     </div>
   </aside>
 
@@ -173,7 +182,22 @@
 
         <div class="ai-usage-bar" id="aiUsageBar"></div>
 
-        <div class="calc-grid">
+        <!-- Misafir/girişsiz kullanıcı kapısı (2026-09, misafir kullanım
+             sistemi) — kayıtlı kullanıcı için JS ile gizlenir. -->
+        <div class="card ai-guest-gate" id="aiGuestGate" style="display:none;">
+          <div class="msr" style="font-size:40px; color:var(--secondary);">lock</div>
+          <h2 style="margin:10px 0 6px;">AI Teknik Analiz için ücretsiz hesabını oluştur</h2>
+          <p style="color:var(--text-muted); font-size:13.5px; max-width:420px; margin:0 auto 18px;">
+            İlk kez kayıt olan kullanıcılara 3 ücretsiz AI Teknik Analiz hakkı veriyoruz.
+            Devam etmek için giriş yap ya da hesap oluştur.
+          </p>
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <button type="button" class="btn primary" id="aiGateLoginBtn">Giriş Yap</button>
+            <button type="button" class="btn outline" id="aiGateSignupBtn">Üye Ol</button>
+          </div>
+        </div>
+
+        <div class="calc-grid" id="aiCalcGrid">
           <div>
             <div class="card">
               <div class="ai-upload-zone" id="aiUploadZone" tabindex="0" role="button">
@@ -1045,6 +1069,24 @@
 </div>
 
 <!-- ============================================================
+     MİSAFİR ÜYELİK HATIRLATMA MODALI (2026-09, misafir kullanım
+     sistemi) — oturum başına en fazla bir kez, gecikmeli açılır.
+     ============================================================ -->
+<div id="guestPromptOverlay" style="display:none;">
+  <div class="guest-prompt-card">
+    <div class="brand-row" style="margin-bottom:14px;">
+      <div class="brand-badge"><img src="app-logo.png" alt="Varlığım" onerror="this.parentElement.innerHTML='V';" /></div>
+      <div class="name" style="font-weight:700; font-size:16px;">Varlığım'a Hoş Geldiniz</div>
+    </div>
+    <p style="font-size:13.5px; color:var(--text-muted); margin:0 0 18px;">
+      Hesabınızı oluşturarak verilerinizi kaydedebilir ve tüm cihazlarınızdan erişebilirsiniz.
+    </p>
+    <button type="button" class="btn primary full" id="guestPromptLoginBtn" style="margin-top:0;">Giriş Yap / Üye Ol</button>
+    <button type="button" class="btn outline full" id="guestPromptDismissBtn" style="margin-top:10px;">Şimdilik Geç</button>
+  </div>
+</div>
+
+<!-- ============================================================
      MOBİL UYGULAMA İNDİRME ROZETLERİ (sabit, her ekranda görünür)
      ============================================================ -->
 <div id="storeBadgeBar">
@@ -1058,7 +1100,8 @@
   </button>
 </div>
 
-<script src="app-core.js?v=20260908"></script>
+<script src="app-core.js?v=20260909"></script>
+<script src="app-guest.js?v=20260909"></script>
 <script src="app-logos.js?v=20260904"></script>
 <script src="app-charts.js?v=20260904-4"></script>
 <script src="bist-stocks-data.js?v=20260902"></script>
@@ -1075,7 +1118,7 @@
 <script src="app-interest.js?v=20260907-3"></script>
 <script src="app-butce.js?v=20260902"></script>
 <script src="app-varligim.js?v=20260907"></script>
-<script src="app-ai-analiz.js?v=20260908"></script>
+<script src="app-ai-analiz.js?v=20260909"></script>
 <script src="app-premium.js?v=20260908"></script>
 </body>
 </html>
