@@ -331,11 +331,47 @@ function applyCreditBddkRule() {
   return false;
 }
 
+// DÜZELTME (2026-09-10, kullanıcı isteği: "istenilen ayın girilebildiği
+// bir bölüm eklemeni istiyorum" — Güncel Banka Kredi Oranları kartında
+// yalnızca hazır 3/6/9/12/18/24/36 ay kutucukları vardı, kullanıcı
+// aralarında olmayan bir vadeyi (örn. 15 ay) deneyemiyordu). Mevduat
+// tarafındaki "Vade (gün)" serbest kutusuyla AYNI, önceden kurulmuş
+// desen buraya da uygulandı: serbest "Vade (ay)" kutusu HER ZAMAN o an
+// geçerli olan vadeyi (creditBankInstallmentMonths) gösterir/kontrol
+// eder; hazır kutucuklar bu alanı hızlıca doldurmak için birer KISAYOL
+// olarak kalmaya devam eder, birbirini geçersiz kılmazlar. BDDK azami
+// vade kuralı (applyCreditBddkRule) serbest girişte de AYNEN uygulanır.
+const CREDIT_BANK_MIN_MONTHS = 1;
+const CREDIT_BANK_MAX_MONTHS = 360; // ~30 yıl — makul bir üst sınır; gerçek BDDK azami zaten applyCreditBddkRule() ile ayrıca uygulanıyor
+
+function syncCreditBankCustomMonthsInput() {
+  const input = document.getElementById('creditBankCustomMonths');
+  if (input && document.activeElement !== input) {
+    input.value = creditBankInstallmentMonths;
+  }
+}
+
+function applyCreditBankCustomMonths() {
+  const input = document.getElementById('creditBankCustomMonths');
+  if (!input) return;
+  const parsed = parseInt(input.value, 10);
+  if (!Number.isFinite(parsed) || parsed < CREDIT_BANK_MIN_MONTHS) {
+    return;
+  }
+  creditBankInstallmentMonths = Math.min(parsed, CREDIT_BANK_MAX_MONTHS);
+  renderCreditBankInstallmentChips();
+  renderCreditBankList();
+}
+
 function renderCreditBankInstallmentChips() {
   const wrap = document.getElementById('creditBankInstallmentChips');
   if (!wrap) return;
   const presets = LOAN_INSTALLMENT_PRESETS[creditBankLoanType()] || LOAN_INSTALLMENT_PRESETS.ihtiyac;
-  if (!presets.includes(creditBankInstallmentMonths)) {
+  // Yalnızca değer hiç geçerli bir sayı değilse (ör. ilk yükleme) bir
+  // ön tanımlı vadeye düşülür — kullanıcının serbest kutuya girdiği,
+  // kutucuklar arasında OLMAYAN bir değer (ör. 15 ay) artık burada
+  // sessizce bir ön tanımlıya SIFIRLANMAZ.
+  if (!Number.isFinite(creditBankInstallmentMonths) || creditBankInstallmentMonths < 1) {
     creditBankInstallmentMonths = presets[Math.floor(presets.length / 2)];
   }
   applyCreditBddkRule();
@@ -351,9 +387,11 @@ function renderCreditBankInstallmentChips() {
         wrap.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
       }
+      syncCreditBankCustomMonthsInput();
       renderCreditBankList();
     });
   });
+  syncCreditBankCustomMonthsInput();
 }
 
 function renderCreditBankList() {
@@ -451,6 +489,7 @@ function initInterestBankSections() {
     renderCreditBankInstallmentChips();
     renderCreditBankList();
   }, 300));
+  document.getElementById('creditBankCustomMonths')?.addEventListener('input', debounce(applyCreditBankCustomMonths, 300));
   document.getElementById('creditBankType')?.addEventListener('change', () => {
     creditBankInstallmentMonths = LOAN_INSTALLMENT_PRESETS[creditBankLoanType()][0];
     loadCreditBankRates();
