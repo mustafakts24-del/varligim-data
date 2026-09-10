@@ -113,11 +113,17 @@ function renderFonList() {
         <div class="name">${escapeHtml(f.name || '')}${f.founderName ? ' · ' + escapeHtml(f.founderName) : ''}</div>
       </td>
       <td class="num">${naIfMissing(f.price, fmtTLPrecise)}</td>
-      <td class="num"><button type="button" class="detail-btn" data-open-fund="${escapeHtml(f.code)}">Detay</button></td>
+      <td class="num">
+        <button type="button" class="quick-add-btn" data-quick-add-fund="${escapeHtml(f.code)}" title="Varlığıma Ekle">+</button>
+        <button type="button" class="detail-btn" data-open-fund="${escapeHtml(f.code)}">Detay</button>
+      </td>
     </tr>
   `).join('');
   tbody.querySelectorAll('[data-open-fund]').forEach(btn => {
     btn.addEventListener('click', () => openFundDetail(btn.dataset.openFund));
+  });
+  tbody.querySelectorAll('[data-quick-add-fund]').forEach(btn => {
+    btn.addEventListener('click', () => quickAddToPortfolio('fon', btn.dataset.quickAddFund));
   });
   loadMoreBtn.style.display = filtered.length > fonVisibleCount ? '' : 'none';
 }
