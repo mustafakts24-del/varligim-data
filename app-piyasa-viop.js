@@ -58,9 +58,15 @@ function renderViopList() {
       <td class="num">${fmtNumber(c.price)}</td>
       <td class="num">${changeChipHtml(c.changePercent)}</td>
       <td class="num">${naIfMissing(c.volumeTl, fmtTL)}</td>
-      <td class="num"><button type="button" class="detail-btn" data-open-viop="${idx}">Detay</button></td>
+      <td class="num">
+        <button type="button" class="quick-add-btn" data-quick-add-viop="${escapeHtml(c.symbol)}" title="Varlığıma Ekle">+</button>
+        <button type="button" class="detail-btn" data-open-viop="${idx}">Detay</button>
+      </td>
     </tr>
   `).join('');
+  tbody.querySelectorAll('[data-quick-add-viop]').forEach(btn => {
+    btn.addEventListener('click', () => quickAddToPortfolio('viop', btn.dataset.quickAddViop));
+  });
   tbody.querySelectorAll('[data-open-viop]').forEach(btn => {
     btn.addEventListener('click', () => openViopDetail(filtered[Number(btn.dataset.openViop)]));
   });
