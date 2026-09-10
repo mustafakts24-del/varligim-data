@@ -784,8 +784,32 @@ document.getElementById('sidebarOverlay').addEventListener('click', closeMobileS
  * orada oturum 'guest' / 'authenticated' modları arasında yönetilir,
  * misafir verisi hesaba aktarım teklifi sorulur ve giriş/kayıt katmanı
  * (overlay) açılıp kapatılır. Bu dosya yalnızca ince bir delege.
+ *
+ * DÜZELTME (2026-09, kullanıcı raporu: "site ilk açıldığında Ana Sayfa
+ * verileri yüklenmiyor, ancak Ana Sayfa'ya tekrar basınca yükleniyor"):
+ * canlı ortamda (gerçek tarayıcı + konsol/network izleme ile) doğrulandı
+ * — sayfa yüklenirken SENKRON olarak eklenen bu onAuthStateChange
+ * dinleyicisi, Supabase istemcisinin bilinen bir zamanlama tuhaflığı
+ * yüzünden bazı durumlarda İLK ('INITIAL_SESSION') bildirimini HİÇ
+ * ALMIYOR — supa.auth.getSession() kendisi her zaman sorunsuz ve hızlı
+ * çözülüyor, yalnızca sayfa açılırken eklenen dinleyici tetiklenmiyor
+ * (sayfa açıldıktan SONRA eklenen yeni bir dinleyici ise anında
+ * tetikleniyor). Sonuç: appShell'deki misafir/giriş footer'ı VE Ana
+ * Sayfa'nın otomatik ilk yüklemesi (bkz. app-guest.js finishBoot() →
+ * showPage()) sonsuza kadar bekliyordu; kullanıcı Ana Sayfa'ya elle
+ * bastığında bu AYRI, doğrudan showPage() çağrısı devreye girdiği için
+ * "çalışıyormuş" gibi görünüyordu.
+ *
+ * Düzeltme: ilk oturum durumu artık bu PASİF bildirimi beklemek yerine
+ * supa.auth.getSession() ile AKTİF olarak bir kez soruluyor ve sonucu
+ * hemen işleniyor; onAuthStateChange bundan SONRA yalnızca GERÇEK
+ * değişiklikleri (giriş/çıkış/token yenileme) yönetmeye devam ediyor.
+ * _bootHandled bayrağı, ikisinin aynı ilk durumu İKİ KEZ işlemesini (ve
+ * bunun yol açabileceği "Ana Sayfa aynı anda iki kez yükleniyor" yarış
+ * durumunu) önler.
  * ------------------------------------------------------------------ */
-supa.auth.onAuthStateChange((_event, session) => {
+let _bootHandled = false;
+function _dispatchSessionChange(_event, session) {
   if (typeof handleSessionChange === 'function') {
     handleSessionChange(_event, session);
   } else {
@@ -793,6 +817,28 @@ supa.auth.onAuthStateChange((_event, session) => {
     // kilitlenmesin diye düşük seviye bir yedek.
     appShell.style.display = 'flex';
   }
+}
+supa.auth.getSession()
+  .then(({ data }) => {
+    if (_bootHandled) return;
+    _bootHandled = true;
+    _dispatchSessionChange('INITIAL_SESSION', data ? data.session : null);
+  })
+  .catch(() => {
+    if (_bootHandled) return;
+    _bootHandled = true;
+    _dispatchSessionChange('INITIAL_SESSION', null);
+  });
+supa.auth.onAuthStateChange((_event, session) => {
+  if (_event === 'INITIAL_SESSION') {
+    // Bu, yukarıdaki getSession() çağrısının zaten işlemiş olabileceği
+    // AYNI ilk durumun (gecikmeli) yansımasıdır — GERÇEK bir giriş/çıkış
+    // değil. _bootHandled zaten true ise burada tekrar işlemeyip
+    // "Ana Sayfa iki kez eşzamanlı yükleniyor" yarışını önlüyoruz.
+    if (_bootHandled) return;
+    _bootHandled = true;
+  }
+  _dispatchSessionChange(_event, session);
 });
 
 /* ==================================================================
