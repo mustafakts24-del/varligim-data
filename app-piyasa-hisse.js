@@ -211,7 +211,14 @@ async function renderIndexGrid(containerId, items) {
   grid.innerHTML = items.map(it => `
     <div class="index-card" data-open-index="${it.code}">
       <div style="display:flex; align-items:center; justify-content:space-between;">
-        <div class="idx-name">${escapeHtml(it.name)}</div>
+        <div>
+          <div class="idx-name">${escapeHtml(it.name)}</div>
+          <!-- DÜZELTME (2026-09, kullanıcı talebi: "endeks kutularında
+               endeks kodu da gösterilsin") — burada UYDURULMUŞ bir kod
+               değil, veriyi zaten bu endeksin fiyatını çekmek için
+               kullanılan GERÇEK it.code alanı gösteriliyor. -->
+          <div class="idx-code" style="font-size:11px; color:var(--text-muted); font-weight:600; letter-spacing:.3px;">${escapeHtml(it.code)}</div>
+        </div>
         ${favoriteStarHtml('endeks', it.code, { name: it.name })}
       </div>
       <div class="idx-value" id="idx-price-${it.code}">…</div>
@@ -301,11 +308,17 @@ async function renderHisseList() {
         </td>
         <td class="num">${fmtTL(s.price)}</td>
         <td class="num">${changeChipHtml(s.changePercent)}</td>
-        <td class="num"><button type="button" class="detail-btn" data-open-stock="${s.symbol}">Detay</button></td>
+        <td class="num">
+          <button type="button" class="quick-add-btn" data-quick-add-stock="${escapeHtml(s.symbol)}" title="Varlığıma Ekle">+</button>
+          <button type="button" class="detail-btn" data-open-stock="${s.symbol}">Detay</button>
+        </td>
       </tr>
     `).join('');
     tbody.querySelectorAll('[data-open-stock]').forEach(btn => {
       btn.addEventListener('click', () => openStockDetail(btn.dataset.openStock));
+    });
+    tbody.querySelectorAll('[data-quick-add-stock]').forEach(btn => {
+      btn.addEventListener('click', () => quickAddToPortfolio('hisse', btn.dataset.quickAddStock));
     });
     return;
   }
@@ -329,11 +342,17 @@ async function renderHisseList() {
       </td>
       <td class="num" id="hisse-price-${s.symbol}">…</td>
       <td class="num" id="hisse-chg-${s.symbol}">…</td>
-      <td class="num"><button type="button" class="detail-btn" data-open-stock="${s.symbol}">Detay</button></td>
+      <td class="num">
+        <button type="button" class="quick-add-btn" data-quick-add-stock="${escapeHtml(s.symbol)}" title="Varlığıma Ekle">+</button>
+        <button type="button" class="detail-btn" data-open-stock="${s.symbol}">Detay</button>
+      </td>
     </tr>
   `).join('');
   tbody.querySelectorAll('[data-open-stock]').forEach(btn => {
     btn.addEventListener('click', () => openStockDetail(btn.dataset.openStock));
+  });
+  tbody.querySelectorAll('[data-quick-add-stock]').forEach(btn => {
+    btn.addEventListener('click', () => quickAddToPortfolio('hisse', btn.dataset.quickAddStock));
   });
   loadMoreBtn.style.display = filtered.length > hisseVisibleCount ? '' : 'none';
 
