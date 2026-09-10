@@ -71,6 +71,59 @@ function goToVarligimSubtab(subtabKey) {
   if (chip) chip.click();
 }
 
+/* ------------------------------------------------------------------
+ * FAZ 2 — PİYASA LİSTELERİNDEKİ "+" (HIZLI VARLIĞIMA EKLE)
+ * ------------------------------------------------------------------
+ * Kasıtlı olarak YENİ bir form/modal/Supabase-yazma yolu YOK: mevcut
+ * Varlığım sayfasındaki "Ekle" formları (Hisse/Emtia/Fon/Kripto/
+ * Döviz/VİOP) zaten misafir-güvenli (bkz. app-guest.js — supa.from/
+ * supa.auth.getUser misafir modunda sessionStorage'a yönlendiriliyor)
+ * ve güncel fiyatı otomatik dolduruyor ama kullanıcı isterse elle
+ * değiştirebiliyor (bkz. app-varligim.js — bindVarligimAutoCost).
+ * "+" butonu sadece o mevcut formu açıp enstrümanı ÖN-SEÇİYOR; "Ekle"
+ * butonuna basmadan hiçbir şey kaydedilmez, giriş ZORUNLU DEĞİLDİR
+ * (misafir kullanıcı da aynı formu kullanabilir).
+ * ------------------------------------------------------------------ */
+const QUICK_ADD_FIELD_MAP = {
+  emtia:  { subtab: 'emtia',       fieldId: 'newCommoditySearch',        qtyId: 'newCommodityAmount' },
+  hisse:  { subtab: 'hisse',       fieldId: 'newStockSelect',            qtyId: 'newLot' },
+  fon:    { subtab: 'fon',         fieldId: 'newFundCode',               qtyId: 'newFundUnits' },
+  kripto: { subtab: 'kripto',      fieldId: 'newCryptoSelect',           qtyId: 'newCryptoAmount' },
+  doviz:  { subtab: 'nakit-doviz', fieldId: 'newVarligimCurrencySearch', qtyId: 'newVarligimCurrencyAmount' },
+  viop:   { subtab: 'viop',        fieldId: 'newViopSymbol',             qtyId: 'newViopLot' }
+};
+
+function quickAddToPortfolio(category, value) {
+  const cfg = QUICK_ADD_FIELD_MAP[category];
+  if (!cfg || !value) return;
+
+  goToVarligimSubtab(cfg.subtab);
+
+  const field = document.getElementById(cfg.fieldId);
+  if (field) {
+    field.value = value;
+    if (field.tagName === 'SELECT') {
+      // Hisse/Kripto: mevcut "change" dinleyicisi otomatik fiyat
+      // doldurmayı zaten tetikliyor (stockAutoCost/cryptoAutoCost).
+      field.dispatchEvent(new Event('change', { bubbles: true }));
+    } else {
+      // Emtia/Döviz: "input" dinleyicisi debounce ile resolve ediyor.
+      // Fon: "input" dinleyicisi fon kodunu arayıp adı otomatik dolduruyor.
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+      // VİOP sembol alanı "blur" olayında fiyatı çekiyor.
+      if (category === 'viop') field.dispatchEvent(new Event('blur', { bubbles: true }));
+    }
+  }
+
+  const qtyField = document.getElementById(cfg.qtyId);
+  if (qtyField) {
+    setTimeout(() => {
+      qtyField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      qtyField.focus();
+    }, 150);
+  }
+}
+
 document.addEventListener('click', (e) => {
   const card = e.target.closest('.stat-card[data-cat-key]');
   if (!card) return;
@@ -191,6 +244,18 @@ async function loadExtraTickerGrid(containerId, tickers) {
   await Promise.all(tickers.map(async t => {
     const valueEl = document.getElementById(`ticker2-value-${t.id}`);
     const chipEl = document.getElementById(`ticker2-chip-${t.id}`);
+    // DÜZELTME (2026-09, "Ana Sayfa ilk açılışta yüklenmiyor" hata
+    // ayıklaması sırasında bulunan yan etki): bu fonksiyon aynı
+    // containerId için eşzamanlı (üst üste binen) iki çağrıyla
+    // çalıştırılırsa, ikinci çağrı `grid.dataset.built` bayrağını zaten
+    // '1' bulup kutuları yeniden KURMADAN doğrudan buraya geçebilir —
+    // bu durumda getElementById henüz mevcut olmayan bir öğe için null
+    // dönebilir ve `valueEl.textContent = ...` sayfanın TAMAMEN
+    // asılı kalmasına (loadHomePage()'in sessizce hata durumuna
+    // düşmesine) neden olurdu. Kök neden (onAuthStateChange'in ilk
+    // bildirimi kaçırması → olası çift tetikleme) app-core.js'de
+    // düzeltildi; bu koruma yalnızca ek bir güvenlik ağı.
+    if (!valueEl || !chipEl) return;
     let quote = null;
     try {
       quote = await t.fetcher();
