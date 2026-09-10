@@ -554,9 +554,15 @@
             <span><span class="msr">account_balance</span> Güncel Banka Kredi Oranları</span>
             <button class="btn outline small" id="creditBankRefreshBtn" type="button">Yenile</button>
           </div>
-          <div class="calc-inline-row">
-            <label for="creditBankAmount">Kredi tutarı (₺)</label>
-            <input id="creditBankAmount" type="text" inputmode="decimal" class="amt-grouped" value="500.000" />
+          <div class="calc-inline-row" style="max-width:520px; display:flex; gap:16px; flex-wrap:wrap;">
+            <div style="flex:1 1 160px;">
+              <label for="creditBankAmount">Kredi tutarı (₺)</label>
+              <input id="creditBankAmount" type="text" inputmode="decimal" class="amt-grouped" value="500.000" />
+            </div>
+            <div style="flex:1 1 120px;">
+              <label for="creditBankCustomMonths">Vade (ay)</label>
+              <input id="creditBankCustomMonths" type="number" inputmode="numeric" min="1" max="360" step="1" value="12" />
+            </div>
           </div>
           <label for="creditBankType" style="margin-top:10px;">Kredi türü</label>
           <select id="creditBankType">
@@ -623,22 +629,11 @@
 
         <div class="stat-grid" id="budgetSummaryGrid"></div>
 
-        <!-- KULLANICI RAPORU (ekstra kontrol, #126 parite denetimi): mobildeki
-             budget_calendar_screen.dart'ta olan aylık takvim görünümü web'de
-             yoktu. Veri zaten budget_transactions tablosunda mevcut olduğu
-             için yeni bir kaynak gerekmedi — sadece bu görünüm eklendi. -->
-        <div class="card">
-          <div class="section-title"><span class="msr">calendar_view_month</span> Aylık Takvim</div>
-          <div class="budget-calendar-weekdays">
-            <span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span>
-          </div>
-          <div class="budget-calendar-grid" id="budgetCalendarGrid"></div>
-          <div class="budget-calendar-legend">
-            <span class="budget-calendar-legend-item"><span class="dot pos"></span>Gelir</span>
-            <span class="budget-calendar-legend-item"><span class="dot neg"></span>Gider</span>
-          </div>
-        </div>
-
+        <!-- DÜZELTME (2026-09-10, kullanıcı isteği: "işlem ekle ve takvimin
+             yerini değiştir") — "İşlem ekle" kartı artık "Aylık Takvim"in
+             ÜSTÜNDE; sadece görsel sıra değişti, iki kart da aynı kalan
+             kimlikleriyle (id'ler) birebir aynı şekilde çalışmaya devam
+             ediyor. -->
         <div class="card">
           <div class="section-title" id="budgetFormTitle">İşlem ekle</div>
           <div class="add-form">
@@ -657,6 +652,22 @@
             </label>
             <button class="btn primary full" id="addBudgetBtn" type="button">Ekle</button>
             <button class="btn outline full" id="cancelBudgetEditBtn" type="button" style="display:none;">İptal</button>
+          </div>
+        </div>
+
+        <!-- KULLANICI RAPORU (ekstra kontrol, #126 parite denetimi): mobildeki
+             budget_calendar_screen.dart'ta olan aylık takvim görünümü web'de
+             yoktu. Veri zaten budget_transactions tablosunda mevcut olduğu
+             için yeni bir kaynak gerekmedi — sadece bu görünüm eklendi. -->
+        <div class="card">
+          <div class="section-title"><span class="msr">calendar_view_month</span> Aylık Takvim</div>
+          <div class="budget-calendar-weekdays">
+            <span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span>
+          </div>
+          <div class="budget-calendar-grid" id="budgetCalendarGrid"></div>
+          <div class="budget-calendar-legend">
+            <span class="budget-calendar-legend-item"><span class="dot pos"></span>Gelir</span>
+            <span class="budget-calendar-legend-item"><span class="dot neg"></span>Gider</span>
           </div>
         </div>
 
@@ -1136,7 +1147,7 @@
 <script src="app-bulten.js?v=20260909"></script>
 <script src="app-home.js?v=20260909-4"></script>
 <script src="app-varliklar.js?v=20260907"></script>
-<script src="app-interest.js?v=20260907-3"></script>
+<script src="app-interest.js?v=20260910"></script>
 <script src="app-butce.js?v=20260902"></script>
 <script src="app-varligim.js?v=20260907"></script>
 <script src="app-ai-analiz.js?v=20260909"></script>
