@@ -136,6 +136,13 @@ document.querySelectorAll('#bultenCategoryChips .filter-chip').forEach(chip => {
   });
 });
 
+// DÜZELTME (2026-09-10, kullanıcı isteği: "kaynaklar kırmızı i işaretiyle
+// gizlensin, sadece imleç üzerine gelince kaynak gösterilsin"): kaynak adı
+// artık meta satırında DOĞRUDAN yazmıyor — küçük, kırmızı, "i" harfli bir
+// rozete dönüştürüldü; kaynak adı yalnızca bu rozetin üzerine gelindiğinde
+// (hover) veya klavyeyle odaklanıldığında (erişilebilirlik için :focus da
+// eklendi) beliren bir araç ipucunda (tooltip) gösteriliyor. Tarih/saat
+// hâlâ doğrudan görünür kalıyor (bu bir "kaynak" değil).
 function openNewsDetail(article) {
   if (!article) return;
   openDetailModal(
@@ -144,9 +151,24 @@ function openNewsDetail(article) {
     ${article.imageUrl ? `<img src="${escapeHtml(article.imageUrl)}" alt="" style="width:100%; border-radius:var(--radius-sm); margin-bottom:14px;" />` : ''}
     <div class="news-card-cat">${escapeHtml(article.category)}</div>
     <h2 style="margin:8px 0 10px; font-size:18px;">${escapeHtml(article.title)}</h2>
-    <div class="news-card-meta" style="margin-bottom:14px;">${escapeHtml(article.source)}${article.publishedAt ? ' · ' + new Date(article.publishedAt).toLocaleString('tr-TR') : ''}</div>
-    ${article.summary ? `<p style="font-size:14px; line-height:1.6; color:var(--text-muted);">${escapeHtml(article.summary)}</p>` : ''}
-    <a class="btn primary full" style="margin-top:16px; display:inline-block; text-align:center;" href="${escapeHtml(article.link)}" target="_blank" rel="noopener noreferrer">Haberin Tamamını Oku</a>
+    <div class="news-card-meta" style="margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+      ${article.publishedAt ? `<span>${new Date(article.publishedAt).toLocaleString('tr-TR')}</span>` : ''}
+      <span class="news-source-badge" tabindex="0">
+        <span class="news-source-badge-icon">i</span>
+        <span class="news-source-tooltip">Kaynak: ${escapeHtml(article.source)}</span>
+      </span>
+    </div>
+    ${article.summary ? `<p style="font-size:14px; line-height:1.6; color:var(--text-muted); white-space:pre-line;">${escapeHtml(article.summary)}</p>` : ''}
+    <!-- DÜZELTME (2026-09-10, kullanıcı isteği: "haberin tamamı okunabilsin,
+         başka siteye yönlendirme olmasın"): yukarıdaki özet artık kaynağın
+         RSS akışında GERÇEKTEN sağladığı tüm metni (1200 karaktere kadar,
+         önceden 400'dü) gösteriyor — yapay bir kısaltma kaldırıldı. Ancak
+         RSS akışları, yayıncının kendi tercihiyle, haberin TAMAMINI değil
+         yalnızca bir özetini sağlıyor; kaynak sitedeki tam metni burada
+         BİREBİR kopyalamak (telif hakkı ihlali olur) yapılmadı — bu yüzden
+         "kaynağında oku" bağlantısı, artık kaynak adını göstermeden,
+         korunuyor. -->
+    <a class="btn primary full" style="margin-top:16px; display:inline-block; text-align:center;" href="${escapeHtml(article.link)}" target="_blank" rel="noopener noreferrer">Kaynağında Devamını Oku</a>
     `
   );
 }
