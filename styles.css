@@ -389,6 +389,19 @@ input::placeholder { color: var(--text-faint); }
 h1.page-title { font-size: 22px; margin: 0 0 4px; }
 .page-lead { color: var(--text-muted); font-size: 13.5px; margin: 0 0 22px; }
 
+/* Faz 4, madde 39: Kredi/Faiz hesaplama bölümlerindeki finansal
+   bilgilendirme uyarısı — nötr/bilgilendirici (uyarı/amber rengi
+   DEĞİL, kullanıcıyı alarma geçirmemesi için .banner-warning'den
+   bilinçli olarak ayrı, sakin bir stil). */
+.disclaimer-note {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  color: var(--text-faint); font-size: 12px; line-height: 1.5;
+  margin: 0 0 18px;
+}
+.disclaimer-note .msr { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
 /* ============================================================
    KARTLAR
    ============================================================ */
@@ -553,6 +566,16 @@ tbody tr:hover { background: var(--bg-elevated); }
 }
 
 .table-wrap { overflow-x: auto; }
+/* DÜZELTME (Faz 4, madde 35 — responsive denetim): tabloda min-width
+ * olmadığından, dar (mobil) ekranlarda `.table-wrap`'in overflow-x:auto
+ * özelliği hiç devreye girmiyordu — tarayıcı tabloyu konteynerin
+ * %100'üne SIKIŞTIRIYOR, bu da Fiyat/Değişim sütunlarının "…" olarak
+ * kesilmesine ve "+"/"Detay" butonlarının okunaksız hale gelmesine
+ * (ör. "Detay" -> "De") yol açıyordu. Artık tablo bu genişliğin altına
+ * inmiyor; dar ekranlarda konteyner yatay olarak kaydırılabiliyor
+ * (sütunlar sıkışmak yerine).
+ */
+.table-wrap table { min-width: 560px; }
 
 /* ============================================================
    FORM GRID (varlık ekleme formları)
@@ -684,6 +707,21 @@ tbody tr:hover { background: var(--bg-elevated); }
   padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
 }
 .detail-btn:hover { color: var(--text); border-color: var(--secondary); }
+
+/* Faz 2: piyasa listelerinde "Detay"ın yanındaki hızlı "Varlığıma Ekle"
+   ("+") butonu.
+   DÜZELTME (Faz 4, madde 35): 28x28px, yaygın kabul edilen asgari
+   dokunma hedefi boyutunun (Apple ~44pt / Material ~48dp) altındaydı.
+   Görsel boyut değişmeden (padding ile) gerçek dokunma alanı büyütüldü
+   — komşu "Detay" butonuna yanlışlıkla basma riskini de azaltır. */
+.quick-add-btn {
+  background: var(--primary); border: 1px solid var(--primary);
+  color: #fff; border-radius: var(--radius-pill);
+  width: 34px; height: 34px; padding: 0; font-size: 17px; font-weight: 700;
+  cursor: pointer; line-height: 1; margin-right: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.quick-add-btn:hover { opacity: 0.88; }
 
 .load-more-row { text-align: center; margin-top: 14px; }
 
@@ -979,6 +1017,19 @@ tbody tr:hover { background: var(--bg-elevated); }
 .news-card-cat { font-size: 11px; font-weight: 700; color: var(--tertiary); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; }
 .news-card-title { font-size: 14.5px; font-weight: 700; line-height: 1.35; margin-bottom: 8px; }
 .news-card-meta { font-size: 11.5px; color: var(--text-faint); margin-top: auto; }
+
+/* DORMANT reklam alanı altyapısı (Faz 3, madde 28-33) — gerçek bir
+   reklam ağı henüz bağlı değil; bilinçli olarak "reklam" gibi değil,
+   açıkça bir yer tutucu gibi görünecek şekilde tasarlandı (kesikli
+   çerçeve + "yakında" etiketi) ki yanıltıcı olmasın. */
+.ad-slot-placeholder {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  border: 1px dashed var(--border); border-radius: var(--radius-md);
+  padding: 14px 16px; margin-bottom: 14px;
+  color: var(--text-faint); font-size: 12.5px; font-weight: 600;
+  background: var(--bg-elevated);
+}
+.ad-slot-placeholder .msr { font-size: 17px; }
 
 /* ============================================================
    ANA SAYFA (FAZ 11)
@@ -1367,6 +1418,19 @@ tbody tr:hover { background: var(--bg-elevated); }
   #storeBadgeBar { right: 10px; bottom: 10px; gap: 6px; }
   .store-badge { padding: 7px 10px 7px 8px; }
   .store-badge-text strong { font-size: 11.5px; }
+}
+/* DÜZELTME (Faz 4, madde 35): dar ekranlarda bu rozetler `position:
+ * fixed` olduğu için sayfa kaydırıldıkça alttaki kart içeriğinin
+ * üzerine biniyor, okunabilirliği bozuyordu (özellikle Kredi/Faiz
+ * Hesaplama sonuç kartı gibi sağ-alt köşeye denk gelen içerikte).
+ * Rozet KALDIRILMADI (mevcut özellik korunuyor) — yalnızca çok dar
+ * ekranlarda metin etiketi gizlenip ikon-only, daha küçük bir daireye
+ * küçültülerek örtme alanı belirgin şekilde azaltıldı; buton yine de
+ * dokunmaya uygun boyutta ve tıklanabilir kalıyor. */
+@media (max-width: 480px) {
+  .store-badge { width: 38px; height: 38px; padding: 0; justify-content: center; border-radius: 50%; }
+  .store-badge-text { display: none; }
+  .store-badge svg { width: 18px; height: 18px; }
 }
 
 /* ============================================================
