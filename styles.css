@@ -69,6 +69,14 @@ html, body {
   color: var(--text);
   font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* DÜZELTME (2026-09-10, kullanıcı raporu: sayı kutusu ok tuşlarının
+     ARKA PLANI beyaz/açık renk görünüyordu — bkz. "Vade (ay)" kutusu).
+     Uygulama HER YERDE koyu tema kullandığı için tarayıcıya bunu
+     bildiriyoruz: böylece sayı kutusu ok tuşları, tarih/ay seçici
+     takvim ikonu, onay kutusu gibi tarayıcının KENDİ çizdiği (CSS ile
+     doğrudan boyanamayan) native kontroller de otomatik olarak koyu
+     temaya göre çiziliyor — sayfanın her yerinde, tek satırla. */
+  color-scheme: dark;
 }
 
 body { min-height: 100vh; }
@@ -186,6 +194,12 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus { border-color: var(--secondary); }
 input::placeholder { color: var(--text-faint); }
+
+/* Onay kutusunun İŞARETLİ hali varsayılan tarayıcı mavisi yerine
+   uygulamanın marka rengini kullansın (color-scheme:dark zaten
+   kutunun kendisini koyu temaya göre çiziyor — bu yalnızca vurgu
+   rengini markayla eşleştiriyor). */
+input[type="checkbox"] { accent-color: var(--primary); width: auto; }
 
 .btn {
   display: inline-flex;
