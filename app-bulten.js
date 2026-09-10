@@ -1,15 +1,156 @@
 /* ==================================================================
  * app-bulten.js
- * "Bülten" sayfası: mobil uygulamayla AYNI 5 RSS kaynağından
- * (bulletin_screen.dart) haberler — price-proxy'nin yeni type=news
- * ucu üzerinden (server-side fetch, CORS ve User-Agent gereksinimi
- * nedeniyle tarayıcıdan doğrudan çekilemiyor).
+ * "Bülten" sayfası: mobil uygulamayla AYNI, PAYLAŞILAN merkezi haber
+ * deposundan (price-proxy'nin type=news ucu -> Supabase news_articles
+ * tablosu, 15 dakikada bir Supabase Cron ile dolduruluyor) haberler.
+ *
+ * DÜZELTME (2026-09-10, yeni özellik: "favori şirketler"): giriş yapmış
+ * kullanıcılar Bülten'de takip etmek istedikleri şirket/konu adlarını
+ * ekleyebilir (Supabase favorite_companies tablosu — mobille AYNI
+ * tablo). Bu şirketlerle eşleşen haberler sunucu tarafında işaretlenip
+ * "Favori Haberler" bölümünde en üste sabitlenir.
  * ================================================================== */
 
 let bultenArticles = [];
+let bultenFavoriteMatches = [];
 let bultenActiveCategory = 'all';
 let bultenSearchText = '';
 let bultenAutoRefreshTimer = null;
+let bultenFavoriteCompanies = [];
+
+async function loadBultenFavoriteCompanies() {
+  const { data: { user } } = await supa.auth.getUser();
+  const guestEl = document.getElementById('bultenFavGuest');
+  const manageEl = document.getElementById('bultenFavManage');
+
+  if (!user) {
+    bultenFavoriteCompanies = [];
+    if (guestEl) guestEl.style.display = 'block';
+    if (manageEl) manageEl.style.display = 'none';
+    return;
+  }
+
+  if (guestEl) guestEl.style.display = 'none';
+  if (manageEl) manageEl.style.display = 'block';
+
+  const { data, error } = await supa
+    .from('favorite_companies')
+    .select('company_name')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    bultenFavoriteCompanies = [];
+    return;
+  }
+
+  bultenFavoriteCompanies = (data || []).map(r => r.company_name);
+  renderBultenFavChips();
+}
+
+function renderBultenFavChips() {
+  const wrap = document.getElementById('bultenFavChips');
+  if (!wrap) return;
+  if (bultenFavoriteCompanies.length === 0) {
+    wrap.innerHTML = '<span style="font-size:11.5px; color:var(--text-faint);">Henüz favori şirket eklemedin.</span>';
+    return;
+  }
+  wrap.innerHTML = bultenFavoriteCompanies.map(name => `
+    <span class="filter-chip active" style="display:inline-flex; align-items:center; gap:6px;" data-fav-chip="${escapeHtml(name)}">
+      ${escapeHtml(name)}
+      <span data-fav-remove="${escapeHtml(name)}" style="cursor:pointer; font-weight:bold;">×</span>
+    </span>
+  `).join('');
+  wrap.querySelectorAll('[data-fav-remove]').forEach(el => {
+    el.addEventListener('click', () => removeBultenFavoriteCompany(el.dataset.favRemove));
+  });
+}
+
+async function addBultenFavoriteCompany() {
+  const input = document.getElementById('bultenFavCompanyInput');
+  const name = (input?.value || '').trim();
+  if (!name) return;
+
+  const { data: { user } } = await supa.auth.getUser();
+  if (!user) return;
+
+  const { error } = await supa.from('favorite_companies').insert({
+    user_id: user.id,
+    company_name: name
+  });
+
+  if (error) {
+    // Aynı şirket zaten eklenmişse (unique index) sessizce yoksay;
+    // başka bir hata varsa kullanıcıya bildir.
+    if (!(error.message || '').toLowerCase().includes('duplicate')) {
+      showMsg('Şirket eklenemedi: ' + error.message, 'error');
+      return;
+    }
+  }
+
+  if (input) input.value = '';
+  await loadBultenFavoriteCompanies();
+  await refreshBultenArticles();
+}
+
+async function removeBultenFavoriteCompany(name) {
+  const { data: { user } } = await supa.auth.getUser();
+  if (!user) return;
+
+  await supa
+    .from('favorite_companies')
+    .delete()
+    .eq('user_id', user.id)
+    .ilike('company_name', name);
+
+  await loadBultenFavoriteCompanies();
+  await refreshBultenArticles();
+}
+
+document.getElementById('bultenFavAddBtn')?.addEventListener('click', addBultenFavoriteCompany);
+document.getElementById('bultenFavCompanyInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addBultenFavoriteCompany();
+});
+document.getElementById('bultenFavLoginLink')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  if (typeof openAuthOverlay === 'function') {
+    openAuthOverlay('login', {
+      title: 'Favori şirket takip et',
+      lead: 'Bülten\'de takip ettiğin şirketlerden haber geldiğinde en üstte görmek için giriş yap.'
+    });
+  }
+});
+
+function bultenFavoritesParam() {
+  return bultenFavoriteCompanies.length ? '&favorites=' + encodeURIComponent(bultenFavoriteCompanies.join(',')) : '';
+}
+
+async function refreshBultenArticles() {
+  const result = await fetchPriceProxy('type=news' + bultenFavoritesParam());
+  const all = result.articles || [];
+  bultenFavoriteMatches = all.filter(a => a.isFavoriteMatch);
+  bultenArticles = all.filter(a => !a.isFavoriteMatch);
+  const ts = document.getElementById('bultenLastUpdated');
+  if (ts) ts.textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
+  renderBultenGrid();
+  renderBultenFavGrid();
+}
+
+function renderBultenFavGrid() {
+  const section = document.getElementById('bultenFavSection');
+  const grid = document.getElementById('bultenFavGrid');
+  if (!section || !grid) return;
+  if (bultenFavoriteMatches.length === 0) {
+    section.style.display = 'none';
+    grid.innerHTML = '';
+    return;
+  }
+  section.style.display = 'block';
+  grid.innerHTML = bultenFavoriteMatches.map((a, idx) => bultenCardHtml(a, `data-open-fav-news="${idx}"`)).join('');
+  grid.querySelectorAll('[data-open-fav-news]').forEach(card => {
+    card.addEventListener('click', () => openNewsDetail(bultenFavoriteMatches[Number(card.dataset.openFavNews)]));
+  });
+}
 
 async function loadBultenPage() {
   const grid = document.getElementById('bultenGrid');
@@ -17,10 +158,16 @@ async function loadBultenPage() {
   grid.innerHTML = '';
   emptyState.style.display = 'none';
   try {
-    const result = await cachedFetch('news:all', 5 * 60 * 1000, () => fetchPriceProxy('type=news'));
-    bultenArticles = result.articles || [];
+    await loadBultenFavoriteCompanies();
+  } catch (e) { /* misafirse veya hata olursa favori bölümü sessizce gizli kalır */ }
+  try {
+    const result = await cachedFetch('news:' + bultenFavoriteCompanies.join(','), 5 * 60 * 1000, () => fetchPriceProxy('type=news' + bultenFavoritesParam()));
+    const all = result.articles || [];
+    bultenFavoriteMatches = all.filter(a => a.isFavoriteMatch);
+    bultenArticles = all.filter(a => !a.isFavoriteMatch);
   } catch (e) {
     bultenArticles = [];
+    bultenFavoriteMatches = [];
   }
   const tsEl = document.getElementById('bultenLastUpdated');
   if (tsEl) tsEl.textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
@@ -30,7 +177,8 @@ async function loadBultenPage() {
   if (typeof renderAdSlot === 'function') {
     renderAdSlot('bultenAdSlot', 'bulten-top').catch(() => {});
   }
-  if (bultenArticles.length === 0) {
+  renderBultenFavGrid();
+  if (bultenArticles.length === 0 && bultenFavoriteMatches.length === 0) {
     emptyState.textContent = 'Şu anda gösterilecek haber yok.';
     emptyState.style.display = 'block';
     return;
@@ -46,11 +194,7 @@ async function loadBultenPage() {
       const bultenPage = document.getElementById('page-bulten');
       if (!bultenPage || !bultenPage.classList.contains('active')) return;
       try {
-        const result = await fetchPriceProxy('type=news');
-        bultenArticles = result.articles || [];
-        const ts = document.getElementById('bultenLastUpdated');
-        if (ts) ts.textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
-        renderBultenGrid();
+        await refreshBultenArticles();
       } catch (e) { /* sessizce atla, mevcut liste ekranda kalır */ }
     }, 15 * 60 * 1000);
   }
@@ -72,6 +216,24 @@ function bultenRelativeTime(publishedAt) {
   if (diffDay < 7) return `${diffDay} gün önce`;
   const two = (n) => String(n).padStart(2, '0');
   return `${two(d.getDate())}.${two(d.getMonth() + 1)}.${d.getFullYear()}`;
+}
+
+const BULTEN_CAT_LABELS = { ekonomi: 'Ekonomi', borsa: 'Borsa', emtia: 'Emtia', doviz: 'Döviz', kap: 'KAP' };
+
+// Normal grid ile "Favori Haberler" grid'i AYNI kart görünümünü
+// kullanır (DRY) — extraAttr, çağıran tarafın kendi tıklama olay
+// dinleyicisini bağlayabilmesi için karta eklenen data-* niteliğidir.
+function bultenCardHtml(a, extraAttr) {
+  return `
+    <div class="news-card" ${extraAttr}>
+      ${a.imageUrl ? `<img src="${escapeHtml(a.imageUrl)}" alt="" loading="lazy" />` : ''}
+      <div class="news-card-body">
+        <div class="news-card-cat">${escapeHtml(BULTEN_CAT_LABELS[a.category] || a.category)}</div>
+        <div class="news-card-title">${escapeHtml(a.title)}</div>
+        <div class="news-card-meta">${bultenRelativeTime(a.publishedAt)}</div>
+      </div>
+    </div>
+  `;
 }
 
 function renderBultenGrid() {
@@ -97,7 +259,6 @@ function renderBultenGrid() {
     return;
   }
   emptyState.style.display = 'none';
-  const catLabels = { ekonomi: 'Ekonomi', borsa: 'Borsa', emtia: 'Emtia', doviz: 'Döviz', kap: 'KAP' };
   // DÜZELTME (Faz 3, madde 28-33 — parite denetimi): mobildeki
   // NewsArticleCard (bulletin_screen.dart) haber KARTINDA kaynak adını
   // hiç GÖSTERMİYOR — yalnızca göreli bir zaman ("X dk önce") gösteriyor;
@@ -107,16 +268,7 @@ function renderBultenGrid() {
   // ile davranış farkı yaratıyordu. Kart meta satırı artık mobildeki
   // gibi yalnızca göreli zamanı gösteriyor; kaynak adı openNewsDetail()
   // içindeki detay modalında (mobildeki gibi) korunuyor.
-  grid.innerHTML = filtered.map((a, idx) => `
-    <div class="news-card" data-open-news="${idx}">
-      ${a.imageUrl ? `<img src="${escapeHtml(a.imageUrl)}" alt="" loading="lazy" />` : ''}
-      <div class="news-card-body">
-        <div class="news-card-cat">${escapeHtml(catLabels[a.category] || a.category)}</div>
-        <div class="news-card-title">${escapeHtml(a.title)}</div>
-        <div class="news-card-meta">${bultenRelativeTime(a.publishedAt)}</div>
-      </div>
-    </div>
-  `).join('');
+  grid.innerHTML = filtered.map((a, idx) => bultenCardHtml(a, `data-open-news="${idx}"`)).join('');
   grid.querySelectorAll('[data-open-news]').forEach(card => {
     card.addEventListener('click', () => openNewsDetail(filtered[Number(card.dataset.openNews)]));
   });
