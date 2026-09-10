@@ -52,13 +52,19 @@ async function loadEmtiaMarketPage() {
       </td>
       <td class="num" id="emtia-price-${item.key}">…</td>
       <td class="num" id="emtia-chg-${item.key}">…</td>
-      <td class="num"><button type="button" class="detail-btn" data-open-commodity="${item.key}">Detay</button></td>
+      <td class="num">
+        <button type="button" class="quick-add-btn" data-quick-add-commodity="${item.key}" title="Varlığıma Ekle">+</button>
+        <button type="button" class="detail-btn" data-open-commodity="${item.key}">Detay</button>
+      </td>
     </tr>
   `).join('');
   emptyState.style.display = 'none';
 
   tbody.querySelectorAll('[data-open-commodity]').forEach(btn => {
     btn.addEventListener('click', () => openCommodityDetail(btn.dataset.openCommodity));
+  });
+  tbody.querySelectorAll('[data-quick-add-commodity]').forEach(btn => {
+    btn.addEventListener('click', () => quickAddToPortfolio('emtia', btn.dataset.quickAddCommodity));
   });
 
   let anySuccess = false;
