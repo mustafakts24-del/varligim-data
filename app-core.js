@@ -809,25 +809,58 @@ document.getElementById('sidebarOverlay').addEventListener('click', closeMobileS
  * durumunu) önler.
  * ------------------------------------------------------------------ */
 let _bootHandled = false;
-function _dispatchSessionChange(_event, session) {
+// DÜZELTME (2026-09-10, "Ana Sayfa ilk açılışta boş görünüyor" — canlı
+// sitede doğrulanan GERÇEK kök neden): supa.auth.getSession() kayıtlı
+// oturum YOKKEN ağ isteği gerekmediği için mikro-görev kuyruğunda çok
+// hızlı çözülebiliyor — bu da .then() callback'inin, tarayıcı henüz
+// SIRADAKİ <script> dosyalarını (app-guest.js VE en az app-home.js dahil,
+// zira sayfa yükleyicileri `registerPageLoader(...)` ile ancak KENDİ
+// dosyaları çalışınca kaydoluyor) yüklemeden ÖNCE çalışmasına yol
+// açabiliyordu. O anda `handleSessionChange` henüz tanımlı olmadığı için
+// eski kod yalnızca kabuğu (#appShell) görünür yapıp SESSİZCE vazgeçiyordu
+// — finishBoot()/showPage('home') hiç çağrılmadığı için Ana Sayfa
+// verileri, misafir footer'ı vb. sonsuza kadar ilk (boş/…) durumunda
+// kalıyordu. Artık ilk dispatch, DOM tamamen ayrıştırılıp SIRADAKİ TÜM
+// senkron <script> etiketleri (dolayısıyla tüm registerPageLoader
+// çağrıları) çalışana kadar (`document.readyState !== 'loading'` /
+// DOMContentLoaded) erteleniyor; ayrıca ekstra güvenlik için
+// handleSessionChange henüz tanımlı değilse kısa aralıklarla tekrar
+// deneniyor.
+function _dispatchSessionChange(_event, session, _retry) {
   if (typeof handleSessionChange === 'function') {
     handleSessionChange(_event, session);
   } else {
-    // app-guest.js beklenmedik şekilde yüklenmediyse bile uygulama
-    // kilitlenmesin diye düşük seviye bir yedek.
+    // Beklenmedik biçimde app-guest.js hâlâ yüklenmemişse uygulama
+    // kilitlenmesin diye kabuğu hemen göster, birkaç ms sonra tekrar dene.
     appShell.style.display = 'flex';
+    const attempt = (_retry || 0) + 1;
+    if (attempt <= 100) { // ~3 saniyeye kadar (100 × 30ms) tekrar dene
+      setTimeout(() => _dispatchSessionChange(_event, session, attempt), 30);
+    }
+  }
+}
+function _runInitialDispatch(session) {
+  // Sayfadaki TÜM senkron <script src> etiketleri (app-home.js'in
+  // registerPageLoader('home', ...) çağrısı dahil) çalışıp DOM tamamen
+  // ayrıştırılana kadar bekle — aksi halde showPage('home') doğru anda
+  // çağrılsa bile henüz kayıtlı bir yükleyici bulamayıp sessizce hiçbir
+  // şey yapmayabilir.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => _dispatchSessionChange('INITIAL_SESSION', session), { once: true });
+  } else {
+    _dispatchSessionChange('INITIAL_SESSION', session);
   }
 }
 supa.auth.getSession()
   .then(({ data }) => {
     if (_bootHandled) return;
     _bootHandled = true;
-    _dispatchSessionChange('INITIAL_SESSION', data ? data.session : null);
+    _runInitialDispatch(data ? data.session : null);
   })
   .catch(() => {
     if (_bootHandled) return;
     _bootHandled = true;
-    _dispatchSessionChange('INITIAL_SESSION', null);
+    _runInitialDispatch(null);
   });
 supa.auth.onAuthStateChange((_event, session) => {
   if (_event === 'INITIAL_SESSION') {
