@@ -62,11 +62,17 @@ async function renderDovizList() {
       </td>
       <td class="num" id="doviz-price-${c.code}">…</td>
       <td class="num" id="doviz-chg-${c.code}">…</td>
-      <td class="num"><button type="button" class="detail-btn" data-open-doviz="${c.code}">Detay</button></td>
+      <td class="num">
+        <button type="button" class="quick-add-btn" data-quick-add-doviz="${escapeHtml(c.code)}" title="Varlığıma Ekle">+</button>
+        <button type="button" class="detail-btn" data-open-doviz="${c.code}">Detay</button>
+      </td>
     </tr>
   `).join('');
   tbody.querySelectorAll('[data-open-doviz]').forEach(btn => {
     btn.addEventListener('click', () => openDovizDetail(btn.dataset.openDoviz));
+  });
+  tbody.querySelectorAll('[data-quick-add-doviz]').forEach(btn => {
+    btn.addEventListener('click', () => quickAddToPortfolio('doviz', btn.dataset.quickAddDoviz));
   });
   await Promise.all(filtered.map(async (c) => {
     const priceEl = document.getElementById(`doviz-price-${c.code}`);
