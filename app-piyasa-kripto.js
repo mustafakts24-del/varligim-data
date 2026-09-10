@@ -157,11 +157,17 @@ function renderKriptoList() {
       </td>
       <td class="num">${fmtTL(c.current_price)}</td>
       <td class="num">${changeChipHtml(c.price_change_percentage_24h)}</td>
-      <td class="num"><button type="button" class="detail-btn" data-open-crypto="${escapeHtml(c.id)}">Detay</button></td>
+      <td class="num">
+        <button type="button" class="quick-add-btn" data-quick-add-crypto="${escapeHtml(c.id)}" title="Varlığıma Ekle">+</button>
+        <button type="button" class="detail-btn" data-open-crypto="${escapeHtml(c.id)}">Detay</button>
+      </td>
     </tr>
   `).join('');
   tbody.querySelectorAll('[data-open-crypto]').forEach(btn => {
     btn.addEventListener('click', () => openCryptoDetail(btn.dataset.openCrypto));
+  });
+  tbody.querySelectorAll('[data-quick-add-crypto]').forEach(btn => {
+    btn.addEventListener('click', () => quickAddToPortfolio('kripto', btn.dataset.quickAddCrypto));
   });
 }
 
