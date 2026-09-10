@@ -9,7 +9,7 @@
   name="description"
   content="Varlığım ile hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı üye olmadan deneyin; verilerinizi kaydetmek için istediğiniz zaman ücretsiz hesap oluşturun."
 />
-<link rel="stylesheet" href="styles.css?v=20260909" />
+<link rel="stylesheet" href="styles.css?v=20260909-4" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -443,6 +443,7 @@
       <div class="page" id="page-faiz">
         <h1 class="page-title">Faiz (Mevduat) Hesaplayıcı</h1>
         <p class="page-lead">Anapara, oran ve vadeyi gir; vade sonu net getiriyi hesapla. Alttaki liste mevcut mevduat kayıtlarını gösterir.</p>
+        <div class="disclaimer-note"><span class="msr">info</span> Bilgilendirme amaçlıdır. Gerçek mevduat koşulları banka, müşteri profili, güncel faiz oranları ve yürürlükteki mevzuata göre değişebilir; burada gösterilen hiçbir sonuç kesin bir banka teklifi değildir.</div>
         <div class="calc-grid">
           <div class="card">
             <div class="section-title"><span class="msr">calculate</span> Hesaplayıcı</div>
@@ -518,6 +519,7 @@
       <div class="page" id="page-kredi">
         <h1 class="page-title">Kredi Hesaplama</h1>
         <p class="page-lead">Bu araç yalnızca bir hesaplayıcıdır; hesabına herhangi bir kayıt eklemez.</p>
+        <div class="disclaimer-note"><span class="msr">info</span> Bilgilendirme amaçlıdır. Gerçek kredi koşulları banka, müşteri profili, güncel faiz oranları ve yürürlükteki mevzuata göre değişebilir; burada gösterilen hiçbir sonuç kesin bir kredi onayı veya banka teklifi değildir.</div>
         <div class="calc-grid">
           <div class="card">
             <div class="section-title"><span class="msr">calculate</span> Kredi Bilgileri</div>
@@ -677,6 +679,13 @@
       <div class="page" id="page-favoriler">
         <h1 class="page-title">Favoriler</h1>
         <p class="page-lead">Favorilere eklediğin enstrümanlar. Mobil uygulamayla otomatik senkronize.</p>
+        <!-- Misafir/girişsiz kullanıcı bilgilendirmesi (2026-09, misafir
+             kullanım genişletmesi) — giriş yapmış kullanıcıda JS ile
+             gizlenir (bkz. app-guest.js updateGuestBannersVisibility). -->
+        <div class="card" id="favoriGuestBanner" style="display:none; margin-bottom:14px;">
+          <p style="margin:0 0 10px; font-size:13px; color:var(--text-muted);">Favorilerini kalıcı olarak kullanmak için giriş yap veya ücretsiz hesap oluştur.</p>
+          <button type="button" class="btn primary small" id="favoriGuestLoginBtn">Giriş Yap / Kayıt Ol</button>
+        </div>
         <input id="favoriSearchInput" type="text" autocomplete="off" placeholder="Favorilerde ara..." style="width:100%; margin-bottom:10px;" />
         <div class="chip-row" id="favoriCategoryChips">
           <div class="filter-chip active" data-cat="all">Tümü</div>
@@ -706,6 +715,13 @@
       <div class="page" id="page-varligim">
         <h1 class="page-title">Varlığım</h1>
         <p class="page-lead">Tüm varlık kategorilerinin tek merkezde yönetimi. Bu liste, telefonundaki Varlığım uygulamasıyla aynı hesaba bağlı ve otomatik senkronize.</p>
+        <!-- Misafir/girişsiz kullanıcı bilgilendirmesi (2026-09, misafir
+             kullanım genişletmesi) — giriş yapmış kullanıcıda JS ile
+             gizlenir (bkz. app-guest.js updateGuestBannersVisibility). -->
+        <div class="card" id="varligimGuestBanner" style="display:none; margin-bottom:14px;">
+          <p style="margin:0 0 10px; font-size:13px; color:var(--text-muted);">Varlıklarını kalıcı olarak kaydetmek ve tüm cihazlarından erişmek için giriş yap veya ücretsiz hesap oluştur.</p>
+          <button type="button" class="btn primary small" id="varligimGuestLoginBtn">Giriş Yap / Kayıt Ol</button>
+        </div>
 
         <div class="subtab-row">
           <div class="subtab-chip active" data-subtab="nakit-doviz">Nakit ve Döviz</div>
@@ -1060,7 +1076,12 @@
           <div class="filter-chip" data-cat="doviz">Döviz</div>
           <div class="filter-chip" data-cat="kap">KAP</div>
         </div>
-        <div id="bultenEmptyState" class="empty" style="display:none;">Haberler şu anda alınamıyor.</div>
+        <!-- DORMANT reklam alanı (Faz 3, madde 28-33): gerçek bir reklam
+             ağı henüz bağlanmadı; bu yalnızca ileride kullanılacak
+             altyapı. Premium kullanıcılarda otomatik gizlenir — bkz.
+             app-premium.js -> renderAdSlot(). -->
+        <div id="bultenAdSlot" style="display:none;"></div>
+        <div id="bultenEmptyState" class="empty" style="display:none;">Şu anda gösterilecek haber yok.</div>
         <div class="news-grid" id="bultenGrid"></div>
       </div>
 
@@ -1100,25 +1121,25 @@
   </button>
 </div>
 
-<script src="app-core.js?v=20260909-2"></script>
-<script src="app-guest.js?v=20260909"></script>
+<script src="app-core.js?v=20260909-3"></script>
+<script src="app-guest.js?v=20260909-2"></script>
 <script src="app-logos.js?v=20260904"></script>
 <script src="app-charts.js?v=20260904-4"></script>
 <script src="bist-stocks-data.js?v=20260902"></script>
-<script src="app-piyasa-emtia.js?v=20260903-2"></script>
-<script src="app-piyasa-hisse.js?v=20260905-2"></script>
-<script src="app-piyasa-fon.js?v=20260907"></script>
-<script src="app-piyasa-kripto.js?v=20260907"></script>
-<script src="app-piyasa-doviz.js?v=20260904-2"></script>
-<script src="app-piyasa-viop.js?v=20260902"></script>
+<script src="app-piyasa-emtia.js?v=20260903-3"></script>
+<script src="app-piyasa-hisse.js?v=20260905-4"></script>
+<script src="app-piyasa-fon.js?v=20260909"></script>
+<script src="app-piyasa-kripto.js?v=20260909"></script>
+<script src="app-piyasa-doviz.js?v=20260904-3"></script>
+<script src="app-piyasa-viop.js?v=20260909"></script>
 <script src="app-favoriler.js?v=20260903-2"></script>
-<script src="app-bulten.js?v=20260902"></script>
-<script src="app-home.js?v=20260907-3"></script>
+<script src="app-bulten.js?v=20260909"></script>
+<script src="app-home.js?v=20260909-4"></script>
 <script src="app-varliklar.js?v=20260907"></script>
 <script src="app-interest.js?v=20260907-3"></script>
 <script src="app-butce.js?v=20260902"></script>
 <script src="app-varligim.js?v=20260907"></script>
 <script src="app-ai-analiz.js?v=20260909"></script>
-<script src="app-premium.js?v=20260908"></script>
+<script src="app-premium.js?v=20260909"></script>
 </body>
 </html>
