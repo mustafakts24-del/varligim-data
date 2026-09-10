@@ -121,4 +121,72 @@ async function loadPremiumPage() {
   }
 }
 
+/* ==================================================================
+ * REKLAM ALANI ALTYAPISI (Faz 3, madde 28-33) — DORMANT / PASİF
+ * ==================================================================
+ * Bu turda gerçek bir reklam ağı (ör. Google AdSense/AdMob) BAĞLANMADI
+ * — kullanıcı henüz bir sağlayıcı belirlemedi ve "asla veri/içerik
+ * uydurma" kuralı burada da geçerli: sahte veya yer tutucu olmayan bir
+ * "gerçek reklammış gibi" içerik ASLA gösterilmez. Bu yalnızca ileride
+ * gerçek bir sağlayıcı bağlanacağı zaman kullanılacak, şimdiden
+ * yerleşimi hazır hale getiren ALTYAPI:
+ *  - Premium kullanıcılarda (usage_status -> isPremium) alan tamamen
+ *    gizli kalır (Premium'un reklamsız deneyim beklentisiyle tutarlı).
+ *  - Premium olmayan/misafir kullanıcılarda, açıkça "yakında" olarak
+ *    etiketlenmiş, dürüst bir boş kutu gösterilir.
+ * Gerçek bir sağlayıcı bağlandığında yalnızca aşağıdaki placeholder
+ * HTML'i değiştirmek yeterli olacak — çağıran kod (renderAdSlot'u
+ * çağıran sayfa) DEĞİŞMEYECEK.
+ *
+ * Premium durumu aynı `usage_status` Edge Function çağrısını (AI
+ * Teknik Analiz ile PAYLAŞILAN, zaten var olan altyapı — yeni bir
+ * endpoint/tablo EKLENMEDİ) kullanır ve 5 dakika önbelleğe alınır ki
+ * her sayfa/tekrar render'da gereksiz ağ isteği oluşmasın.
+ * ================================================================== */
+
+let _adSlotPremiumCache = { value: null, at: 0 };
+
+async function _adSlotIsPremium() {
+  const now = Date.now();
+  if (_adSlotPremiumCache.value !== null && now - _adSlotPremiumCache.at < 5 * 60 * 1000) {
+    return _adSlotPremiumCache.value;
+  }
+  try {
+    const usage = await aiCallFunction({ action: 'usage_status' });
+    _adSlotPremiumCache = { value: !!usage.isPremium, at: now };
+    return _adSlotPremiumCache.value;
+  } catch (e) {
+    // Misafir modu / oturum yok / geçici servis hatası: güvenli
+    // varsayım "Premium değil" — misafir zaten Premium olamaz;
+    // geçici bir hata durumunda dormant yer tutucunun görünmesi
+    // zararsızdır (gerçek reklam içeriği yok, sadece boş bir kutu).
+    _adSlotPremiumCache = { value: false, at: now };
+    return false;
+  }
+}
+
+/**
+ * Verilen id'deki container'a dormant bir reklam alanı yerleştirir.
+ * Premium kullanıcılarda container gizlenir (display:none + boş).
+ * `slotName` yalnızca gelecekte farklı yerleşimleri ayırt etmek için
+ * (ör. ileride birden çok slot eklenirse) — şu an görüntülenmiyor.
+ */
+async function renderAdSlot(containerId, slotName) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const premium = await _adSlotIsPremium();
+  if (premium) {
+    el.style.display = 'none';
+    el.innerHTML = '';
+    return;
+  }
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="ad-slot-placeholder" data-ad-slot="${escapeHtml(slotName || '')}">
+      <span class="msr">campaign</span>
+      <span>Reklam alanı — yakında</span>
+    </div>
+  `;
+}
+
 registerPageLoader('premium', loadPremiumPage);
