@@ -264,7 +264,25 @@ function handleSessionChange(_event, session) {
   }
 }
 
+// DÜZELTME (2026-09, misafir kullanım genişletmesi, madde 9-11):
+// Favoriler ve Varlığım sayfalarındaki "giriş yap veya ücretsiz hesap
+// oluştur" bilgilendirme kartları YALNIZCA misafir modundayken görünür;
+// kayıtlı kullanıcıda tamamen gizlenir. Oturum durumu her değiştiğinde
+// (bkz. finishBoot() — hem misafir hem kayıtlı dalda çağrılır) yeniden
+// hesaplanır.
+function updateGuestBannersVisibility() {
+  const guest = isGuestSessionMode();
+  const favoriBanner = document.getElementById('favoriGuestBanner');
+  const varligimBanner = document.getElementById('varligimGuestBanner');
+  if (favoriBanner) favoriBanner.style.display = guest ? '' : 'none';
+  if (varligimBanner) varligimBanner.style.display = guest ? '' : 'none';
+}
+
+document.getElementById('favoriGuestLoginBtn')?.addEventListener('click', () => openAuthOverlay('login'));
+document.getElementById('varligimGuestLoginBtn')?.addEventListener('click', () => openAuthOverlay('login'));
+
 function finishBoot() {
+  updateGuestBannersVisibility();
   if (typeof loadStockOptions === 'function') loadStockOptions();
   if (typeof loadCryptoOptions === 'function') loadCryptoOptions();
   if (typeof loadCommodityOptions === 'function') loadCommodityOptions();
