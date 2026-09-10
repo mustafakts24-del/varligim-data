@@ -1087,6 +1087,33 @@
           <div class="filter-chip" data-cat="doviz">Döviz</div>
           <div class="filter-chip" data-cat="kap">KAP</div>
         </div>
+        <!-- DÜZELTME (2026-09-10, yeni özellik: "favori şirketler"):
+             mobille AYNI davranış — giriş yapmış kullanıcı Bülten'de
+             takip etmek istediği şirket/konu adlarını ekleyebilir; bu
+             şirketlerle eşleşen haberler aşağıdaki "Favori Haberler"
+             bölümünde en üstte gösterilir ve (mobilde) bildirim
+             tetikler. Misafir kullanıcıya giriş daveti gösterilir. -->
+        <div class="card" style="margin-bottom:14px; padding:14px;">
+          <div id="bultenFavGuest" style="display:none; font-size:12.5px; color:var(--text-muted);">
+            ★ Favori şirket takibi için <a href="#" id="bultenFavLoginLink">giriş yap</a> — takip ettiğin şirketlerden haber geldiğinde en üstte görürsün.
+          </div>
+          <div id="bultenFavManage" style="display:none;">
+            <div style="font-size:13px; font-weight:700; margin-bottom:4px;">★ Favori Şirketler</div>
+            <div style="font-size:11.5px; color:var(--text-faint); margin-bottom:10px;">Bu şirketlerden gelen haberler aşağıda en üstte gösterilir.</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+              <input id="bultenFavCompanyInput" type="text" autocomplete="off" placeholder="Şirket adı yaz (ör. Türk Hava Yolları)" style="flex:1; min-width:200px;" />
+              <button class="btn primary" id="bultenFavAddBtn">Ekle</button>
+            </div>
+            <div id="bultenFavChips" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+          </div>
+        </div>
+        <div id="bultenFavSection" style="display:none; margin-bottom:16px;">
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+            <span style="color:#F59E0B; font-size:14px;">★</span>
+            <strong style="font-size:13px;">Favori Haberler</strong>
+          </div>
+          <div class="news-grid" id="bultenFavGrid"></div>
+        </div>
         <!-- DORMANT reklam alanı (Faz 3, madde 28-33): gerçek bir reklam
              ağı henüz bağlanmadı; bu yalnızca ileride kullanılacak
              altyapı. Premium kullanıcılarda otomatik gizlenir — bkz.
@@ -1144,7 +1171,7 @@
 <script src="app-piyasa-doviz.js?v=20260904-3"></script>
 <script src="app-piyasa-viop.js?v=20260909"></script>
 <script src="app-favoriler.js?v=20260903-2"></script>
-<script src="app-bulten.js?v=20260910"></script>
+<script src="app-bulten.js?v=20260910-3"></script>
 <script src="app-home.js?v=20260909-4"></script>
 <script src="app-varliklar.js?v=20260907"></script>
 <script src="app-interest.js?v=20260910"></script>
