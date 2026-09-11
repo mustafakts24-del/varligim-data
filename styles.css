@@ -416,18 +416,30 @@ input[type="checkbox"] { accent-color: var(--primary); width: auto; }
    membership_screen.dart ile aynı yapı (sabit sekmeler + yatay
    kayan/tıklanan 3 panel + alt butonlar).
    ============================================================ */
+/* GÜNCELLEME (2026-09-11): 3 paketten 6 pakete çıkınca ("Varlığım AI Pro
+   Plus" gibi uzun isimler dahil) sabit genişlikli eşit sütunlar yerine
+   yatay kaydırılabilen, içeriğe göre boyutlanan "chip" sekmelere
+   geçildi — dar ekranda da her isim tam okunur, sekme çubuğu yine
+   Column'un sabit bir çocuğu olduğu için kaybolmuyor/kaymıyor. Her
+   sekme kendi `--tab-c` rengiyle (JS'ten inline stil) etiketlenir;
+   aktifken o renk dolgu olarak kullanılır — ortak mor/mavi gradyan
+   yerine paket başına farklı renk.  */
 .membership-tabbar {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   padding: 4px;
   border-radius: 14px;
   background: var(--bg-elevated);
   margin-bottom: 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.membership-tabbar::-webkit-scrollbar { display: none; }
 .membership-tab {
-  flex: 1;
+  flex: 0 0 auto;
+  white-space: nowrap;
   text-align: center;
-  padding: 10px 8px;
+  padding: 10px 14px;
   border-radius: 11px;
   cursor: pointer;
   font-size: 13.5px;
@@ -437,7 +449,7 @@ input[type="checkbox"] { accent-color: var(--primary); width: auto; }
   user-select: none;
 }
 .membership-tab.active {
-  background: linear-gradient(135deg, var(--hero-grad-start), var(--hero-grad-end));
+  background: var(--tab-c, var(--hero-grad-start));
   color: #fff;
 }
 .membership-panels {
