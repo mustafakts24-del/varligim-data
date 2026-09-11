@@ -1036,6 +1036,75 @@
               <input id="newRealEstateCurrentValue" type="text" inputmode="decimal" class="amt-grouped" placeholder="Güncel değer (₺)" />
               <input id="newRealEstateMonthlyRent" type="text" inputmode="decimal" class="amt-grouped" placeholder="Aylık kira (₺) - isteğe bağlı" />
               <input id="newRealEstatePurchaseDate" type="date" />
+
+              <!-- YENİ (Akıllı Değerleme FAZ 2, 2026-09-11): opsiyonel alanlar.
+                   Hepsi boş bırakılabilir — hiçbir değer otomatik doldurulmaz/uydurulmaz. -->
+              <details class="optional-details full">
+                <summary>Konut Detayları (Opsiyonel)</summary>
+                <div class="optional-subtitle">Akıllı Değerleme için — doldurmak zorunda değilsiniz</div>
+                <div class="optional-grid">
+                  <input id="newRealEstateNeighborhood" type="text" autocomplete="off" placeholder="Mahalle" />
+                  <select id="newRealEstateHousingType">
+                    <option value="">Konut tipi (seçiniz)</option>
+                    <option value="Daire">Daire</option>
+                    <option value="Villa">Villa</option>
+                    <option value="Rezidans">Rezidans</option>
+                    <option value="Müstakil Ev">Müstakil Ev</option>
+                    <option value="Yazlık">Yazlık</option>
+                  </select>
+                  <input id="newRealEstateRoomCount" type="number" step="any" min="0" placeholder="Oda sayısı (örn. 2)" />
+                  <input id="newRealEstateLivingRoomCount" type="number" step="1" min="0" placeholder="Salon (örn. 1)" />
+                  <input id="newRealEstateNetAreaM2" type="number" step="any" min="0" placeholder="Net m²" />
+                  <input id="newRealEstateGrossAreaM2" type="number" step="any" min="0" placeholder="Brüt m²" />
+                  <input id="newRealEstateBuildingAge" type="number" step="1" min="0" placeholder="Bina yaşı" />
+                  <input id="newRealEstateFloorNo" type="number" step="1" placeholder="Kat" />
+                  <input id="newRealEstateTotalFloors" type="number" step="1" min="0" placeholder="Toplam kat" />
+                  <select id="newRealEstateHeatingType">
+                    <option value="">Isıtma tipi (seçiniz)</option>
+                    <option value="Doğalgaz (Kombi)">Doğalgaz (Kombi)</option>
+                    <option value="Merkezi">Merkezi</option>
+                    <option value="Yerden Isıtma">Yerden Isıtma</option>
+                    <option value="Klima">Klima</option>
+                    <option value="Soba">Soba</option>
+                    <option value="Isıtma Yok">Isıtma Yok</option>
+                  </select>
+                  <label class="optional-checkbox"><input id="newRealEstateHasBalcony" type="checkbox" style="width:auto;" /> Balkon</label>
+                  <label class="optional-checkbox"><input id="newRealEstateHasElevator" type="checkbox" style="width:auto;" /> Asansör</label>
+                  <label class="optional-checkbox"><input id="newRealEstateHasParking" type="checkbox" style="width:auto;" /> Otopark</label>
+                  <label class="optional-checkbox"><input id="newRealEstateFurnished" type="checkbox" style="width:auto;" /> Eşyalı</label>
+                </div>
+              </details>
+              <details class="optional-details full">
+                <summary>Bina ve Diğer Özellikler (Opsiyonel)</summary>
+                <div class="optional-subtitle">Değerleme doğruluğunu artırır — doldurmak zorunda değilsiniz</div>
+                <div class="optional-grid">
+                  <input id="newRealEstateSiteName" type="text" autocomplete="off" placeholder="Site adı (site içinde değilse boş bırakın)" />
+                  <input id="newRealEstateDuesAmount" type="text" inputmode="decimal" class="amt-grouped" placeholder="Aidat (₺)" />
+                  <select id="newRealEstateFacade">
+                    <option value="">Cephe (seçiniz)</option>
+                    <option value="Kuzey">Kuzey</option>
+                    <option value="Güney">Güney</option>
+                    <option value="Doğu">Doğu</option>
+                    <option value="Batı">Batı</option>
+                    <option value="Kuzeydoğu">Kuzeydoğu</option>
+                    <option value="Kuzeybatı">Kuzeybatı</option>
+                    <option value="Güneydoğu">Güneydoğu</option>
+                    <option value="Güneybatı">Güneybatı</option>
+                  </select>
+                  <input id="newRealEstateViewType" type="text" autocomplete="off" placeholder="Manzara (örn. Deniz Manzarası)" />
+                  <select id="newRealEstateTitleDeedStatus">
+                    <option value="">Tapu durumu (seçiniz)</option>
+                    <option value="Kat Mülkiyeti">Kat Mülkiyeti</option>
+                    <option value="Kat İrtifakı">Kat İrtifakı</option>
+                    <option value="Hisseli Tapu">Hisseli Tapu</option>
+                    <option value="Müstakil Tapu">Müstakil Tapu</option>
+                    <option value="Tapu Yok">Tapu Yok</option>
+                  </select>
+                  <label class="optional-checkbox"><input id="newRealEstateLoanEligible" type="checkbox" style="width:auto;" /> Krediye uygun</label>
+                  <input id="newRealEstateBuildingFeatures" class="full" type="text" autocomplete="off" placeholder="Bina özellikleri (virgülle ayırın: Güvenlik, Kapıcı, Jeneratör)" />
+                </div>
+              </details>
+
               <button class="btn primary full" id="addRealEstateBtn" type="button">Ekle</button>
               <button class="btn outline full" id="cancelRealEstateEditBtn" type="button" style="display:none;">İptal</button>
             </div>
@@ -1074,6 +1143,69 @@
               <input id="newVehiclePurchasePrice" type="text" inputmode="decimal" class="amt-grouped" placeholder="Alış fiyatı (₺)" />
               <input id="newVehicleCurrentValue" type="text" inputmode="decimal" class="amt-grouped" placeholder="Güncel değer (₺)" />
               <input id="newVehiclePurchaseDate" type="date" />
+
+              <!-- YENİ (Akıllı Değerleme FAZ 2, 2026-09-11): opsiyonel alanlar.
+                   Hepsi boş bırakılabilir — hiçbir değer otomatik doldurulmaz/uydurulmaz. -->
+              <details class="optional-details full">
+                <summary>Teknik Detaylar (Opsiyonel)</summary>
+                <div class="optional-subtitle">Akıllı Değerleme için — doldurmak zorunda değilsiniz</div>
+                <div class="optional-grid">
+                  <input id="newVehicleVersionPackage" type="text" autocomplete="off" placeholder="Versiyon / Paket (örn. Comfortline)" />
+                  <select id="newVehicleFuelType">
+                    <option value="">Yakıt tipi (seçiniz)</option>
+                    <option value="Benzin">Benzin</option>
+                    <option value="Dizel">Dizel</option>
+                    <option value="LPG">LPG</option>
+                    <option value="Hibrit">Hibrit</option>
+                    <option value="Elektrikli">Elektrikli</option>
+                  </select>
+                  <select id="newVehicleTransmission">
+                    <option value="">Vites (seçiniz)</option>
+                    <option value="Manuel">Manuel</option>
+                    <option value="Otomatik">Otomatik</option>
+                    <option value="Yarı Otomatik">Yarı Otomatik</option>
+                  </select>
+                  <input id="newVehicleEngine" type="text" autocomplete="off" placeholder="Motor (örn. 2.0 TDI)" />
+                  <input id="newVehicleEngineDisplacement" type="number" step="any" min="0" placeholder="Motor hacmi (cc)" />
+                  <input id="newVehicleHorsepower" type="number" step="1" min="0" placeholder="Beygir gücü (hp)" />
+                  <input id="newVehicleMileageKm" type="number" step="1" min="0" placeholder="Kilometre (km)" />
+                  <select id="newVehicleBodyType">
+                    <option value="">Kasa tipi (seçiniz)</option>
+                    <option value="Sedan">Sedan</option>
+                    <option value="Hatchback 3 Kapı">Hatchback 3 Kapı</option>
+                    <option value="Hatchback 5 Kapı">Hatchback 5 Kapı</option>
+                    <option value="Station Wagon">Station Wagon</option>
+                    <option value="SUV">SUV</option>
+                    <option value="Coupe">Coupe</option>
+                    <option value="Cabrio">Cabrio</option>
+                    <option value="Pick-up">Pick-up</option>
+                    <option value="MPV">MPV</option>
+                  </select>
+                  <select id="newVehicleDriveType">
+                    <option value="">Çekiş tipi (seçiniz)</option>
+                    <option value="Önden Çekiş">Önden Çekiş</option>
+                    <option value="Arkadan İtiş">Arkadan İtiş</option>
+                    <option value="4x4 / AWD">4x4 / AWD</option>
+                  </select>
+                  <input id="newVehicleProvince" type="text" autocomplete="off" placeholder="İl" />
+                  <input id="newVehicleDistrict" type="text" autocomplete="off" placeholder="İlçe" />
+                  <input id="newVehicleFirstRegistrationDate" type="date" />
+                  <input id="newVehicleOptionalEquipment" class="full" type="text" autocomplete="off" placeholder="Opsiyonel donanımlar (virgülle ayırın: Sunroof, Deri Döşeme)" />
+                </div>
+              </details>
+              <details class="optional-details full">
+                <summary>Hasar ve Ekspertiz (Opsiyonel)</summary>
+                <div class="optional-subtitle">Değerleme doğruluğunu artırır — doldurmak zorunda değilsiniz</div>
+                <div class="optional-grid">
+                  <label class="optional-checkbox full"><input id="newVehicleHasDamageRecord" type="checkbox" style="width:auto;" /> Hasar kaydı var</label>
+                  <input id="newVehicleTramerAmount" type="text" inputmode="decimal" class="amt-grouped" placeholder="Tramer tutarı (₺)" />
+                  <input id="newVehicleChangedPartsCount" type="number" step="1" min="0" placeholder="Değişen parça sayısı" />
+                  <input id="newVehiclePaintedPartsCount" type="number" step="1" min="0" placeholder="Boyanan parça sayısı" />
+                  <label class="optional-checkbox full"><input id="newVehicleHeavyDamageRecord" type="checkbox" style="width:auto;" /> Ağır hasar kaydı var</label>
+                  <input id="newVehicleExpertiseNotes" class="full" type="text" autocomplete="off" placeholder="Ekspertiz notları (isteğe bağlı)" />
+                </div>
+              </details>
+
               <button class="btn primary full" id="addVehicleBtn" type="button">Ekle</button>
               <button class="btn outline full" id="cancelVehicleEditBtn" type="button" style="display:none;">İptal</button>
             </div>
@@ -1227,7 +1359,8 @@
 <script src="app-varliklar.js?v=20260907"></script>
 <script src="app-interest.js?v=20260910"></script>
 <script src="app-butce.js?v=20260902"></script>
-<script src="app-varligim.js?v=20260907"></script>
+<script src="app-varligim.js?v=20260911-2"></script>
+<script src="app-valuation.js?v=20260911-1"></script>
 <script src="app-ai-analiz.js?v=20260909"></script>
 <script src="app-premium.js?v=20260909"></script>
 
