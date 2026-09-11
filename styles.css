@@ -356,6 +356,128 @@ input[type="checkbox"] { accent-color: var(--primary); width: auto; }
 
 #sidebarFooter .email { color: var(--text-muted); font-size: 12.5px; margin-bottom: 8px; word-break: break-all; }
 
+/* ============================================================
+   YENİ (2026-09-11): Sidebar — "Üyelik Bilgileri" ve "Profil"
+   butonları (mobildeki profile_screen.dart / drawer ile aynı fikir,
+   web'e uyarlanmış). Mobildeki mor/mavi gradyanla birebir aynı
+   --hero-grad-start/--hero-grad-end token'ları kullanılıyor.
+   ============================================================ */
+.sidebar-membership-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--hero-grad-start), var(--hero-grad-end));
+  color: #fff;
+  transition: filter .15s;
+}
+.sidebar-membership-btn:hover { filter: brightness(1.08); }
+.sidebar-membership-btn .crown { font-size: 18px; line-height: 1; flex-shrink: 0; }
+.sidebar-membership-btn .txt { flex: 1; min-width: 0; }
+.sidebar-membership-btn .title { font-size: 12.5px; font-weight: 700; }
+.sidebar-membership-btn .tier { font-size: 11px; opacity: .88; margin-top: 1px; }
+.sidebar-membership-btn .chevr { font-size: 18px; opacity: .85; flex-shrink: 0; }
+
+.sidebar-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  cursor: pointer;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: background .15s, color .15s;
+}
+.sidebar-profile-btn:hover { background: var(--card); }
+.sidebar-profile-btn .msr:first-child { font-size: 19px; color: var(--text-muted); flex-shrink: 0; }
+.sidebar-profile-btn .txt {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-profile-btn .chevr { font-size: 18px; color: var(--text-faint); flex-shrink: 0; }
+
+#profileMsg { margin-top: 14px; font-size: 13px; border-radius: var(--radius-sm); padding: 10px 12px; display: none; }
+#profileMsg.error { display: block; background: var(--negative-bg); color: var(--negative); }
+#profileMsg.success { display: block; background: var(--positive-bg); color: var(--positive); }
+
+/* ============================================================
+   YENİ (2026-09-11): Üyelik Bilgileri sayfası — mobil
+   membership_screen.dart ile aynı yapı (sabit sekmeler + yatay
+   kayan/tıklanan 3 panel + alt butonlar).
+   ============================================================ */
+.membership-tabbar {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--bg-elevated);
+  margin-bottom: 18px;
+}
+.membership-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px;
+  border-radius: 11px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text-muted);
+  transition: background .2s, color .2s;
+  user-select: none;
+}
+.membership-tab.active {
+  background: linear-gradient(135deg, var(--hero-grad-start), var(--hero-grad-end));
+  color: #fff;
+}
+.membership-panels {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+}
+.membership-panels::-webkit-scrollbar { display: none; }
+.membership-panel {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.membership-panel .msr.big { font-size: 52px; color: var(--text-muted); margin-bottom: 14px; }
+.membership-panel h2 { font-size: 19px; font-weight: 800; margin: 0 0 8px; }
+.membership-panel p { font-size: 13px; color: var(--text-muted); max-width: 360px; margin: 0; }
+.membership-actions .btn.full { height: 52px; font-size: 14.5px; font-weight: 800; margin-top: 0; margin-bottom: 10px; border-radius: 16px; }
+.membership-legal-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 4px;
+}
+.membership-legal-row .btn { flex: 1; background: transparent; color: var(--text-muted); font-size: 12px; font-weight: 500; padding: 10px 6px; }
+.membership-legal-row .btn:hover { color: var(--text); }
+.membership-legal-divider { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
+
 #main {
   margin-left: var(--sidebar-w);
   flex: 1;
