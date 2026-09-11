@@ -739,6 +739,61 @@ tbody tr:hover { background: var(--bg-elevated); }
 }
 .add-form .full { grid-column: 1 / -1; }
 
+/* ============================================================
+   OPSİYONEL DETAY BÖLÜMLERİ (Akıllı Değerleme FAZ 2, 2026-09-11)
+   Mobildeki ExpansionTile ile aynı mantık: varsayılan kapalı,
+   Akıllı Değerleme motoru için isteğe bağlı ek alanlar. Boş
+   bırakılabilir — hiçbir değer otomatik doldurulmaz/uydurulmaz.
+   Kaynak (mobil): lib/screens/vehicle_form_screen.dart,
+   lib/screens/real_estate_form_screen.dart
+   ============================================================ */
+.optional-details {
+  grid-column: 1 / -1;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+.optional-details + .optional-details { margin-top: 2px; }
+.optional-details summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--text);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.optional-details summary::-webkit-details-marker { display: none; }
+.optional-details summary::before {
+  content: '▸';
+  display: inline-block;
+  color: var(--text-muted);
+  transition: transform .15s ease;
+}
+.optional-details[open] summary::before { transform: rotate(90deg); }
+.optional-details .optional-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 4px 0 12px 18px;
+}
+.optional-details .optional-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+.optional-details .optional-grid .full { grid-column: 1 / -1; }
+.optional-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
 /* Alt sekme (Varlıklar içi) çipleri */
 .subtab-row {
   display: flex;
@@ -1500,6 +1555,7 @@ tbody tr:hover { background: var(--bg-elevated); }
   }
   #sidebarOverlay.open { display: block; }
   .add-form { grid-template-columns: 1fr; }
+  .optional-details .optional-grid { grid-template-columns: 1fr; }
   .hero-value { font-size: 28px; }
   #content { padding: 18px; }
 }
