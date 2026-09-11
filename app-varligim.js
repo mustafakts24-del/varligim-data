@@ -127,9 +127,20 @@ function resetRealEstateForm() {
   document.getElementById('addRealEstateBtn').textContent = 'Ekle';
   document.getElementById('cancelRealEstateEditBtn').style.display = 'none';
   ['newRealEstateTitle', 'newRealEstateCity', 'newRealEstateDistrict', 'newRealEstatePurchasePrice',
-    'newRealEstateCurrentValue', 'newRealEstateMonthlyRent', 'newRealEstatePurchaseDate']
+    'newRealEstateCurrentValue', 'newRealEstateMonthlyRent', 'newRealEstatePurchaseDate',
+    // YENİ (Akıllı Değerleme FAZ 2, 2026-09-11): opsiyonel alanlar
+    'newRealEstateNeighborhood', 'newRealEstateRoomCount', 'newRealEstateLivingRoomCount',
+    'newRealEstateNetAreaM2', 'newRealEstateGrossAreaM2', 'newRealEstateBuildingAge',
+    'newRealEstateFloorNo', 'newRealEstateTotalFloors', 'newRealEstateSiteName',
+    'newRealEstateDuesAmount', 'newRealEstateViewType', 'newRealEstateBuildingFeatures']
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('newRealEstateType').value = 'Konut';
+  ['newRealEstateHousingType', 'newRealEstateHeatingType', 'newRealEstateFacade', 'newRealEstateTitleDeedStatus']
+    .forEach(id => document.getElementById(id).value = '');
+  ['newRealEstateHasBalcony', 'newRealEstateHasElevator', 'newRealEstateHasParking',
+    'newRealEstateFurnished', 'newRealEstateLoanEligible']
+    .forEach(id => document.getElementById(id).checked = false);
+  document.querySelectorAll('#varligimSection-gayrimenkul .optional-details').forEach(d => d.open = false);
 }
 
 function startEditRealEstate(row) {
@@ -145,6 +156,30 @@ function startEditRealEstate(row) {
   setGroupedInputValue('newRealEstateCurrentValue', row.current_value);
   setGroupedInputValue('newRealEstateMonthlyRent', row.monthly_rent);
   document.getElementById('newRealEstatePurchaseDate').value = row.purchase_date ? new Date(row.purchase_date).toISOString().slice(0, 10) : '';
+
+  // YENİ (Akıllı Değerleme FAZ 2, 2026-09-11): opsiyonel alanlar
+  document.getElementById('newRealEstateNeighborhood').value = row.neighborhood || '';
+  document.getElementById('newRealEstateHousingType').value = row.housing_type || '';
+  document.getElementById('newRealEstateRoomCount').value = row.room_count ?? '';
+  document.getElementById('newRealEstateLivingRoomCount').value = row.living_room_count ?? '';
+  document.getElementById('newRealEstateNetAreaM2').value = row.net_area_m2 ?? '';
+  document.getElementById('newRealEstateGrossAreaM2').value = row.gross_area_m2 ?? '';
+  document.getElementById('newRealEstateBuildingAge').value = row.building_age ?? '';
+  document.getElementById('newRealEstateFloorNo').value = row.floor_no ?? '';
+  document.getElementById('newRealEstateTotalFloors').value = row.total_floors ?? '';
+  document.getElementById('newRealEstateHeatingType').value = row.heating_type || '';
+  document.getElementById('newRealEstateHasBalcony').checked = !!row.has_balcony;
+  document.getElementById('newRealEstateHasElevator').checked = !!row.has_elevator;
+  document.getElementById('newRealEstateHasParking').checked = !!row.has_parking;
+  document.getElementById('newRealEstateFurnished').checked = !!row.furnished;
+  document.getElementById('newRealEstateSiteName').value = row.site_name || '';
+  setGroupedInputValue('newRealEstateDuesAmount', row.dues_amount);
+  document.getElementById('newRealEstateFacade').value = row.facade || '';
+  document.getElementById('newRealEstateViewType').value = row.view_type || '';
+  document.getElementById('newRealEstateTitleDeedStatus').value = row.title_deed_status || '';
+  document.getElementById('newRealEstateLoanEligible').checked = !!row.loan_eligible;
+  document.getElementById('newRealEstateBuildingFeatures').value = Array.isArray(row.building_features) ? row.building_features.join(', ') : '';
+
   document.getElementById('newRealEstateTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
@@ -204,10 +239,14 @@ async function loadRealEstateHoldings() {
       <td class="num">${changePct == null ? '—' : changeChipHtml(changePct)}</td>
       <td class="num">${rentYieldPct == null ? '—' : '%' + fmtNumber(rentYieldPct)}</td>
       <td class="num">
+        <button type="button" class="btn outline small real-estate-value" title="Akıllı Değerleme" style="margin-right:4px;"><span class="msr" style="font-size:16px;">auto_awesome</span></button>
         <button type="button" class="btn outline small real-estate-edit" title="Düzenle" style="margin-right:4px;"><span class="msr" style="font-size:16px;">edit</span></button>
         <button type="button" class="del real-estate-delete" data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
       </td>
     `;
+    tr.querySelector('.real-estate-value').addEventListener('click', () => valOpenModal(
+      'real_estate', row.id, 'Akıllı Değerleme', row.title || row.type || 'Gayrimenkul'
+    ));
     tr.querySelector('.real-estate-edit').addEventListener('click', () => startEditRealEstate(row));
     tr.querySelector('.real-estate-delete').addEventListener('click', () => deleteRealEstateHolding(row.id));
     tbody.appendChild(tr);
@@ -254,10 +293,57 @@ document.getElementById('addRealEstateBtn').addEventListener('click', async () =
   const id = editingRealEstateId || `${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
   const purchaseDate = new Date(`${purchaseDateRaw}T12:00:00`).toISOString();
 
+  // YENİ (Akıllı Değerleme FAZ 2, 2026-09-11): opsiyonel alanlar.
+  // Hepsi boş bırakılabilir — hiçbir değer otomatik doldurulmaz/uydurulmaz.
+  const neighborhood = document.getElementById('newRealEstateNeighborhood').value.trim();
+  const housingType = document.getElementById('newRealEstateHousingType').value || null;
+  const roomCountRaw = document.getElementById('newRealEstateRoomCount').value.trim();
+  const livingRoomCountRaw = document.getElementById('newRealEstateLivingRoomCount').value.trim();
+  const netAreaRaw = document.getElementById('newRealEstateNetAreaM2').value.trim();
+  const grossAreaRaw = document.getElementById('newRealEstateGrossAreaM2').value.trim();
+  const buildingAgeRaw = document.getElementById('newRealEstateBuildingAge').value.trim();
+  const floorNoRaw = document.getElementById('newRealEstateFloorNo').value.trim();
+  const totalFloorsRaw = document.getElementById('newRealEstateTotalFloors').value.trim();
+  const heatingType = document.getElementById('newRealEstateHeatingType').value || null;
+  const hasBalcony = document.getElementById('newRealEstateHasBalcony').checked;
+  const hasElevator = document.getElementById('newRealEstateHasElevator').checked;
+  const hasParking = document.getElementById('newRealEstateHasParking').checked;
+  const siteName = document.getElementById('newRealEstateSiteName').value.trim();
+  const duesAmountRaw = document.getElementById('newRealEstateDuesAmount').value.trim();
+  const furnished = document.getElementById('newRealEstateFurnished').checked;
+  const facade = document.getElementById('newRealEstateFacade').value || null;
+  const viewType = document.getElementById('newRealEstateViewType').value.trim();
+  const titleDeedStatus = document.getElementById('newRealEstateTitleDeedStatus').value || null;
+  const loanEligible = document.getElementById('newRealEstateLoanEligible').checked;
+  const buildingFeaturesRaw = document.getElementById('newRealEstateBuildingFeatures').value.trim();
+  const buildingFeatures = buildingFeaturesRaw === '' ? null
+    : buildingFeaturesRaw.split(',').map(s => s.trim()).filter(s => s !== '');
+
   const { error } = await supa.from('real_estate_holdings').upsert({
     id, user_id: user.id, type, title, city: city || null, district: district || null,
     purchase_price: purchasePrice, current_value: currentValue, monthly_rent: monthlyRent,
-    purchase_date: purchaseDate, deleted_at: null
+    purchase_date: purchaseDate, deleted_at: null,
+    neighborhood: neighborhood || null,
+    housing_type: housingType,
+    room_count: roomCountRaw === '' ? null : parseFloat(roomCountRaw),
+    living_room_count: livingRoomCountRaw === '' ? null : parseInt(livingRoomCountRaw, 10),
+    net_area_m2: netAreaRaw === '' ? null : parseFloat(netAreaRaw),
+    gross_area_m2: grossAreaRaw === '' ? null : parseFloat(grossAreaRaw),
+    building_age: buildingAgeRaw === '' ? null : parseInt(buildingAgeRaw, 10),
+    floor_no: floorNoRaw === '' ? null : parseInt(floorNoRaw, 10),
+    total_floors: totalFloorsRaw === '' ? null : parseInt(totalFloorsRaw, 10),
+    heating_type: heatingType,
+    has_balcony: hasBalcony,
+    has_elevator: hasElevator,
+    has_parking: hasParking,
+    site_name: siteName || null,
+    dues_amount: duesAmountRaw === '' ? null : parseGroupedAmount(duesAmountRaw),
+    furnished: furnished,
+    facade: facade,
+    view_type: viewType || null,
+    title_deed_status: titleDeedStatus,
+    loan_eligible: loanEligible,
+    building_features: buildingFeatures
   }, { onConflict: 'user_id,id' });
 
   if (error) {
@@ -279,9 +365,19 @@ function resetVehicleForm() {
   document.getElementById('addVehicleBtn').textContent = 'Ekle';
   document.getElementById('cancelVehicleEditBtn').style.display = 'none';
   ['newVehicleBrand', 'newVehicleModel', 'newVehicleModelYear', 'newVehiclePlate',
-    'newVehiclePurchasePrice', 'newVehicleCurrentValue', 'newVehiclePurchaseDate']
+    'newVehiclePurchasePrice', 'newVehicleCurrentValue', 'newVehiclePurchaseDate',
+    // YENİ (Akıllı Değerleme FAZ 2, 2026-09-11): opsiyonel alanlar
+    'newVehicleVersionPackage', 'newVehicleEngine', 'newVehicleEngineDisplacement',
+    'newVehicleHorsepower', 'newVehicleMileageKm', 'newVehicleProvince', 'newVehicleDistrict',
+    'newVehicleFirstRegistrationDate', 'newVehicleOptionalEquipment', 'newVehicleTramerAmount',
+    'newVehicleChangedPartsCount', 'newVehiclePaintedPartsCount', 'newVehicleExpertiseNotes']
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('newVehicleType').value = 'Otomobil';
+  ['newVehicleFuelType', 'newVehicleTransmission', 'newVehicleBodyType', 'newVehicleDriveType']
+    .forEach(id => document.getElementById(id).value = '');
+  ['newVehicleHasDamageRecord', 'newVehicleHeavyDamageRecord']
+    .forEach(id => document.getElementById(id).checked = false);
+  document.querySelectorAll('#varligimSection-arac .optional-details').forEach(d => d.open = false);
 }
 
 function startEditVehicle(row) {
@@ -297,6 +393,28 @@ function startEditVehicle(row) {
   setGroupedInputValue('newVehiclePurchasePrice', row.purchase_price);
   setGroupedInputValue('newVehicleCurrentValue', row.current_value);
   document.getElementById('newVehiclePurchaseDate').value = row.purchase_date ? new Date(row.purchase_date).toISOString().slice(0, 10) : '';
+
+  // YENİ (Akıllı Değerleme FAZ 2, 2026-09-11): opsiyonel alanlar
+  document.getElementById('newVehicleVersionPackage').value = row.version_package || '';
+  document.getElementById('newVehicleFuelType').value = row.fuel_type || '';
+  document.getElementById('newVehicleTransmission').value = row.transmission || '';
+  document.getElementById('newVehicleEngine').value = row.engine || '';
+  document.getElementById('newVehicleEngineDisplacement').value = row.engine_displacement ?? '';
+  document.getElementById('newVehicleHorsepower').value = row.horsepower ?? '';
+  document.getElementById('newVehicleMileageKm').value = row.mileage_km ?? '';
+  document.getElementById('newVehicleBodyType').value = row.body_type || '';
+  document.getElementById('newVehicleDriveType').value = row.drive_type || '';
+  document.getElementById('newVehicleProvince').value = row.province || '';
+  document.getElementById('newVehicleDistrict').value = row.district || '';
+  document.getElementById('newVehicleFirstRegistrationDate').value = row.first_registration_date ? new Date(row.first_registration_date).toISOString().slice(0, 10) : '';
+  document.getElementById('newVehicleOptionalEquipment').value = Array.isArray(row.optional_equipment) ? row.optional_equipment.join(', ') : '';
+  document.getElementById('newVehicleHasDamageRecord').checked = !!row.has_damage_record;
+  setGroupedInputValue('newVehicleTramerAmount', row.tramer_amount);
+  document.getElementById('newVehicleChangedPartsCount').value = row.changed_parts_count ?? '';
+  document.getElementById('newVehiclePaintedPartsCount').value = row.painted_parts_count ?? '';
+  document.getElementById('newVehicleHeavyDamageRecord').checked = !!row.heavy_damage_record;
+  document.getElementById('newVehicleExpertiseNotes').value = (row.expertise_info && row.expertise_info.notlar) ? row.expertise_info.notlar : '';
+
   document.getElementById('newVehicleBrand').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
@@ -352,10 +470,14 @@ async function loadVehicleHoldings() {
       <td class="num">${fmtTL(row.current_value)}</td>
       <td class="num">${changePct == null ? '—' : changeChipHtml(changePct)}</td>
       <td class="num">
+        <button type="button" class="btn outline small vehicle-value" title="Akıllı Değerleme" style="margin-right:4px;"><span class="msr" style="font-size:16px;">auto_awesome</span></button>
         <button type="button" class="btn outline small vehicle-edit" title="Düzenle" style="margin-right:4px;"><span class="msr" style="font-size:16px;">edit</span></button>
         <button type="button" class="del vehicle-delete" data-id="${escapeHtml(row.id || '')}" title="Sil">✕</button>
       </td>
     `;
+    tr.querySelector('.vehicle-value').addEventListener('click', () => valOpenModal(
+      'vehicle', row.id, 'Akıllı Değerleme', [row.brand, row.model].filter(Boolean).join(' ') || row.type || 'Araç'
+    ));
     tr.querySelector('.vehicle-edit').addEventListener('click', () => startEditVehicle(row));
     tr.querySelector('.vehicle-delete').addEventListener('click', () => deleteVehicleHolding(row.id));
     tbody.appendChild(tr);
@@ -402,9 +524,52 @@ document.getElementById('addVehicleBtn').addEventListener('click', async () => {
   const id = editingVehicleId || `${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
   const purchaseDate = new Date(`${purchaseDateRaw}T12:00:00`).toISOString();
 
+  // YENİ (Akıllı Değerleme FAZ 2, 2026-09-11): opsiyonel alanlar.
+  // Hepsi boş bırakılabilir — hiçbir değer otomatik doldurulmaz/uydurulmaz.
+  const versionPackage = document.getElementById('newVehicleVersionPackage').value.trim();
+  const fuelType = document.getElementById('newVehicleFuelType').value || null;
+  const transmission = document.getElementById('newVehicleTransmission').value || null;
+  const engine = document.getElementById('newVehicleEngine').value.trim();
+  const engineDisplacementRaw = document.getElementById('newVehicleEngineDisplacement').value.trim();
+  const horsepowerRaw = document.getElementById('newVehicleHorsepower').value.trim();
+  const mileageKmRaw = document.getElementById('newVehicleMileageKm').value.trim();
+  const bodyType = document.getElementById('newVehicleBodyType').value || null;
+  const driveType = document.getElementById('newVehicleDriveType').value || null;
+  const province = document.getElementById('newVehicleProvince').value.trim();
+  const vehicleDistrict = document.getElementById('newVehicleDistrict').value.trim();
+  const firstRegistrationDateRaw = document.getElementById('newVehicleFirstRegistrationDate').value;
+  const optionalEquipmentRaw = document.getElementById('newVehicleOptionalEquipment').value.trim();
+  const optionalEquipment = optionalEquipmentRaw === '' ? null
+    : optionalEquipmentRaw.split(',').map(s => s.trim()).filter(s => s !== '');
+  const hasDamageRecord = document.getElementById('newVehicleHasDamageRecord').checked;
+  const tramerAmountRaw = document.getElementById('newVehicleTramerAmount').value.trim();
+  const changedPartsCountRaw = document.getElementById('newVehicleChangedPartsCount').value.trim();
+  const paintedPartsCountRaw = document.getElementById('newVehiclePaintedPartsCount').value.trim();
+  const heavyDamageRecord = document.getElementById('newVehicleHeavyDamageRecord').checked;
+  const expertiseNotes = document.getElementById('newVehicleExpertiseNotes').value.trim();
+
   const { error } = await supa.from('vehicle_holdings').upsert({
     id, user_id: user.id, type, brand, model, model_year: modelYear, plate: plate || null,
-    purchase_price: purchasePrice, current_value: currentValue, purchase_date: purchaseDate, deleted_at: null
+    purchase_price: purchasePrice, current_value: currentValue, purchase_date: purchaseDate, deleted_at: null,
+    version_package: versionPackage || null,
+    fuel_type: fuelType,
+    transmission: transmission,
+    engine: engine || null,
+    engine_displacement: engineDisplacementRaw === '' ? null : parseFloat(engineDisplacementRaw),
+    horsepower: horsepowerRaw === '' ? null : parseInt(horsepowerRaw, 10),
+    mileage_km: mileageKmRaw === '' ? null : parseInt(mileageKmRaw, 10),
+    body_type: bodyType,
+    drive_type: driveType,
+    province: province || null,
+    district: vehicleDistrict || null,
+    first_registration_date: firstRegistrationDateRaw ? new Date(`${firstRegistrationDateRaw}T12:00:00`).toISOString() : null,
+    has_damage_record: hasDamageRecord,
+    tramer_amount: tramerAmountRaw === '' ? null : parseGroupedAmount(tramerAmountRaw),
+    changed_parts_count: changedPartsCountRaw === '' ? null : parseInt(changedPartsCountRaw, 10),
+    painted_parts_count: paintedPartsCountRaw === '' ? null : parseInt(paintedPartsCountRaw, 10),
+    heavy_damage_record: heavyDamageRecord,
+    expertise_info: expertiseNotes === '' ? null : { notlar: expertiseNotes },
+    optional_equipment: optionalEquipment
   }, { onConflict: 'user_id,id' });
 
   if (error) {
