@@ -659,6 +659,16 @@ document.getElementById('authForm').addEventListener('submit', async (e) => {
  * ------------------------------------------------------------------ */
 document.getElementById('signOutBtn').addEventListener('click', async () => {
   await supa.auth.signOut();
+  // YENİ (2026-09-11, mobildeki LocalPortfolioCacheService.wipeAfterSignOut
+  // ile AYNI kural — kullanıcı raporu: "çıkış yaptım hala bilgilerim
+  // görünüyor" / kişisel bilgilerin bir sonraki kullanıcıya/misafire
+  // sızmaması için): yerelde önbelleklenen Ad Soyad / Telefon çıkışta
+  // temizlenir. E-posta zaten hiçbir zaman yerelde SAKLANMAZ — her zaman
+  // doğrudan Supabase oturumundan okunur (bkz. app-profil.js).
+  try {
+    localStorage.removeItem('varligim_profile_name');
+    localStorage.removeItem('varligim_profile_phone');
+  } catch (e) {}
 });
 
 /* ------------------------------------------------------------------
@@ -680,7 +690,9 @@ const PAGE_TITLES = {
   butce: 'Bütçe',
   favoriler: 'Favoriler',
   varligim: 'Varlığım',
-  bulten: 'Bülten'
+  bulten: 'Bülten',
+  profil: 'Profil',
+  uyelik: 'Üyelik Bilgileri'
 };
 
 const VARLIKLAR_PAGES = ['emtia', 'hisse', 'fon', 'kripto', 'doviz', 'faiz', 'kredi', 'viop'];
