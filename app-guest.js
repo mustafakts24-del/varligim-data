@@ -231,6 +231,12 @@ function handleSessionChange(_event, session) {
     userEmailEl.textContent = session.user.email || '';
     if (authedFooter) authedFooter.style.display = '';
     if (guestFooter) guestFooter.style.display = 'none';
+    // YENİ (2026-09-11, web'e mobil Profil/Üyelik Bilgileri taşıması):
+    // sidebar'daki Profil adı ve Üyelik Bilgileri rozeti, oturum her
+    // değiştiğinde (bkz. app-profil.js) güncellenir.
+    if (typeof window.refreshSidebarProfileFooter === 'function') {
+      window.refreshSidebarProfileFooter(session.user);
+    }
 
     if (wasGuestWithData) {
       const wantsMigration = window.confirm(
