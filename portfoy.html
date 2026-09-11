@@ -9,7 +9,7 @@
   name="description"
   content="Varlığım ile hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı üye olmadan deneyin; verilerinizi kaydetmek için istediğiniz zaman ücretsiz hesap oluşturun."
 />
-<link rel="stylesheet" href="styles.css?v=20260910-2" />
+<link rel="stylesheet" href="styles.css?v=20260911-1" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -99,6 +99,23 @@
     <div id="sidebarFooter">
       <!-- Kayıtlı kullanıcı durumu -->
       <div id="sidebarAuthedFooter" style="display:none;">
+        <!-- YENİ (2026-09-11, mobil "Üyelik Bilgileri" ile aynı davranış):
+             taç simgeli üyelik butonu — yalnızca giriş yapıldığında görünür. -->
+        <div class="sidebar-membership-btn" id="sidebarMembershipBtn">
+          <span class="crown">👑</span>
+          <div class="txt">
+            <div class="title">Üyelik Bilgileri</div>
+            <div class="tier" id="sidebarMembershipTier">Ücretsiz</div>
+          </div>
+          <span class="msr chevr">chevron_right</span>
+        </div>
+        <!-- YENİ (2026-09-11): profil butonu — giriş yapılmışken ad soyad
+             gösterir, tıklanınca Kişisel Bilgiler sayfasını açar. -->
+        <div class="sidebar-profile-btn" id="sidebarProfileBtn">
+          <span class="msr">account_circle</span>
+          <div class="txt" id="sidebarProfileName">Profil</div>
+          <span class="msr chevr">chevron_right</span>
+        </div>
         <div class="email" id="userEmail"></div>
         <button class="btn outline small" id="signOutBtn" style="width:100%;">Çıkış yap</button>
       </div>
@@ -242,6 +259,38 @@
         <div id="premiumPageBody">
           <div class="empty" style="padding:40px 0;">Yükleniyor…</div>
         </div>
+      </div>
+
+      <!-- YENİ (2026-09-11): PROFİL / KİŞİSEL BİLGİLER — mobil
+           profile_screen.dart'ın "Kişisel Bilgiler" kartıyla aynı alanlar
+           (Ad Soyad / E-posta / Telefon). Hiçbir veri UYDURULMAZ; e-posta
+           her zaman Supabase oturumundan gelir ve düzenlenemez. -->
+      <div class="page" id="page-profil">
+        <h1 class="page-title">Profil</h1>
+        <p class="page-lead">Hesabına ait kişisel bilgiler.</p>
+        <div class="card">
+          <div class="section-title"><span class="msr">badge</span> Kişisel Bilgiler</div>
+          <label for="profileNameInput">Ad Soyad</label>
+          <input id="profileNameInput" type="text" placeholder="Ad Soyad" autocomplete="name" />
+          <label for="profileEmailInput">E-posta</label>
+          <input id="profileEmailInput" type="email" disabled />
+          <label for="profilePhoneInput">Telefon</label>
+          <input id="profilePhoneInput" type="tel" placeholder="05xx xxx xx xx" autocomplete="tel" />
+          <button class="btn primary full" id="profileSaveBtn">Profili Kaydet</button>
+          <div id="profileMsg"></div>
+        </div>
+      </div>
+
+      <!-- YENİ (2026-09-11): ÜYELİK BİLGİLERİ — mobil membership_screen.dart
+           ile birebir aynı yapı: sabit Trade/Pro/Premium sekmeleri, altında
+           yatay kaydırılan/tıklanan 3 panel (Trade varsayılan), ardından
+           Yıllık/Aylık Üyeliği Başlat butonları ve Ön Bilgilendirme Formu /
+           Mesafeli Satış Sözleşmesi butonları. Gerçek paket içeriği,
+           fiyat, ödeme sağlayıcısı ve sözleşme metni HENÜZ YOK — bu yüzden
+           hiçbiri UYDURULMADI; dürüst "yakında eklenecek" yer tutucuları
+           kullanılıyor (mobildeki ile aynı yaklaşım). -->
+      <div class="page" id="page-uyelik">
+        <div id="uyelikPageBody"></div>
       </div>
 
       <!-- VARLIKLAR (HUB) -->
@@ -1159,8 +1208,10 @@
   </button>
 </div>
 
-<script src="app-core.js?v=20260910"></script>
-<script src="app-guest.js?v=20260909-2"></script>
+<script src="app-core.js?v=20260911-1"></script>
+<script src="app-guest.js?v=20260911-1"></script>
+<script src="app-profil.js?v=20260911-1"></script>
+<script src="app-uyelik.js?v=20260911-1"></script>
 <script src="app-logos.js?v=20260904"></script>
 <script src="app-charts.js?v=20260904-4"></script>
 <script src="bist-stocks-data.js?v=20260902"></script>
@@ -1179,5 +1230,6 @@
 <script src="app-varligim.js?v=20260907"></script>
 <script src="app-ai-analiz.js?v=20260909"></script>
 <script src="app-premium.js?v=20260909"></script>
+
 </body>
 </html>
