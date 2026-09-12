@@ -420,6 +420,119 @@ function startEditVehicle(row) {
 
 document.getElementById('cancelVehicleEditBtn').addEventListener('click', resetVehicleForm);
 
+/* ==================================================================
+ * YENİ (Araç Ekle iyileştirmesi, 2026-09-11): Marka -> Model ->
+ * Versiyon kademeli otomatik tamamlama (mobildeki Autocomplete
+ * alanlarının web karşılığı, aynı `VEHICLE_CATALOG` verisiyle,
+ * bkz. app-vehicle-catalog.js). Liste sadece bir öneridir — kullanıcı
+ * listede olmayan bir marka/model/versiyon yazmak isterse serbestçe
+ * yazmaya devam edebilir, hiçbir alan zorunlu seçime kilitlenmez.
+ * ================================================================== */
+function attachAutocomplete(inputEl, optionsFn, onSelect) {
+  if (!inputEl) return;
+  let wrap = inputEl.parentElement;
+  if (!wrap || !wrap.classList.contains('autocomplete-wrap')) {
+    wrap = document.createElement('div');
+    wrap.className = 'autocomplete-wrap';
+    inputEl.parentNode.insertBefore(wrap, inputEl);
+    wrap.appendChild(inputEl);
+  }
+  let dropdown = null;
+
+  function closeDropdown() {
+    if (dropdown) { dropdown.remove(); dropdown = null; }
+  }
+
+  function openDropdown() {
+    closeDropdown();
+    const options = (optionsFn(inputEl.value || '') || []).slice(0, 30);
+    if (!options.length) return;
+    dropdown = document.createElement('div');
+    dropdown.className = 'autocomplete-dropdown';
+    options.forEach((opt) => {
+      const item = document.createElement('div');
+      item.className = 'autocomplete-item';
+      item.textContent = opt;
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        inputEl.value = opt;
+        closeDropdown();
+        onSelect(opt);
+      });
+      dropdown.appendChild(item);
+    });
+    wrap.appendChild(dropdown);
+  }
+
+  inputEl.addEventListener('focus', openDropdown);
+  inputEl.addEventListener('input', openDropdown);
+  inputEl.addEventListener('blur', () => setTimeout(closeDropdown, 150));
+
+  return { refresh: openDropdown, close: closeDropdown };
+}
+
+(function setupVehicleCatalogAutocomplete() {
+  if (typeof window.VEHICLE_BRANDS === 'undefined') return; // app-vehicle-catalog.js yüklenmemiş olabilir
+  const brandInput = document.getElementById('newVehicleBrand');
+  const modelInput = document.getElementById('newVehicleModel');
+  const versionInput = document.getElementById('newVehicleVersionPackage');
+
+  attachAutocomplete(
+    brandInput,
+    (q) => {
+      const query = q.trim().toLowerCase();
+      const list = window.VEHICLE_BRANDS;
+      return query ? list.filter((b) => b.toLowerCase().includes(query)) : list;
+    },
+    () => {
+      if (modelInput) modelInput.focus();
+    }
+  );
+
+  attachAutocomplete(
+    modelInput,
+    (q) => {
+      const query = q.trim().toLowerCase();
+      const models = window.vehicleModelsForBrand(brandInput ? brandInput.value : '').map((m) => m.name);
+      return query ? models.filter((m) => m.toLowerCase().includes(query)) : models;
+    },
+    () => {
+      if (versionInput) versionInput.focus();
+    }
+  );
+
+  attachAutocomplete(
+    versionInput,
+    (q) => {
+      const query = q.trim().toLowerCase();
+      const trims = window
+        .vehicleTrimsForModel(brandInput ? brandInput.value : '', modelInput ? modelInput.value : '')
+        .map((t) => t.name);
+      return query ? trims.filter((t) => t.toLowerCase().includes(query)) : trims;
+    },
+    (selection) => {
+      const trims = window.vehicleTrimsForModel(
+        brandInput ? brandInput.value : '',
+        modelInput ? modelInput.value : ''
+      );
+      const matched = trims.find((t) => t.name === selection);
+      if (!matched) return;
+      if (matched.engineLabel) {
+        const el = document.getElementById('newVehicleEngine');
+        if (el) el.value = matched.engineLabel;
+      }
+      if (matched.displacementCc != null) {
+        const el = document.getElementById('newVehicleEngineDisplacement');
+        if (el) el.value = matched.displacementCc;
+      }
+      if (matched.horsepowerHp != null) {
+        const el = document.getElementById('newVehicleHorsepower');
+        if (el) el.value = matched.horsepowerHp;
+      }
+    }
+  );
+})();
+
 function renderVehiclePortfolioSummary(data) {
   const el = document.getElementById('vehiclePortfolioSummary');
   if (!el) return;
