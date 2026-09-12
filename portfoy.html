@@ -9,7 +9,7 @@
   name="description"
   content="Varlığım ile hisse, kripto, döviz, emtia, fon, gayrimenkul, araç, mevduat ve VİOP varlıklarınızı üye olmadan deneyin; verilerinizi kaydetmek için istediğiniz zaman ücretsiz hesap oluşturun."
 />
-<link rel="stylesheet" href="styles.css?v=20260911-2" />
+<link rel="stylesheet" href="styles.css?v=20260912-2" />
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
@@ -64,6 +64,12 @@
       <div class="nav-group">
         <div class="nav-item" data-page="aianaliz">
           <span class="msr">smart_toy</span> AI Teknik Analiz
+          <span class="nav-premium-badge">PREMIUM</span>
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-item" data-page="aracfiyat">
+          <span class="msr">directions_car</span> AI Araç Fiyat Sorgulama
           <span class="nav-premium-badge">PREMIUM</span>
         </div>
       </div>
@@ -250,6 +256,89 @@
               <div class="empty" style="padding:36px 10px;">Sonuçları görmek için soldan bir grafik yükleyip “Analiz Et”e basın.</div>
             </div>
             <div id="aiResultWrap" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-aracfiyat">
+        <h1 class="page-title">🚗 AI Araç Fiyat Sorgulama</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:-8px 0 14px; max-width:680px;">
+          Bir aracın marka, model, yıl, km ve durum bilgilerini gir; yapay zeka gerçek web araması
+          yaparak Türkiye ikinci el piyasasındaki karşılaştırılabilir ilanları bulsun ve bunların
+          ORTALAMASINI hesaplasın. Bu bir kesin değerleme değildir.
+        </p>
+
+        <!-- Misafir/girişsiz kullanıcı kapısı — app-guest.js'in mevcut,
+             aktif isGuestSessionMode/openAuthOverlay fonksiyonları. -->
+        <div class="card ai-guest-gate" id="arfGuestGate" style="display:none;">
+          <div class="msr" style="font-size:40px; color:var(--secondary);">lock</div>
+          <h2 style="margin:10px 0 6px;">AI Araç Fiyat Sorgulama için giriş yap</h2>
+          <p style="color:var(--text-muted); font-size:13.5px; max-width:420px; margin:0 auto 18px;">
+            Bu özellik Premium üyelere özeldir. Devam etmek için giriş yap ya da hesap oluştur.
+          </p>
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <button type="button" class="btn primary" id="arfGateLoginBtn">Giriş Yap</button>
+            <button type="button" class="btn outline" id="arfGateSignupBtn">Üye Ol</button>
+          </div>
+        </div>
+
+        <div id="arfBody">
+          <!-- Premium olmayan kullanıcı için kapı — JS ile gösterilir/gizlenir. -->
+          <div class="card ai-guest-gate" id="arfPremiumGate" style="display:none;">
+            <div style="font-size:34px;">👑</div>
+            <h2 style="margin:10px 0 6px;">AI Araç Fiyat Sorgulama Premium üyelere özeldir</h2>
+            <p style="color:var(--text-muted); font-size:13.5px; max-width:420px; margin:0 auto 18px;">
+              Premium üyeler ayda birkaç araç için AI destekli fiyat sorgulaması yapabilir.
+            </p>
+            <button type="button" class="btn primary" onclick="showPage('premium')">👑 Premium'a Geç</button>
+          </div>
+
+          <div id="arfFormWrap">
+            <div class="ai-usage-bar" id="arfUsageBar"></div>
+            <div id="arfMsg" class="ai-msg" style="display:none; margin-bottom:12px;"></div>
+
+            <div class="card">
+              <div class="add-form">
+                <input type="text" id="arfBrandInput" placeholder="Marka (Örn. Fiat, Renault, Audi)">
+                <input type="text" id="arfModelInput" placeholder="Önce marka seçin, sonra model listelenir">
+                <select id="arfYearSelect"></select>
+                <input type="text" id="arfKmInput" inputmode="numeric" placeholder="Kilometre">
+                <select id="arfTransmissionSelect">
+                  <option value="">Vites (belirtilmedi)</option>
+                  <option value="Manuel">Manuel</option>
+                  <option value="Otomatik">Otomatik</option>
+                  <option value="Yarı Otomatik">Yarı Otomatik</option>
+                </select>
+                <select id="arfFuelSelect">
+                  <option value="">Yakıt Tipi (belirtilmedi)</option>
+                  <option value="Benzin">Benzin</option>
+                  <option value="Dizel">Dizel</option>
+                  <option value="LPG">LPG</option>
+                  <option value="Hibrit">Hibrit</option>
+                  <option value="Elektrikli">Elektrikli</option>
+                </select>
+                <select id="arfDriveTypeSelect">
+                  <option value="">Çekiş Tipi (belirtilmedi)</option>
+                  <option value="Önden Çekiş">Önden Çekiş</option>
+                  <option value="Arkadan İtiş">Arkadan İtiş</option>
+                  <option value="4x4 / AWD">4x4 / AWD</option>
+                </select>
+              </div>
+
+              <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-size:13.5px; cursor:pointer;">
+                <input type="checkbox" id="arfHeavyDamageCheckbox" style="width:16px; height:16px;">
+                Ağır Hasar Kaydı Var
+              </label>
+              <div id="arfDamageAmountRow" style="display:none; margin-top:10px;">
+                <input type="text" id="arfDamageAmountInput" inputmode="numeric" class="full" placeholder="Tramer Tutarı (₺)">
+              </div>
+
+              <button type="button" class="btn primary full" id="arfSubmitBtn" style="margin-top:16px;">
+                <span class="msr">directions_car</span> AI ile Fiyat Sorgula
+              </button>
+            </div>
+
+            <div id="arfResultWrap" style="display:none; margin-top:16px;"></div>
           </div>
         </div>
       </div>
@@ -1340,7 +1429,7 @@
   </button>
 </div>
 
-<script src="app-core.js?v=20260911-1"></script>
+<script src="app-core.js?v=20260912-1"></script>
 <script src="app-guest.js?v=20260911-1"></script>
 <script src="app-profil.js?v=20260911-1"></script>
 <script src="app-uyelik.js?v=20260911-2"></script>
@@ -1359,9 +1448,11 @@
 <script src="app-varliklar.js?v=20260907"></script>
 <script src="app-interest.js?v=20260910"></script>
 <script src="app-butce.js?v=20260902"></script>
-<script src="app-varligim.js?v=20260911-2"></script>
+<script src="app-vehicle-catalog.js?v=20260912-2"></script>
+<script src="app-varligim.js?v=20260912-1"></script>
 <script src="app-valuation.js?v=20260911-1"></script>
 <script src="app-ai-analiz.js?v=20260909"></script>
+<script src="app-arac-fiyat-sorgulama.js?v=20260912-1"></script>
 <script src="app-premium.js?v=20260909"></script>
 
 </body>
