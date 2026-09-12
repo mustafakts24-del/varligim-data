@@ -740,6 +740,35 @@ tbody tr:hover { background: var(--bg-elevated); }
 .add-form .full { grid-column: 1 / -1; }
 
 /* ============================================================
+   MARKA/MODEL/VERSİYON OTOMATİK TAMAMLAMA (Araç Ekle iyileştirmesi,
+   2026-09-11). `.autocomplete-wrap`, ilgili <input>'u JS tarafından
+   (app-varligim.js: attachAutocomplete) sarmalanan bir kapsayıcıdır
+   — grid hücresindeki yerleşimi bozmaz, sadece öneri listesinin
+   input'un hemen altına konumlanmasını sağlar.
+   ============================================================ */
+.autocomplete-wrap { position: relative; }
+.autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+}
+.autocomplete-item {
+  padding: 9px 13px;
+  font-size: 13.5px;
+  color: var(--text);
+  cursor: pointer;
+}
+.autocomplete-item:hover { background: var(--secondary); color: #fff; }
+
+/* ============================================================
    OPSİYONEL DETAY BÖLÜMLERİ (Akıllı Değerleme FAZ 2, 2026-09-11)
    Mobildeki ExpansionTile ile aynı mantık: varsayılan kapalı,
    Akıllı Değerleme motoru için isteğe bağlı ek alanlar. Boş
@@ -1756,3 +1785,15 @@ tbody tr:hover { background: var(--bg-elevated); }
 }
 
 #sidebarGuestFooter .email { margin-bottom: 10px; }
+
+/* ============================================================
+   AI ARAÇ FİYAT SORGULAMA (YENİ, 2026-09-12) — form kartının ilk
+   çocuğu .add-form olduğu için üstteki ayraç çizgisini/boşluğunu
+   kaldırıyoruz (diğer sayfalardaki .add-form'a DOKUNULMADI, yalnızca
+   bu sayfaya özel scoped bir kural).
+   ============================================================ */
+#page-aracfiyat .add-form {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
