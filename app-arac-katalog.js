@@ -148,18 +148,31 @@
     for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
     return VK_AVATAR_COLORS[h % VK_AVATAR_COLORS.length];
   }
-  // YENİ (hata bildirimi, 2026-09-13, madde 3+4): marka baş harfi
-  // rozeti KALDIRILDI — artık yalnızca GERÇEK, ağdan doğrulanmış marka
-  // logosu (bkz. `vehicle_brands.logo_url`) varsa gösterilir; yoksa
-  // hiçbir rozet/harf GÖSTERİLMEZ, sadece marka ismi görünür
-  // (dürüstlük kuralı: sahte/uydurma bir görsel asla gösterilmez).
-  // Logo yüklenemezse (bozuk/ulaşılamaz URL) `onerror` ile öğe DOM'dan
-  // kaldırılır, yine hiçbir yer tutucu gösterilmez.
+  // GÜNCELLEME (hata bildirimi, 2026-09-13, 2. ve 3. tur): önce marka baş
+  // harfi rozeti (kural 26) tamamen kaldırılıp yerine SADECE gerçek marka
+  // logosu ya da hiçbir şey gösteriliyordu. 3. turda kullanıcı isteği
+  // üzerine bu değişti: gerçek logo yoksa (veya yüklenemezse) artık
+  // markanın ilk iki harfinin olduğu bir HALKA (dairesel rozet)
+  // gösteriliyor — asla sahte/uydurma bir LOGO değil, sadece nötr bir
+  // baş harf yedeği (aynı mantık mobil tarafta da uygulandı).
+  function vkInitials(name) {
+    const letters = String(name || '').trim().replace(/\s+/g, '');
+    const two = letters.slice(0, 2) || '?';
+    return two.toLocaleUpperCase('tr-TR');
+  }
+  function vkInitialsHtml(name) {
+    const color = vkAvatarColor(name || '');
+    return `<span class="vk-logo-wrap vk-initials-badge" style="display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; margin-right:10px; border-radius:50%; background:${color}22; color:${color}; font-weight:700; font-size:12px; flex-shrink:0;">${vkEsc(vkInitials(name))}</span>`;
+  }
   function vkLogoHtml(url, name) {
     // Not: harici bir CSS dosyasına bağımlı kalınmadan, satır-içi
     // (inline) stil kullanılır — bu bileşenin diğer "vk-" sınıfları
     // gibi (bkz. vkAvatarHtml'in eski satır-içi stil yaklaşımı).
-    return `<span class="vk-logo-wrap" style="display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; margin-right:10px; border-radius:8px; background:#fff; border:1px solid rgba(0,0,0,0.08); overflow:hidden; flex-shrink:0;"><img class="vk-logo" src="${vkEsc(url)}" alt="${vkEsc(name || '')}" loading="lazy" style="width:100%; height:100%; object-fit:contain; padding:4px; box-sizing:border-box;" onerror="this.parentElement.remove()"></span>`;
+    // Logo yüklenemezse (bozuk/ulaşılamaz URL) `onerror` ile ilk-iki-harf
+    // halkasına (vkInitialsHtml) düşülür — data-fallback özniteliğinde
+    // HTML-escaped olarak taşınır.
+    const fallbackHtml = vkInitialsHtml(name).replace(/"/g, '&quot;');
+    return `<span class="vk-logo-wrap" style="display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; margin-right:10px; border-radius:8px; background:#fff; border:1px solid rgba(0,0,0,0.08); overflow:hidden; flex-shrink:0;"><img class="vk-logo" src="${vkEsc(url)}" alt="${vkEsc(name || '')}" loading="lazy" data-fallback="${fallbackHtml}" style="width:100%; height:100%; object-fit:contain; padding:4px; box-sizing:border-box;" onerror="this.parentElement.outerHTML=this.getAttribute('data-fallback');"></span>`;
   }
 
   function vkEsc(s) {
@@ -215,7 +228,7 @@
       // faydalanmaya devam eder.
       listEl.innerHTML = items.map((it, idx) => `
         <div class="vk-row" data-idx="${idx}" style="display:flex; align-items:center; gap:2px; padding:10px 6px; border-bottom:1px solid rgba(0,0,0,0.06); cursor:pointer;">
-          ${it.logo_url ? vkLogoHtml(it.logo_url, it.name) : ''}
+          ${opts.brandAvatar ? (it.logo_url ? vkLogoHtml(it.logo_url, it.name) : vkInitialsHtml(it.name)) : ''}
           <div class="vk-row-main" style="flex:1; min-width:0;">
             <div class="vk-row-name">${vkEsc(it.name)}${it.subcategory ? ` <span class="vk-row-tag">${vkEsc(it.subcategory)}</span>` : ''}</div>
             ${it._sub ? `<div class="vk-row-sub">${vkEsc(it._sub)}</div>` : ''}
@@ -305,6 +318,7 @@
         title: sel.categoryName,
         breadcrumb: `<span class="vk-crumb-cur">${vkEsc(sel.categoryName)}</span>`,
         items: brands,
+        brandAvatar: true,
         searchPlaceholder: 'Marka Ara',
         emptyMessage: 'Bu kategoride henüz marka eklenmedi.',
         onBack: stepCategory,
