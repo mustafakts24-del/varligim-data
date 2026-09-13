@@ -139,9 +139,8 @@
   }
 
   // ============================================================
-  // Marka baş harfi rozeti (kural 26: gerçek logo yoksa marka baş
-  // harfi kullan — mevcut projede banka logoları için de kullanılan
-  // AYNI dürüst yaklaşım, Sahibinden'den logo ÇEKİLMEZ).
+  // Kategori ızgarası renk vurgusu için hâlâ kullanılan yardımcı
+  // (bkz. vkRenderCategoryGrid — kartın --vhc-color'ı).
   // ============================================================
   const VK_AVATAR_COLORS = ['#5B6EF5','#7047EB','#9B3FF0','#3984F6','#F0A020','#2AA9E0','#22D3EE','#E0507A','#3FAE6B'];
   function vkAvatarColor(name) {
@@ -149,10 +148,18 @@
     for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
     return VK_AVATAR_COLORS[h % VK_AVATAR_COLORS.length];
   }
-  function vkAvatarHtml(name) {
-    const letter = (name || '?').trim().charAt(0).toLocaleUpperCase('tr-TR');
-    const color = vkAvatarColor(name || '');
-    return `<span class="vk-avatar" style="background:${color}22; color:${color};">${vkEsc(letter)}</span>`;
+  // YENİ (hata bildirimi, 2026-09-13, madde 3+4): marka baş harfi
+  // rozeti KALDIRILDI — artık yalnızca GERÇEK, ağdan doğrulanmış marka
+  // logosu (bkz. `vehicle_brands.logo_url`) varsa gösterilir; yoksa
+  // hiçbir rozet/harf GÖSTERİLMEZ, sadece marka ismi görünür
+  // (dürüstlük kuralı: sahte/uydurma bir görsel asla gösterilmez).
+  // Logo yüklenemezse (bozuk/ulaşılamaz URL) `onerror` ile öğe DOM'dan
+  // kaldırılır, yine hiçbir yer tutucu gösterilmez.
+  function vkLogoHtml(url, name) {
+    // Not: harici bir CSS dosyasına bağımlı kalınmadan, satır-içi
+    // (inline) stil kullanılır — bu bileşenin diğer "vk-" sınıfları
+    // gibi (bkz. vkAvatarHtml'in eski satır-içi stil yaklaşımı).
+    return `<span class="vk-logo-wrap" style="display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; margin-right:10px; border-radius:8px; background:#fff; border:1px solid rgba(0,0,0,0.08); overflow:hidden; flex-shrink:0;"><img class="vk-logo" src="${vkEsc(url)}" alt="${vkEsc(name || '')}" loading="lazy" style="width:100%; height:100%; object-fit:contain; padding:4px; box-sizing:border-box;" onerror="this.parentElement.remove()"></span>`;
   }
 
   function vkEsc(s) {
@@ -200,14 +207,20 @@
         listEl.innerHTML = `<div class="vk-empty">${vkEsc(opts.emptyMessage || 'Sonuç bulunamadı.')}</div>`;
         return;
       }
+      // Not: bu satır düzeni (avatar/logo — isim — ok simgesi yan yana)
+      // harici bir CSS dosyasına bağımlı kalınmadan doğrudan satır-içi
+      // (inline) stil ile garanti edilir (bkz. vkLogoHtml'in kendi
+      // notu) — dosyanın diğer görsel öğeleri (buton/kart vb.) genel
+      // styles.css'teki paylaşılan sınıflardan (.card, .btn, .msr)
+      // faydalanmaya devam eder.
       listEl.innerHTML = items.map((it, idx) => `
-        <div class="vk-row" data-idx="${idx}">
-          ${opts.showAvatar ? vkAvatarHtml(it.name) : ''}
-          <div class="vk-row-main">
+        <div class="vk-row" data-idx="${idx}" style="display:flex; align-items:center; gap:2px; padding:10px 6px; border-bottom:1px solid rgba(0,0,0,0.06); cursor:pointer;">
+          ${it.logo_url ? vkLogoHtml(it.logo_url, it.name) : ''}
+          <div class="vk-row-main" style="flex:1; min-width:0;">
             <div class="vk-row-name">${vkEsc(it.name)}${it.subcategory ? ` <span class="vk-row-tag">${vkEsc(it.subcategory)}</span>` : ''}</div>
             ${it._sub ? `<div class="vk-row-sub">${vkEsc(it._sub)}</div>` : ''}
           </div>
-          <span class="msr vk-row-chevron">chevron_right</span>
+          <span class="msr vk-row-chevron" style="flex-shrink:0; opacity:0.45;">chevron_right</span>
         </div>
       `).join('');
       listEl.querySelectorAll('.vk-row').forEach((rowEl) => {
@@ -292,7 +305,6 @@
         title: sel.categoryName,
         breadcrumb: `<span class="vk-crumb-cur">${vkEsc(sel.categoryName)}</span>`,
         items: brands,
-        showAvatar: true,
         searchPlaceholder: 'Marka Ara',
         emptyMessage: 'Bu kategoride henüz marka eklenmedi.',
         onBack: stepCategory,
