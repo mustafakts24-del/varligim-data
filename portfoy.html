@@ -260,7 +260,7 @@
         </div>
       </div>
 
-      <div class="page" id="page-aracfiyat">
+            <div class="page" id="page-aracfiyat">
         <h1 class="page-title">🚗 AI Araç Fiyat Sorgulama</h1>
         <p style="color:var(--text-muted); font-size:13px; margin:-8px 0 14px; max-width:680px;">
           Bir aracın marka, model, yıl, km ve durum bilgilerini gir; yapay zeka gerçek web araması
@@ -297,10 +297,19 @@
             <div class="ai-usage-bar" id="arfUsageBar"></div>
             <div id="arfMsg" class="ai-msg" style="display:none; margin-bottom:12px;"></div>
 
-            <div class="card">
-              <div class="add-form">
-                <input type="text" id="arfBrandInput" placeholder="Marka (Örn. Fiat, Renault, Audi)">
-                <input type="text" id="arfModelInput" placeholder="Önce marka seçin, sonra model listelenir">
+            <!-- YENİ (Araç Kataloğu, 2026-09-12): Kategori → Marka → Model →
+                 Nesil/Kasa → Motor → Versiyon adım adım seçim. Veri kaynağı
+                 Supabase'teki vehicle_categories/vehicle_brands/... tabloları
+                 (bkz. app-arac-katalog.js, window.VehicleCatalogPicker). -->
+            <div class="card" id="arfCatalogCard">
+              <div id="arfCatalogPicker"></div>
+            </div>
+
+            <!-- Katalog seçimi tamamlanınca gösterilir. -->
+            <div class="card" id="arfDetailsCard" style="display:none;">
+              <div id="arfSelectionSummary"></div>
+
+              <div class="add-form" style="margin-top:14px;">
                 <select id="arfYearSelect"></select>
                 <input type="text" id="arfKmInput" inputmode="numeric" placeholder="Kilometre">
                 <select id="arfTransmissionSelect">
@@ -323,6 +332,9 @@
                   <option value="Arkadan İtiş">Arkadan İtiş</option>
                   <option value="4x4 / AWD">4x4 / AWD</option>
                 </select>
+                <input type="text" id="arfChangedPartsInput" inputmode="numeric" placeholder="Değişen Parça Sayısı (opsiyonel)">
+                <input type="text" id="arfPaintedPartsInput" inputmode="numeric" placeholder="Boyanan Parça Sayısı (opsiyonel)">
+                <input type="text" id="arfPurchasePriceInput" inputmode="numeric" placeholder="Satın Alma Fiyatı ₺ (opsiyonel)">
               </div>
 
               <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-size:13.5px; cursor:pointer;">
@@ -1452,7 +1464,8 @@
 <script src="app-varligim.js?v=20260912-1"></script>
 <script src="app-valuation.js?v=20260911-1"></script>
 <script src="app-ai-analiz.js?v=20260909"></script>
-<script src="app-arac-fiyat-sorgulama.js?v=20260912-1"></script>
+<script src="app-arac-katalog.js?v=20260913-1"></script>
+<script src="app-arac-fiyat-sorgulama.js?v=20260913-1"></script>
 <script src="app-premium.js?v=20260909"></script>
 
 </body>
