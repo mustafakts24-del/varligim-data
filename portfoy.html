@@ -74,6 +74,12 @@
         </div>
       </div>
       <div class="nav-group">
+        <div class="nav-item" data-page="gayrimenkulfiyat">
+          <span class="msr">home_work</span> AI Gayrimenkul Fiyat Sorgulama
+          <span class="nav-premium-badge">PREMIUM</span>
+        </div>
+      </div>
+      <div class="nav-group">
         <div class="nav-item" id="navVarliklarToggle">
           <span class="msr">account_balance_wallet</span> Varlıklar
           <span class="msr chev">expand_more</span>
@@ -351,6 +357,93 @@
             </div>
 
             <div id="arfResultWrap" style="display:none; margin-top:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- YENİ (2026-09-13): AI GAYRİMENKUL FİYAT SORGULAMA — AI Araç Fiyat
+           Sorgulama ile AYNI mimari/UX deseni (kullanıcı isteği: "araç fiyat
+           sorgulama bölümü gibi tasarla"), TEK FARK, giriş alanları
+           gayrimenkule uyarlanmıştır ve araçtaki katalog seçimi yerine
+           mevcut "Gayrimenkul Ekle" ekranındaki (real_estate_form_screen.dart /
+           app-varligim.js newRealEstate* alanları) alan adları/seçenekleri
+           BİREBİR reuse edilmiştir. -->
+      <div class="page" id="page-gayrimenkulfiyat">
+        <h1 class="page-title">🏠 AI Gayrimenkul Fiyat Sorgulama</h1>
+        <p style="color:var(--text-muted); font-size:13px; margin:-8px 0 14px; max-width:680px;">
+          Bir evin il, ilçe, mahalle, konut tipi, oda sayısı, m² ve durum bilgilerini gir; yapay
+          zeka gerçek web araması yaparak o eve YAKIN karşılaştırılabilir ilanları bulsun ve
+          bunların ORTALAMASINI hesaplasın. Bu bir kesin değerleme değildir.
+        </p>
+
+        <!-- Misafir/girişsiz kullanıcı kapısı — app-guest.js'in mevcut,
+             aktif isGuestSessionMode/openAuthOverlay fonksiyonları. -->
+        <div class="card ai-guest-gate" id="grfGuestGate" style="display:none;">
+          <div class="msr" style="font-size:40px; color:var(--secondary);">lock</div>
+          <h2 style="margin:10px 0 6px;">AI Gayrimenkul Fiyat Sorgulama için giriş yap</h2>
+          <p style="color:var(--text-muted); font-size:13.5px; max-width:420px; margin:0 auto 18px;">
+            Bu özellik Premium üyelere özeldir. Devam etmek için giriş yap ya da hesap oluştur.
+          </p>
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <button type="button" class="btn primary" id="grfGateLoginBtn">Giriş Yap</button>
+            <button type="button" class="btn outline" id="grfGateSignupBtn">Üye Ol</button>
+          </div>
+        </div>
+
+        <div id="grfBody">
+          <!-- Premium olmayan kullanıcı için kapı — JS ile gösterilir/gizlenir. -->
+          <div class="card ai-guest-gate" id="grfPremiumGate" style="display:none;">
+            <div style="font-size:34px;">👑</div>
+            <h2 style="margin:10px 0 6px;">AI Gayrimenkul Fiyat Sorgulama Premium üyelere özeldir</h2>
+            <p style="color:var(--text-muted); font-size:13.5px; max-width:420px; margin:0 auto 18px;">
+              Premium üyeler ayda birkaç ev için AI destekli fiyat sorgulaması yapabilir.
+            </p>
+            <button type="button" class="btn primary" onclick="showPage('premium')">👑 Premium'a Geç</button>
+          </div>
+
+          <div id="grfFormWrap">
+            <div class="ai-usage-bar" id="grfUsageBar"></div>
+            <div id="grfMsg" class="ai-msg" style="display:none; margin-bottom:12px;"></div>
+
+            <div class="card">
+              <div class="add-form">
+                <input type="text" id="grfCityInput" placeholder="İl">
+                <input type="text" id="grfDistrictInput" placeholder="İlçe">
+                <input type="text" id="grfNeighborhoodInput" placeholder="Mahalle (opsiyonel — konum kesinliği için önerilir)">
+                <select id="grfHousingTypeSelect"></select>
+                <select id="grfRoomPatternSelect"></select>
+                <input type="text" id="grfNetAreaInput" inputmode="numeric" placeholder="Net m²">
+                <input type="text" id="grfGrossAreaInput" inputmode="numeric" placeholder="Brüt m² (opsiyonel)">
+                <input type="text" id="grfBuildingAgeInput" inputmode="numeric" placeholder="Bina Yaşı">
+                <input type="text" id="grfFloorNoInput" inputmode="numeric" placeholder="Bulunduğu Kat (opsiyonel)">
+                <input type="text" id="grfTotalFloorsInput" inputmode="numeric" placeholder="Toplam Kat Sayısı (opsiyonel)">
+                <select id="grfHeatingTypeSelect"></select>
+                <select id="grfTitleDeedStatusSelect"></select>
+                <input type="text" id="grfSiteNameInput" placeholder="Site Adı (opsiyonel)">
+                <input type="text" id="grfPurchasePriceInput" inputmode="numeric" placeholder="Satın Alma Fiyatı ₺ (opsiyonel)">
+              </div>
+
+              <div style="display:flex; flex-wrap:wrap; gap:16px; margin-top:14px;">
+                <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; cursor:pointer;">
+                  <input type="checkbox" id="grfElevatorCheckbox" style="width:16px; height:16px;"> Asansör
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; cursor:pointer;">
+                  <input type="checkbox" id="grfBalconyCheckbox" style="width:16px; height:16px;"> Balkon
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; cursor:pointer;">
+                  <input type="checkbox" id="grfParkingCheckbox" style="width:16px; height:16px;"> Otopark
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; cursor:pointer;">
+                  <input type="checkbox" id="grfFurnishedCheckbox" style="width:16px; height:16px;"> Eşyalı
+                </label>
+              </div>
+
+              <button type="button" class="btn primary full" id="grfSubmitBtn" style="margin-top:16px;">
+                <span class="msr">home_work</span> AI ile Fiyat Sorgula
+              </button>
+            </div>
+
+            <div id="grfResultWrap" style="display:none; margin-top:16px;"></div>
           </div>
         </div>
       </div>
@@ -1466,6 +1559,7 @@
 <script src="app-ai-analiz.js?v=20260909"></script>
 <script src="app-arac-katalog.js?v=20260913-3"></script>
 <script src="app-arac-fiyat-sorgulama.js?v=20260913-1"></script>
+<script src="app-gayrimenkul-fiyat-sorgulama.js?v=20260913-1"></script>
 <script src="app-premium.js?v=20260909"></script>
 
 </body>
