@@ -678,6 +678,7 @@ const PAGE_TITLES = {
   home: 'Ana Sayfa',
   aianaliz: 'AI Teknik Analiz',
   aracfiyat: 'AI Araç Fiyat Sorgulama',
+  gayrimenkulfiyat: 'AI Gayrimenkul Fiyat Sorgulama',
   premium: 'Premium',
   varliklar: 'Varlıklar',
   emtia: 'Emtialar',
