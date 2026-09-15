@@ -678,7 +678,6 @@ async function loadHomePage() {
   if (updatedEl) {
     updatedEl.innerHTML = `
       <span class="live-indicator" id="homeLiveIndicator"><span class="dot"></span>CANLI</span>
-      · Son güncelleme: ${new Date().toLocaleTimeString('tr-TR')}
     `;
   }
 
