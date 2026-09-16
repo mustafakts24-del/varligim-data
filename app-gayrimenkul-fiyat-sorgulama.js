@@ -138,7 +138,7 @@ function grfRenderUsageBar(usage) {
     usageBarEl.innerHTML = `
       <span class="ai-trial-counter${exhausted ? ' exhausted' : ''}">
         <span class="msr" style="font-size:15px; vertical-align:-3px;">home_work</span>
-        ${exhausted ? 'Bu ayki AI fiyat sorgulama hakkın doldu' : `Bu Ay Kullanılan: ${usage.used}/${usage.monthlyLimit}`}
+        ${exhausted ? 'Bu ayki EVA fiyat sorgulama hakkın doldu' : `Bu Ay Kullanılan: ${usage.used}/${usage.monthlyLimit}`}
       </span>
     `;
   }
@@ -180,6 +180,77 @@ function grfPopulateSelects() {
   grfPopulateSelect('grfRoomPatternSelect', GRF_ROOM_PATTERNS);
   grfPopulateSelect('grfHeatingTypeSelect', GRF_HEATING_TYPES);
   grfPopulateSelect('grfTitleDeedStatusSelect', GRF_TITLE_DEED_STATUSES);
+}
+
+// ============================================================
+// İl / İlçe / Mahalle — kademeli, kaydırmalı seçim listeleri.
+// Veri kaynağı: data-turkiye-il-ilce-mahalle.js (TÜİK/İçişleri Bakanlığı
+// resmi mahalle listesine dayanan açık veri seti; 81 il, ~1010 ilçe,
+// ~32.283 mahalle). Bu dosya `TR_IL_ILCE_MAHALLE` global sabitini bu
+// dosyadan ÖNCE yükler (bkz. portfoy.html script sırası).
+// ============================================================
+function grfSetOptions(sel, items, placeholderText) {
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '';
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = placeholderText;
+  sel.appendChild(placeholder);
+  items.forEach((item) => {
+    const el = document.createElement('option');
+    el.value = item;
+    el.textContent = item;
+    sel.appendChild(el);
+  });
+  if (items.includes(prev)) sel.value = prev;
+}
+
+function grfPopulateCitySelect() {
+  const sel = document.getElementById('grfCityInput');
+  if (!sel || typeof TR_IL_ILCE_MAHALLE === 'undefined') return;
+  const cities = Object.keys(TR_IL_ILCE_MAHALLE).sort((a, b) => a.localeCompare(b, 'tr'));
+  grfSetOptions(sel, cities, 'İl seçiniz');
+}
+
+function grfPopulateDistrictSelect(city) {
+  const sel = document.getElementById('grfDistrictInput');
+  if (!sel) return;
+  const ilceler = (city && typeof TR_IL_ILCE_MAHALLE !== 'undefined' && TR_IL_ILCE_MAHALLE[city])
+    ? Object.keys(TR_IL_ILCE_MAHALLE[city]).sort((a, b) => a.localeCompare(b, 'tr'))
+    : [];
+  grfSetOptions(sel, ilceler, 'İlçe seçiniz');
+  sel.disabled = !city;
+}
+
+function grfPopulateNeighborhoodSelect(city, district) {
+  const sel = document.getElementById('grfNeighborhoodInput');
+  if (!sel) return;
+  const mahalleler = (city && district && typeof TR_IL_ILCE_MAHALLE !== 'undefined' &&
+    TR_IL_ILCE_MAHALLE[city] && TR_IL_ILCE_MAHALLE[city][district])
+    ? TR_IL_ILCE_MAHALLE[city][district].slice().sort((a, b) => a.localeCompare(b, 'tr'))
+    : [];
+  grfSetOptions(sel, mahalleler, 'Mahalle seçiniz (opsiyonel)');
+  sel.disabled = !district;
+}
+
+function grfWireLocationSelects() {
+  const citySel = document.getElementById('grfCityInput');
+  const districtSel = document.getElementById('grfDistrictInput');
+  const neighborhoodSel = document.getElementById('grfNeighborhoodInput');
+  if (!citySel || !districtSel || !neighborhoodSel) return;
+
+  grfPopulateCitySelect();
+  grfPopulateDistrictSelect('');
+  grfPopulateNeighborhoodSelect('', '');
+
+  citySel.addEventListener('change', () => {
+    grfPopulateDistrictSelect(citySel.value);
+    grfPopulateNeighborhoodSelect('', '');
+  });
+  districtSel.addEventListener('change', () => {
+    grfPopulateNeighborhoodSelect(citySel.value, districtSel.value);
+  });
 }
 
 // Binlik ayraçlı sayı alanları (satın alma fiyatı) — mevcut projedeki
@@ -293,7 +364,7 @@ async function grfRunEstimate() {
   } finally {
     if (btn) {
       btn.disabled = !!(grfUsageCache && grfUsageCache.remaining <= 0);
-      btn.textContent = 'AI ile Fiyat Sorgula';
+      btn.textContent = 'EVA ile Fiyat Sorgula';
     }
   }
 }
@@ -474,6 +545,7 @@ function grfWirePageOnce() {
   if (grfPageWired) return;
   grfPageWired = true;
   grfPopulateSelects();
+  grfWireLocationSelects();
   grfWireThousandsInput('grfPurchasePriceInput');
   document.getElementById('grfSubmitBtn')?.addEventListener('click', grfRunEstimate);
 }
