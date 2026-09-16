@@ -1,7 +1,7 @@
 /* ==================================================================
- * app-gayrimenkul-fiyat-sorgulama.js — AI Gayrimenkul Fiyat Sorgulama (2026-09-13)
+ * app-gayrimenkul-fiyat-sorgulama.js — EVA Gayrimenkul Fiyat Sorgulama (2026-09-13)
  *
- * Kullanıcı isteği: "AI Araç Fiyat Sorgulama" bölümü gibi, cloud'un yapay
+ * Kullanıcı isteği: "EVA Araç Fiyat Sorgulama" bölümü gibi, cloud'un yapay
  * zekasını kullanarak, karşıdan alınan bilgilerle internetteki o eve YAKIN
  * evlerin fiyatlarını inceleyip belirli aralıklarda evin ederini yazsın.
  * Gerekli giriş alanları BİZİM tarafımızdan tasarlandı (kullanıcı bunu
@@ -67,11 +67,11 @@ async function grfCallFunction(body) {
       body: JSON.stringify(body),
     });
   } catch (e) {
-    throw new Error('AI Gayrimenkul Fiyat Sorgulama servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
+    throw new Error('EVA Gayrimenkul Fiyat Sorgulama servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const err = new Error(data?.error || 'AI Gayrimenkul Fiyat Sorgulama servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
+    const err = new Error(data?.error || 'EVA Gayrimenkul Fiyat Sorgulama servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
     if (data?.code) err.code = data.code;
     throw err;
   }
@@ -85,7 +85,7 @@ function grfWireGateOnce() {
   if (grfGateWired) return;
   grfGateWired = true;
   const reason = {
-    title: 'AI Gayrimenkul Fiyat Sorgulama için giriş yap',
+    title: 'EVA Gayrimenkul Fiyat Sorgulama için giriş yap',
     lead: 'Bu özellik Premium üyelere özeldir. Devam etmek için giriş yap ya da hesap oluştur.',
   };
   document.getElementById('grfGateLoginBtn')?.addEventListener('click', () => {
