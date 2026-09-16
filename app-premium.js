@@ -19,14 +19,14 @@
  * ================================================================== */
 
 const PREMIUM_FEATURES = [
-  { icon: 'all_inclusive', title: 'Sınırsız AI analiz', desc: 'Ücretsiz hak sınırı olmadan istediğin kadar grafik analiz et.' },
+  { icon: 'all_inclusive', title: 'Sınırsız EVA analiz', desc: 'Ücretsiz hak sınırı olmadan istediğin kadar grafik analiz et.' },
   { icon: 'image_search', title: 'Grafik görüntü analizi', desc: 'Hisse, kripto, döviz, emtia veya endeks grafiklerini yükle.' },
   { icon: 'ssid_chart', title: 'Teknik gösterge analizi', desc: 'MACD, RSI, SMA, EMA ve hacim yorumu.' },
   { icon: 'compare_arrows', title: 'Destek / direnç analizi', desc: 'Olası destek ve direnç seviyeleri.' },
   { icon: 'trending_up', title: 'Trend analizi', desc: 'Kısa / orta / uzun vadeli trend değerlendirmesi.' },
   { icon: 'price_change', title: 'Alım / satım bölgeleri', desc: 'Olası alım ve kâr alma bölgeleri.' },
   { icon: 'route', title: 'Senaryo analizi', desc: 'Yükseliş / yatay / düşüş senaryoları.' },
-  { icon: 'forum', title: 'AI ile soru-cevap', desc: "Analiz hakkında AI'a doğrudan soru sor." },
+  { icon: 'forum', title: 'EVA ile soru-cevap', desc: "Analiz hakkında EVA'ya doğrudan soru sor." },
 ];
 
 function premiumFeatureGridHtml() {
