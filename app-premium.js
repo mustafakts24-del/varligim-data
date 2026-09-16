@@ -1,7 +1,7 @@
 /* ==================================================================
  * app-premium.js — Premium sayfası (2026-09)
  *
- * "AI Teknik Analiz" özelliğinin premium/ücretsiz deneme hakkı durumunu
+ * "EVA Teknik Analiz" özelliğinin premium/ücretsiz deneme hakkı durumunu
  * (bkz. app-ai-analiz.js → aiCallFunction, aynı Edge Function'ın
  * "usage_status" action'ı) okuyup, kullanıcı zaten Premium'sa bir
  * "Zaten Premium'sun" kartı, değilse deneme hakkı özeti + özellik listesi
@@ -58,7 +58,7 @@ function renderPremiumAlready(usage) {
     <div class="premium-hero">
       <div class="crown">👑</div>
       <h1>Zaten Premium'sun!</h1>
-      <p>AI Teknik Analiz'i sınırsız kullanabilirsin. Yeni paketler ve özellikler yakında burada görünecek.</p>
+      <p>EVA Teknik Analiz'i sınırsız kullanabilirsin. Yeni paketler ve özellikler yakında burada görünecek.</p>
     </div>
     <div class="card premium-already-badge">
       <span class="premium-badge-lg">👑 Premium${usage.premiumPlan ? ' · ' + escapeHtml(String(usage.premiumPlan)) : ''}</span>
@@ -78,7 +78,7 @@ function renderPremiumUpgrade(usage) {
     <div class="premium-hero">
       <div class="crown">👑</div>
       <h1>Premium'a Geç</h1>
-      <p>AI Teknik Analiz'in tüm gücünden sınırsız yararlan — grafik yükle, yapay zekâ trend, destek/direnç,
+      <p>EVA Teknik Analiz'in tüm gücünden sınırsız yararlan — grafik yükle, yapay zekâ trend, destek/direnç,
       alım-satım bölgeleri, senaryo ve teknik skor üretsin.</p>
     </div>
 
