@@ -77,11 +77,11 @@ async function aiCallFunction(body) {
       body: JSON.stringify(body),
     });
   } catch (e) {
-    throw new Error('AI analiz servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
+    throw new Error('EVA analiz servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const err = new Error(data?.error || 'AI analiz servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
+    const err = new Error(data?.error || 'EVA analiz servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
     // Backend'in 402 TRIAL_EXHAUSTED gibi makine-okunabilir hata kodları
     // (bkz. ai-chart-analysis/index.ts) buraya taşınır — çağıran kod,
     // Türkçe mesaj metnini eşleştirmeye çalışmadan (kırılgan olurdu)
@@ -119,7 +119,7 @@ function aiRenderUsageBar(usage) {
   el.innerHTML = `
     <span class="ai-trial-counter${exhausted ? ' exhausted' : ''}">
       <span class="msr" style="font-size:15px; vertical-align:-3px;">smart_toy</span>
-      ${exhausted ? 'Ücretsiz analiz hakkın bitti' : `Ücretsiz AI Analiz Hakkın: ${remaining}/${usage.freeTrialTotal}`}
+      ${exhausted ? 'Ücretsiz analiz hakkın bitti' : `Ücretsiz EVA Analiz Hakkın: ${remaining}/${usage.freeTrialTotal}`}
     </span>
     ${exhausted ? `<button class="ai-premium-cta-btn" id="aiGoPremiumBtn" type="button">👑 Premium'a Geç</button>` : ''}
   `;
@@ -271,7 +271,7 @@ async function aiRunAnalysis() {
       aiShowMsg(e.message || 'Ücretsiz analiz hakkın bitti. Premium\'a geçebilirsin.', 'error');
       aiLoadUsageStatus();
     } else {
-      aiShowMsg(e.message || 'AI analiz servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.', 'error');
+      aiShowMsg(e.message || 'EVA analiz servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.', 'error');
     }
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = '<span class="msr">smart_toy</span> ANALİZ ET'; }
@@ -428,7 +428,7 @@ function aiRenderAnalysis(analysis) {
     </div>
 
     <div class="card">
-      <div class="detail-section-title" style="margin-top:0;">🤖 AI Teknik Skor</div>
+      <div class="detail-section-title" style="margin-top:0;">🤖 EVA Teknik Skor</div>
       ${aiScoreBarHtml('Trend', ts.trend)}
       ${aiScoreBarHtml('Momentum', ts.momentum)}
       ${aiScoreBarHtml('Hacim', ts.volume)}
@@ -469,7 +469,7 @@ function aiRenderAnalysis(analysis) {
     <div class="card ai-disclaimer">⚠️ ${escapeHtml(analysis.disclaimer || 'Bu analiz yalnızca teknik grafik verilerine dayalı bir değerlendirmedir. Yatırım tavsiyesi değildir. Finansal piyasalarda zarar etme riski vardır.')}</div>
 
     <div class="card">
-      <div class="detail-section-title" style="margin-top:0;">💬 AI ile Sohbet</div>
+      <div class="detail-section-title" style="margin-top:0;">💬 EVA ile Sohbet</div>
       <div class="chip-row" id="aiChatChips">
         ${AI_QUICK_QUESTIONS.map(q => `<div class="filter-chip" data-q="${escapeHtml(q)}">${escapeHtml(q)}</div>`).join('')}
       </div>
@@ -536,7 +536,7 @@ async function aiSendChat(message) {
   } catch (e) {
     const last = aiChatMessages[aiChatMessages.length - 1];
     if (last && last.loading) {
-      last.content = e.message || 'AI analiz servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.';
+      last.content = e.message || 'EVA analiz servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.';
       delete last.loading;
     }
     aiRenderChatMessages();
