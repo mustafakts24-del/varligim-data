@@ -676,9 +676,9 @@ document.getElementById('signOutBtn').addEventListener('click', async () => {
  * ------------------------------------------------------------------ */
 const PAGE_TITLES = {
   home: 'Ana Sayfa',
-  aianaliz: 'AI Teknik Analiz',
-  aracfiyat: 'AI Araç Fiyat Sorgulama',
-  gayrimenkulfiyat: 'AI Gayrimenkul Fiyat Sorgulama',
+  aianaliz: 'EVA Teknik Analiz',
+  aracfiyat: 'EVA Araç Fiyat Sorgulama',
+  gayrimenkulfiyat: 'EVA Gayrimenkul Fiyat Sorgulama',
   premium: 'Premium',
   varliklar: 'Varlıklar',
   emtia: 'Emtialar',
