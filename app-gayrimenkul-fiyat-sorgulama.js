@@ -116,21 +116,20 @@ function grfApplyGuestGate() {
 // Premium / aylık kullanım rozeti — gerçek değer HER ZAMAN backend'den
 // (Edge Function → ai_usage + real_estate_price_inquiry_usage) okunur.
 // ============================================================
+// YENİ (2026-09-16, kullanıcı isteği): Premium kapısı artık formu baştan
+// GİZLEMİYOR — gayrimenkul bilgisi girişine HER ZAMAN izin verilir; Premium
+// kontrolü ve gerekiyorsa otomatik yönlendirme SADECE "Sorgula" butonuna
+// basılınca yapılır (bkz. grfEnsurePremiumOrRedirect, grfRunEstimate).
+// `grfPremiumGate` elemanı artık hiç gösterilmiyor (HTML'de gizli kalır).
 function grfRenderUsageBar(usage) {
   grfUsageCache = usage;
-  const gateEl = document.getElementById('grfPremiumGate');
-  const formWrap = document.getElementById('grfFormWrap');
   const usageBarEl = document.getElementById('grfUsageBar');
   if (!usage) { if (usageBarEl) usageBarEl.innerHTML = ''; return; }
 
   if (!usage.isPremium) {
-    if (gateEl) gateEl.style.display = 'block';
-    if (formWrap) formWrap.style.display = 'none';
     if (usageBarEl) usageBarEl.innerHTML = '';
     return;
   }
-  if (gateEl) gateEl.style.display = 'none';
-  if (formWrap) formWrap.style.display = '';
 
   const remaining = usage.remaining;
   const exhausted = remaining <= 0;
@@ -155,6 +154,29 @@ async function grfLoadUsageStatus() {
     // backend'de (Edge Function, her "estimate" çağrısında) bağımsız
     // olarak korunuyor; bu yalnızca bir ARAYÜZ göstergesidir.
   }
+}
+
+// YENİ (2026-09-16, kullanıcı isteği): "Sorgula" butonuna basılınca ÖNCE
+// Premium durumu backend'den TAZE çekilir (önbellek bayat olabilir);
+// Premium değilse Premium sayfasına otomatik yönlendirilir ve false
+// döner (grfRunEstimate burada durur). Backend, "estimate" çağrısında
+// Premium/kota kontrolünü ZATEN bağımsız yapıyor — bu yalnızca bir
+// ARAYÜZ yönlendirmesidir.
+async function grfEnsurePremiumOrRedirect() {
+  let usage = grfUsageCache;
+  try {
+    usage = await grfCallFunction({ action: 'usage_status' });
+    grfRenderUsageBar(usage);
+  } catch (e) {
+    // Durum tazelenemezse önbellekteki son bilinen değere güvenilir;
+    // hiç yoksa kullanıcıyı gereksiz yere engellememek için devam
+    // etmesine izin verilir (backend zaten bağımsız kontrol ediyor).
+  }
+  if (usage && !usage.isPremium) {
+    if (typeof showPage === 'function') showPage('premium');
+    return false;
+  }
+  return true;
 }
 
 // ============================================================
@@ -299,6 +321,12 @@ function grfShowMsg(text, type) {
 // Form gönderme
 // ============================================================
 async function grfRunEstimate() {
+  const btnCheck = document.getElementById('grfSubmitBtn');
+  if (btnCheck) { btnCheck.disabled = true; btnCheck.textContent = 'Kontrol ediliyor…'; }
+  const allowed = await grfEnsurePremiumOrRedirect();
+  if (btnCheck) { btnCheck.disabled = false; btnCheck.textContent = 'EVA ile Fiyat Sorgula'; }
+  if (!allowed) return;
+
   const city = (document.getElementById('grfCityInput')?.value || '').trim();
   const district = (document.getElementById('grfDistrictInput')?.value || '').trim();
   const neighborhood = (document.getElementById('grfNeighborhoodInput')?.value || '').trim();
