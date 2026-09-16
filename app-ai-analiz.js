@@ -1,5 +1,5 @@
 /* ==================================================================
- * app-ai-analiz.js — AI Teknik Analiz (YENİ, 2026-09)
+ * app-ai-analiz.js — EVA Teknik Analiz (YENİ, 2026-09)
  *
  * Kullanıcı isteği: "Mevcut Varlığım uygulamasına kapsamlı bir Yapay
  * Zekâ Teknik Analiz Sistemi eklemek istiyorum... Web + Android + iOS
@@ -8,7 +8,7 @@
  * vanilla-JS site olduğu netleşti (bkz. proje dokümanları/rapor); bu
  * doğrultuda kullanıcıyla netleştirilip ONAYLANAN karar: web tarafı,
  * projenin BUGÜNE KADARKİ tüm diğer özelliklerinde olduğu gibi, mobildeki
- * (Flutter/Dart) AI Teknik Analiz mantığıyla AYNI davranışı JS ile ayrı
+ * (Flutter/Dart) EVA Teknik Analiz mantığıyla AYNI davranışı JS ile ayrı
  * ayrı uygular; ikisi de AYNI Supabase backend'ini (aynı
  * `ai-chart-analysis` Edge Function'ı, aynı `ai_chart_analyses` tablosu)
  * kullanır.
@@ -98,7 +98,7 @@ async function aiCallFunction(body) {
 // ============================================================
 // Gerçek değer HER ZAMAN backend'den (Edge Function → ai_usage tablosu)
 // okunur; burada hiçbir yerde "3" veya "premium" sabit/varsayılan olarak
-// YAZILMAZ (kural: madde 3/12/13). Sonuç, hem "AI Teknik Analiz"
+// YAZILMAZ (kural: madde 3/12/13). Sonuç, hem "EVA Teknik Analiz"
 // sayfasındaki sayaç hem de gelecekte başka sayfalar için tek bir
 // önbellekte (aiUsageCache) tutulur.
 let aiUsageCache = null;
@@ -665,7 +665,7 @@ function aiWirePageOnce() {
 
 // ============================================================
 // Misafir/girişsiz kullanıcı kapısı (2026-09, misafir kullanım sistemi)
-// Giriş yapmamış kullanıcı AI Teknik Analiz'i hiç kullanamaz — bu sayfa
+// Giriş yapmamış kullanıcı EVA Teknik Analiz'i hiç kullanamaz — bu sayfa
 // açıldığında yükleme/analiz arayüzü yerine bir "hesap oluştur" kartı
 // gösterilir. Mevcut AI kullanım/Premium sistemi (usage_status, 3
 // ücretsiz hak, Edge Function gate) HİÇ değişmedi; burada yalnızca
@@ -677,8 +677,8 @@ function aiWireGateOnce() {
   if (aiGateWired) return;
   aiGateWired = true;
   const reason = {
-    title: 'AI Teknik Analiz için ücretsiz hesabını oluştur',
-    lead: 'İlk kez kayıt olan kullanıcılara 3 ücretsiz AI Teknik Analiz hakkı veriyoruz. Devam etmek için giriş yap ya da hesap oluştur.'
+    title: 'EVA Teknik Analiz için ücretsiz hesabını oluştur',
+    lead: 'İlk kez kayıt olan kullanıcılara 3 ücretsiz EVA Teknik Analiz hakkı veriyoruz. Devam etmek için giriş yap ya da hesap oluştur.'
   };
   document.getElementById('aiGateLoginBtn')?.addEventListener('click', () => {
     if (typeof window.openAuthOverlay === 'function') window.openAuthOverlay('login', reason);
