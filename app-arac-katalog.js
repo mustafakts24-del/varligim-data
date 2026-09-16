@@ -1,7 +1,7 @@
 /* ==================================================================
  * app-arac-katalog.js — Varlığım Araç Kataloğu (YENİ, 2026-09-12)
  *
- * AI Araç Fiyat Sorgulama'nın "Kategori -> Marka -> Model -> Nesil/Kasa
+ * EVA Araç Fiyat Sorgulama'nın "Kategori -> Marka -> Model -> Nesil/Kasa
  * -> Motor -> Versiyon" adım adım seçim akışını yönetir. Veri KAYNAĞI
  * Supabase'teki `vehicle_categories`/`vehicle_brands`/`vehicle_models`/
  * `vehicle_generations`/`vehicle_engines`/`vehicle_versions` tablolarıdır
