@@ -294,7 +294,7 @@
             <div style="font-size:34px;">👑</div>
             <h2 style="margin:10px 0 6px;">EVA Araç Fiyat Sorgulama Premium üyelere özeldir</h2>
             <p style="color:var(--text-muted); font-size:13.5px; max-width:420px; margin:0 auto 18px;">
-              Premium üyeler ayda birkaç araç için AI destekli fiyat sorgulaması yapabilir.
+              Premium üyeler ayda birkaç araç için EVA destekli fiyat sorgulaması yapabilir.
             </p>
             <button type="button" class="btn primary" onclick="showPage('premium')">👑 Premium'a Geç</button>
           </div>
@@ -352,7 +352,7 @@
               </div>
 
               <button type="button" class="btn primary full" id="arfSubmitBtn" style="margin-top:16px;">
-                <span class="msr">directions_car</span> AI ile Fiyat Sorgula
+                <span class="msr">directions_car</span> EVA ile Fiyat Sorgula
               </button>
             </div>
 
@@ -396,7 +396,7 @@
             <div style="font-size:34px;">👑</div>
             <h2 style="margin:10px 0 6px;">EVA Gayrimenkul Fiyat Sorgulama Premium üyelere özeldir</h2>
             <p style="color:var(--text-muted); font-size:13.5px; max-width:420px; margin:0 auto 18px;">
-              Premium üyeler ayda birkaç ev için AI destekli fiyat sorgulaması yapabilir.
+              Premium üyeler ayda birkaç ev için EVA destekli fiyat sorgulaması yapabilir.
             </p>
             <button type="button" class="btn primary" onclick="showPage('premium')">👑 Premium'a Geç</button>
           </div>
@@ -407,9 +407,9 @@
 
             <div class="card">
               <div class="add-form">
-                <input type="text" id="grfCityInput" placeholder="İl">
-                <input type="text" id="grfDistrictInput" placeholder="İlçe">
-                <input type="text" id="grfNeighborhoodInput" placeholder="Mahalle (opsiyonel — konum kesinliği için önerilir)">
+                <select id="grfCityInput"></select>
+                <select id="grfDistrictInput" disabled></select>
+                <select id="grfNeighborhoodInput" disabled></select>
                 <select id="grfHousingTypeSelect"></select>
                 <select id="grfRoomPatternSelect"></select>
                 <input type="text" id="grfNetAreaInput" inputmode="numeric" placeholder="Net m²">
@@ -439,7 +439,7 @@
               </div>
 
               <button type="button" class="btn primary full" id="grfSubmitBtn" style="margin-top:16px;">
-                <span class="msr">home_work</span> AI ile Fiyat Sorgula
+                <span class="msr">home_work</span> EVA ile Fiyat Sorgula
               </button>
             </div>
 
@@ -1556,11 +1556,12 @@
 <script src="app-vehicle-catalog.js?v=20260912-2"></script>
 <script src="app-varligim.js?v=20260912-1"></script>
 <script src="app-valuation.js?v=20260911-1"></script>
-<script src="app-ai-analiz.js?v=20260915"></script>
+<script src="data-turkiye-il-ilce-mahalle.js?v=20260916"></script>
+<script src="app-ai-analiz.js?v=20260916"></script>
 <script src="app-arac-katalog.js?v=20260915"></script>
-<script src="app-arac-fiyat-sorgulama.js?v=20260915"></script>
-<script src="app-gayrimenkul-fiyat-sorgulama.js?v=20260915"></script>
-<script src="app-premium.js?v=20260915"></script>
+<script src="app-arac-fiyat-sorgulama.js?v=20260916"></script>
+<script src="app-gayrimenkul-fiyat-sorgulama.js?v=20260916"></script>
+<script src="app-premium.js?v=20260916"></script>
 
 </body>
 </html>
