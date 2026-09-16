@@ -151,7 +151,7 @@ function arfRenderUsageBar(usage) {
     usageBarEl.innerHTML = `
       <span class="ai-trial-counter${exhausted ? ' exhausted' : ''}">
         <span class="msr" style="font-size:15px; vertical-align:-3px;">directions_car</span>
-        ${exhausted ? 'Bu ayki AI fiyat sorgulama hakkın doldu' : `Bu Ay Kullanılan: ${usage.used}/${usage.monthlyLimit}`}
+        ${exhausted ? 'Bu ayki EVA fiyat sorgulama hakkın doldu' : `Bu Ay Kullanılan: ${usage.used}/${usage.monthlyLimit}`}
       </span>
     `;
   }
@@ -363,7 +363,7 @@ async function arfRunEstimate() {
   } finally {
     if (btn) {
       btn.disabled = !!(arfUsageCache && arfUsageCache.remaining <= 0);
-      btn.textContent = 'AI ile Fiyat Sorgula';
+      btn.textContent = 'EVA ile Fiyat Sorgula';
     }
   }
 }
