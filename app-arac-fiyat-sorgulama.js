@@ -1,5 +1,5 @@
 /* ==================================================================
- * app-arac-fiyat-sorgulama.js — AI Araç Fiyat Sorgulama (GÜNCEL, 2026-09-12)
+ * app-arac-fiyat-sorgulama.js — EVA Araç Fiyat Sorgulama (GÜNCEL, 2026-09-12)
  *
  * Kullanıcı isteği: marka/model/model yılı/km/ağır hasar kaydı/hasar
  * tutarı/vites/yakıt/çekiş tipi girilip "AI ile fiyat sorgula" denince,
@@ -79,11 +79,11 @@ async function arfCallFunction(body) {
       body: JSON.stringify(body),
     });
   } catch (e) {
-    throw new Error('AI Araç Fiyat Sorgulama servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
+    throw new Error('EVA Araç Fiyat Sorgulama servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const err = new Error(data?.error || 'AI Araç Fiyat Sorgulama servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
+    const err = new Error(data?.error || 'EVA Araç Fiyat Sorgulama servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin.');
     if (data?.code) err.code = data.code;
     throw err;
   }
@@ -98,7 +98,7 @@ function arfWireGateOnce() {
   if (arfGateWired) return;
   arfGateWired = true;
   const reason = {
-    title: 'AI Araç Fiyat Sorgulama için giriş yap',
+    title: 'EVA Araç Fiyat Sorgulama için giriş yap',
     lead: 'Bu özellik Premium üyelere özeldir. Devam etmek için giriş yap ya da hesap oluştur.',
   };
   document.getElementById('arfGateLoginBtn')?.addEventListener('click', () => {
